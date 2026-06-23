@@ -1,6 +1,9 @@
 {
-    "title":"Blog Title",
-    "subTitle":"Blog description",
-    "avatarUrl":"https://github.githubassets.com/favicons/favicon.svg",
-    "GMEEK_VERSION":"last"
+    "title": "ΔιάΝους",
+    "subTitle": "Question. Understand. Create.",
+    "avatarUrl": "https://github.githubassets.com/favicons/favicon.svg",
+    "homeUrl": "https://luliyer6-ux.github.io",
+    "GMEEK_VERSION": "last",
+    "singlePage": ["about", "archive", "chronicle", "book"],
+    "allHead": "<link rel='stylesheet' href='/enhance.css'><script defer src='/enhance.js'></script>"
 }
