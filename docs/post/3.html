@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="<!-- chronicle:data:start -->
+{
+  'years': ['2025', '2026', '2027'],
+  'categories': [
+    { 'key': 'travel', 'label': '事件' },
+    { 'key': 'media', 'label': '书影音' },
+    { 'key': 'posters', 'label': '海报墙' }
+  ],
+  'data': {
+    '2025': {
+      'travel': [
+        { 'month': 'Jan.', 'city': '北京', 'items': [{ 'title': '故宫游览' }, { 'title': '颐和园散步' }, { 'title': '南锣鼓巷逛街' }] },
+        { 'month': 'Feb.', 'city': '杭州', 'items': [{ 'title': '西湖游船' }] },
+        { 'month': 'Feb.', 'city': '宁波', 'items': [{ 'title': '天一阁古籍展览' }] },
+        { 'month': 'Feb.', 'city': '绍兴', 'items': [{ 'title': '鲁迅故里探访' }] },
+        { 'month': 'Mar.', 'city': '南京', 'items': [{ 'title': '秦淮河夜景' }] },
+        { 'month': 'Mar.', 'city': '扬州', 'items': [{ 'title': '瘦西湖赏春' }] },
+        { 'month': 'Mar.', 'city': '镇江', 'items': [{ 'title': '金山寺登山' }] },
+        { 'month': 'Apr.', 'city': '苏州', 'items': [{ 'title': '拙政园赏春' }] },
+        { 'month': 'Apr.', 'city': '常州', 'items': [{ 'title': '恐龙园游乐' }] },
+        { 'month': 'Apr.', 'city': '无锡', 'items': [{ 'title': '灵山大佛参观' }] },
+        { 'month': 'May.', 'city': '厦门', 'items': [{ 'title': '鼓浪屿骑行' }] },
+        { 'month': 'May.', 'city': '福州', 'items': [{ 'title': '三坊七巷古街' }] },
+        { 'month': 'May.', 'city': '泉州', 'items': [{ 'title': '清源山游览' }] },
+        { 'month': 'Jun.', 'city': '家里', 'items': [{ 'title': '写博客开始构建' }] },
+        { 'month': 'Jun.', 'city': '学校', 'items': [{ 'title': '博客V3版本基本完成' }] },
+        { 'month': 'Jun.', 'city': '图书馆', 'items': [{ 'title': '文献查阅' }] },
+        { 'month': 'Jul.', 'city': '青岛', 'items': [{ 'title': '栈桥看日出' }] },
+        { 'month': 'Jul.', 'city': '威海', 'items': [{ 'title': '成山头灯塔' }] },
+        { 'month': 'Jul.', 'city': '烟台', 'items': [{ 'title': '蓬莱仙境游船' }] },
+        { 'month': 'Aug.', 'city': '大连', 'items': [{ 'title': '星海广场夜游' }] },
+        { 'month': 'Aug.', 'city': '丹东', 'items': [{ 'title': '鸭绿江漂流' }] },
+        { 'month': 'Aug.', 'city': '营口', 'items': [{ 'title': '月牙湾海滨' }] },
+        { 'month': 'Sep.', 'city': '武汉', 'items': [{ 'title': '黄鹤楼登高' }] },
+        { 'month': 'Sep.', 'city': '宜昌', 'items': [{ 'title': '三峡大坝观景' }] },
+        { 'month': 'Sep.', 'city': '十堰', 'items': [{ 'title': '武当山朝圣' }] },
+        { 'month': 'Oct.', 'city': '西安', 'items': [{ 'title': '兵马俑参观' }] },
+        { 'month': 'Oct.', 'city': '宝鸡', 'items': [{ 'title': '法门寺探访' }] },
+        { 'month': 'Oct.', 'city': '渭南', 'items': [{ 'title': '华山登顶' }] },
+        { 'month': 'Nov.', 'city': '成都', 'items': [{ 'title': '宽窄巷子古韵' }] },
+        { 'month': 'Nov.', 'city': '乐山', 'items': [{ 'title': '大佛景区摄影' }] },
+        { 'month': 'Nov.', 'city': '眉山', 'items': [{ 'title': '三苏祠故里' }] },
+        { 'month': 'Dec.', 'city': '重庆', 'items': [{ 'title': '洪崖洞夜景' }] },
+        { 'month': 'Dec.', 'city': '奉节', 'items': [{ 'title': '瞿塘峡漂流' }] },
+        { 'month': 'Dec.', 'city': '万州', 'items': [{ 'title': '三峡地质公园' }] }
+      ],
+      'media': [
+        { 'month': 'Jan.', 'books': ['《活着》', '《呼兰河传》', '《许三观卖血记》'], 'watch': ['《三体》', '《流浪地球》', '《诛仙》'], 'shows': ['《狂飙》', '《长月烬明》', '《甄嬛传》'], 'games': ['原神', '鹿鼎记', '崩坏星穹铁道'] },
+        { 'month': 'Feb.', 'books': ['《平凡的世界》', '《人生》', '《白鹿原》'], 'watch': ['《星汉灿烂》', '《知否知否》', '《琅琊榜》'], 'shows': ['《长安十二时辰》', '《延禧攻略》', '《鹤唳华亭》'], 'games': ['提瓦特冒险', '仙剑奇侠传', '艾尔登法环'] },
+        { 'month': 'Mar.', 'books': ['《百年孤独》', '《了不起的盖茨比》', '《小王子》'], 'watch': ['《苍兰诀》', '《沉香如屑》', '《尘埃落定》'], 'shows': ['《陆贞传奇》', '《甜蜜家园》', '《怒晴湘西》'], 'games': ['黑神话悟空', '死亡搁浅', '赛博朋克2077'] },
+        { 'month': 'Apr.', 'books': ['《红楼梦》', '《三体III》', '《活着》'], 'watch': ['《云之羽》', '《白月光心上人》', '《断金》'], 'shows': ['《军师联盟》', '《沙海》', '《暗黑破坏神》'], 'games': ['博德之门3', '仙剑7', '胡闹厨房'] },
+        { 'month': 'May.', 'books': ['《天龙八部》', '《笑傲江湖》', '《鹿鼎记》'], 'watch': ['《恐怖游轮》', '《肖申克救赎》', '《霸王别姬》'], 'shows': ['《琅琊榜之风起长林》', '《你迟到的许多年》', '《大宋北斗司》'], 'games': ['双人成行', '我的世界', '塞尔达传说'] },
+        { 'month': 'Jun.', 'books': [], 'watch': [], 'shows': [], 'games': [] },
+        { 'month': 'Jul.', 'books': ['《飘》', '《简爱》', '《傲慢与偏见》'], 'watch': ['《茶馆》', '《秋菊打官司》', '《活着》'], 'shows': ['《甄嬛传之崛起》', '《步步惊心》', '《还珠格格》'], 'games': ['健身环大冒险', '集合啦动物森友会', '马里奥奥德赛'] },
+        { 'month': 'Aug.', 'books': ['《契诃夫短篇集》', '《莫泊桑短篇选》', '《欧亨利短篇集》'], 'watch': ['《归来》', '《搜索》', '《老炮儿》'], 'shows': ['《琅琊榜之海上纷争》', '《香蜜沉沉烬如霜》', '《时间都知道》'], 'games': ['返校', '孤岛惊魂', '看火人'] },
+        { 'month': 'Sep.', 'books': ['《挪威的森林》', '《海边的卡夫卡》', '《骑士与仙姑》'], 'watch': ['《一个都不能少》', '《美丽人生》', '《城市猎人》'], 'shows': ['《三十而已》', '《我和我的经纪人》', '《演员请就位》'], 'games': ['碧海黑帆', '地平线零之曙光', '最后幸存者'] },
+        { 'month': 'Oct.', 'books': ['《月亮与六便士》', '《人性的弱点》', '《目送》'], 'watch': ['《寄生虫》', '《釜山行》', '《绿皮书》'], 'shows': ['《隐秘的角落》', '《白夜追凶》', '《非凡案件》'], 'games': ['极限竞速', '守望先锋', '堡垒之夜'] },
+        { 'month': 'Nov.', 'books': ['《挣扎》', '《生命的意义》', '《幸福的方法》'], 'watch': ['《触不可及》', '《海上钢琴师》', '《饮食男女》'], 'shows': ['《陈情令》', '《镇魂》', '《天官赐福》'], 'games': ['战神》、《巫师3、《荒野大镖客2'] },
+        { 'month': 'Dec.', 'books': ['《人间失格》', '《白夜行》', '《解忧杂货店》'], 'watch': ['《光荣时代》', '《二十不惑》', '《尽管如此》'], 'shows': ['《爱在深秋》', '《故事里的人》', '《浪漫的体质》'], 'games': ['恐怖黎明', '暗黑血统', '生化危机8'] }
+      ],
+      'posters': []
+    },
+    '2026': {
+      'travel': [
+        {
+          'month': 'Jun.',
+          'city': '家里',
+          'items': [
+            { 'title': '写博客开始构建' }
+          ]
+        },
+        {
+          'month': 'Jun.',
+          'city': '学校',
+          'items': [
+            { 'title': '博客V3版本基本完成' }
+          ]
+        }
+      ],
+      'media': [],
+      'posters': [
+        {
+          'title': 'Guidebook',
+          'image': 'https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/Guidebook.png'
+        },
+        {
+          'title': 'Library',
+          'image': 'https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/Library.png'
+        },
+        {
+          'title': 'AI',
+          'image': 'https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/AI.png'
+        }
+      ]
+    },
+    '2027': {
+      'travel': [],
+      'media': [],
+      'posters': []
+    }
+  }
+}
+<!-- chronicle:data:end -->。">
+<meta property="og:title" content="3">
+<meta property="og:description" content="<!-- chronicle:data:start -->
+{
+  'years': ['2025', '2026', '2027'],
+  'categories': [
+    { 'key': 'travel', 'label': '事件' },
+    { 'key': 'media', 'label': '书影音' },
+    { 'key': 'posters', 'label': '海报墙' }
+  ],
+  'data': {
+    '2025': {
+      'travel': [
+        { 'month': 'Jan.', 'city': '北京', 'items': [{ 'title': '故宫游览' }, { 'title': '颐和园散步' }, { 'title': '南锣鼓巷逛街' }] },
+        { 'month': 'Feb.', 'city': '杭州', 'items': [{ 'title': '西湖游船' }] },
+        { 'month': 'Feb.', 'city': '宁波', 'items': [{ 'title': '天一阁古籍展览' }] },
+        { 'month': 'Feb.', 'city': '绍兴', 'items': [{ 'title': '鲁迅故里探访' }] },
+        { 'month': 'Mar.', 'city': '南京', 'items': [{ 'title': '秦淮河夜景' }] },
+        { 'month': 'Mar.', 'city': '扬州', 'items': [{ 'title': '瘦西湖赏春' }] },
+        { 'month': 'Mar.', 'city': '镇江', 'items': [{ 'title': '金山寺登山' }] },
+        { 'month': 'Apr.', 'city': '苏州', 'items': [{ 'title': '拙政园赏春' }] },
+        { 'month': 'Apr.', 'city': '常州', 'items': [{ 'title': '恐龙园游乐' }] },
+        { 'month': 'Apr.', 'city': '无锡', 'items': [{ 'title': '灵山大佛参观' }] },
+        { 'month': 'May.', 'city': '厦门', 'items': [{ 'title': '鼓浪屿骑行' }] },
+        { 'month': 'May.', 'city': '福州', 'items': [{ 'title': '三坊七巷古街' }] },
+        { 'month': 'May.', 'city': '泉州', 'items': [{ 'title': '清源山游览' }] },
+        { 'month': 'Jun.', 'city': '家里', 'items': [{ 'title': '写博客开始构建' }] },
+        { 'month': 'Jun.', 'city': '学校', 'items': [{ 'title': '博客V3版本基本完成' }] },
+        { 'month': 'Jun.', 'city': '图书馆', 'items': [{ 'title': '文献查阅' }] },
+        { 'month': 'Jul.', 'city': '青岛', 'items': [{ 'title': '栈桥看日出' }] },
+        { 'month': 'Jul.', 'city': '威海', 'items': [{ 'title': '成山头灯塔' }] },
+        { 'month': 'Jul.', 'city': '烟台', 'items': [{ 'title': '蓬莱仙境游船' }] },
+        { 'month': 'Aug.', 'city': '大连', 'items': [{ 'title': '星海广场夜游' }] },
+        { 'month': 'Aug.', 'city': '丹东', 'items': [{ 'title': '鸭绿江漂流' }] },
+        { 'month': 'Aug.', 'city': '营口', 'items': [{ 'title': '月牙湾海滨' }] },
+        { 'month': 'Sep.', 'city': '武汉', 'items': [{ 'title': '黄鹤楼登高' }] },
+        { 'month': 'Sep.', 'city': '宜昌', 'items': [{ 'title': '三峡大坝观景' }] },
+        { 'month': 'Sep.', 'city': '十堰', 'items': [{ 'title': '武当山朝圣' }] },
+        { 'month': 'Oct.', 'city': '西安', 'items': [{ 'title': '兵马俑参观' }] },
+        { 'month': 'Oct.', 'city': '宝鸡', 'items': [{ 'title': '法门寺探访' }] },
+        { 'month': 'Oct.', 'city': '渭南', 'items': [{ 'title': '华山登顶' }] },
+        { 'month': 'Nov.', 'city': '成都', 'items': [{ 'title': '宽窄巷子古韵' }] },
+        { 'month': 'Nov.', 'city': '乐山', 'items': [{ 'title': '大佛景区摄影' }] },
+        { 'month': 'Nov.', 'city': '眉山', 'items': [{ 'title': '三苏祠故里' }] },
+        { 'month': 'Dec.', 'city': '重庆', 'items': [{ 'title': '洪崖洞夜景' }] },
+        { 'month': 'Dec.', 'city': '奉节', 'items': [{ 'title': '瞿塘峡漂流' }] },
+        { 'month': 'Dec.', 'city': '万州', 'items': [{ 'title': '三峡地质公园' }] }
+      ],
+      'media': [
+        { 'month': 'Jan.', 'books': ['《活着》', '《呼兰河传》', '《许三观卖血记》'], 'watch': ['《三体》', '《流浪地球》', '《诛仙》'], 'shows': ['《狂飙》', '《长月烬明》', '《甄嬛传》'], 'games': ['原神', '鹿鼎记', '崩坏星穹铁道'] },
+        { 'month': 'Feb.', 'books': ['《平凡的世界》', '《人生》', '《白鹿原》'], 'watch': ['《星汉灿烂》', '《知否知否》', '《琅琊榜》'], 'shows': ['《长安十二时辰》', '《延禧攻略》', '《鹤唳华亭》'], 'games': ['提瓦特冒险', '仙剑奇侠传', '艾尔登法环'] },
+        { 'month': 'Mar.', 'books': ['《百年孤独》', '《了不起的盖茨比》', '《小王子》'], 'watch': ['《苍兰诀》', '《沉香如屑》', '《尘埃落定》'], 'shows': ['《陆贞传奇》', '《甜蜜家园》', '《怒晴湘西》'], 'games': ['黑神话悟空', '死亡搁浅', '赛博朋克2077'] },
+        { 'month': 'Apr.', 'books': ['《红楼梦》', '《三体III》', '《活着》'], 'watch': ['《云之羽》', '《白月光心上人》', '《断金》'], 'shows': ['《军师联盟》', '《沙海》', '《暗黑破坏神》'], 'games': ['博德之门3', '仙剑7', '胡闹厨房'] },
+        { 'month': 'May.', 'books': ['《天龙八部》', '《笑傲江湖》', '《鹿鼎记》'], 'watch': ['《恐怖游轮》', '《肖申克救赎》', '《霸王别姬》'], 'shows': ['《琅琊榜之风起长林》', '《你迟到的许多年》', '《大宋北斗司》'], 'games': ['双人成行', '我的世界', '塞尔达传说'] },
+        { 'month': 'Jun.', 'books': [], 'watch': [], 'shows': [], 'games': [] },
+        { 'month': 'Jul.', 'books': ['《飘》', '《简爱》', '《傲慢与偏见》'], 'watch': ['《茶馆》', '《秋菊打官司》', '《活着》'], 'shows': ['《甄嬛传之崛起》', '《步步惊心》', '《还珠格格》'], 'games': ['健身环大冒险', '集合啦动物森友会', '马里奥奥德赛'] },
+        { 'month': 'Aug.', 'books': ['《契诃夫短篇集》', '《莫泊桑短篇选》', '《欧亨利短篇集》'], 'watch': ['《归来》', '《搜索》', '《老炮儿》'], 'shows': ['《琅琊榜之海上纷争》', '《香蜜沉沉烬如霜》', '《时间都知道》'], 'games': ['返校', '孤岛惊魂', '看火人'] },
+        { 'month': 'Sep.', 'books': ['《挪威的森林》', '《海边的卡夫卡》', '《骑士与仙姑》'], 'watch': ['《一个都不能少》', '《美丽人生》', '《城市猎人》'], 'shows': ['《三十而已》', '《我和我的经纪人》', '《演员请就位》'], 'games': ['碧海黑帆', '地平线零之曙光', '最后幸存者'] },
+        { 'month': 'Oct.', 'books': ['《月亮与六便士》', '《人性的弱点》', '《目送》'], 'watch': ['《寄生虫》', '《釜山行》', '《绿皮书》'], 'shows': ['《隐秘的角落》', '《白夜追凶》', '《非凡案件》'], 'games': ['极限竞速', '守望先锋', '堡垒之夜'] },
+        { 'month': 'Nov.', 'books': ['《挣扎》', '《生命的意义》', '《幸福的方法》'], 'watch': ['《触不可及》', '《海上钢琴师》', '《饮食男女》'], 'shows': ['《陈情令》', '《镇魂》', '《天官赐福》'], 'games': ['战神》、《巫师3、《荒野大镖客2'] },
+        { 'month': 'Dec.', 'books': ['《人间失格》', '《白夜行》', '《解忧杂货店》'], 'watch': ['《光荣时代》', '《二十不惑》', '《尽管如此》'], 'shows': ['《爱在深秋》', '《故事里的人》', '《浪漫的体质》'], 'games': ['恐怖黎明', '暗黑血统', '生化危机8'] }
+      ],
+      'posters': []
+    },
+    '2026': {
+      'travel': [
+        {
+          'month': 'Jun.',
+          'city': '家里',
+          'items': [
+            { 'title': '写博客开始构建' }
+          ]
+        },
+        {
+          'month': 'Jun.',
+          'city': '学校',
+          'items': [
+            { 'title': '博客V3版本基本完成' }
+          ]
+        }
+      ],
+      'media': [],
+      'posters': [
+        {
+          'title': 'Guidebook',
+          'image': 'https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/Guidebook.png'
+        },
+        {
+          'title': 'Library',
+          'image': 'https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/Library.png'
+        },
+        {
+          'title': 'AI',
+          'image': 'https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/AI.png'
+        }
+      ]
+    },
+    '2027': {
+      'travel': [],
+      'media': [],
+      'posters': []
+    }
+  }
+}
+<!-- chronicle:data:end -->。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://luliyer6-ux.github.io/post/3.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>3</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">3</h1>
+<div class="title-right">
+    <a href="https://luliyer6-ux.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/luliyer6-ux/luliyer6-ux.github.io/issues/4" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody">
+<p>{<br>
+"years": ["2025", "2026", "2027"],<br>
+"categories": [<br>
+{ "key": "travel", "label": "事件" },<br>
+{ "key": "media", "label": "书影音" },<br>
+{ "key": "posters", "label": "海报墙" }<br>
+],<br>
+"data": {<br>
+"2025": {<br>
+"travel": [<br>
+{ "month": "Jan.", "city": "北京", "items": [{ "title": "故宫游览" }, { "title": "颐和园散步" }, { "title": "南锣鼓巷逛街" }] },<br>
+{ "month": "Feb.", "city": "杭州", "items": [{ "title": "西湖游船" }] },<br>
+{ "month": "Feb.", "city": "宁波", "items": [{ "title": "天一阁古籍展览" }] },<br>
+{ "month": "Feb.", "city": "绍兴", "items": [{ "title": "鲁迅故里探访" }] },<br>
+{ "month": "Mar.", "city": "南京", "items": [{ "title": "秦淮河夜景" }] },<br>
+{ "month": "Mar.", "city": "扬州", "items": [{ "title": "瘦西湖赏春" }] },<br>
+{ "month": "Mar.", "city": "镇江", "items": [{ "title": "金山寺登山" }] },<br>
+{ "month": "Apr.", "city": "苏州", "items": [{ "title": "拙政园赏春" }] },<br>
+{ "month": "Apr.", "city": "常州", "items": [{ "title": "恐龙园游乐" }] },<br>
+{ "month": "Apr.", "city": "无锡", "items": [{ "title": "灵山大佛参观" }] },<br>
+{ "month": "May.", "city": "厦门", "items": [{ "title": "鼓浪屿骑行" }] },<br>
+{ "month": "May.", "city": "福州", "items": [{ "title": "三坊七巷古街" }] },<br>
+{ "month": "May.", "city": "泉州", "items": [{ "title": "清源山游览" }] },<br>
+{ "month": "Jun.", "city": "家里", "items": [{ "title": "写博客开始构建" }] },<br>
+{ "month": "Jun.", "city": "学校", "items": [{ "title": "博客V3版本基本完成" }] },<br>
+{ "month": "Jun.", "city": "图书馆", "items": [{ "title": "文献查阅" }] },<br>
+{ "month": "Jul.", "city": "青岛", "items": [{ "title": "栈桥看日出" }] },<br>
+{ "month": "Jul.", "city": "威海", "items": [{ "title": "成山头灯塔" }] },<br>
+{ "month": "Jul.", "city": "烟台", "items": [{ "title": "蓬莱仙境游船" }] },<br>
+{ "month": "Aug.", "city": "大连", "items": [{ "title": "星海广场夜游" }] },<br>
+{ "month": "Aug.", "city": "丹东", "items": [{ "title": "鸭绿江漂流" }] },<br>
+{ "month": "Aug.", "city": "营口", "items": [{ "title": "月牙湾海滨" }] },<br>
+{ "month": "Sep.", "city": "武汉", "items": [{ "title": "黄鹤楼登高" }] },<br>
+{ "month": "Sep.", "city": "宜昌", "items": [{ "title": "三峡大坝观景" }] },<br>
+{ "month": "Sep.", "city": "十堰", "items": [{ "title": "武当山朝圣" }] },<br>
+{ "month": "Oct.", "city": "西安", "items": [{ "title": "兵马俑参观" }] },<br>
+{ "month": "Oct.", "city": "宝鸡", "items": [{ "title": "法门寺探访" }] },<br>
+{ "month": "Oct.", "city": "渭南", "items": [{ "title": "华山登顶" }] },<br>
+{ "month": "Nov.", "city": "成都", "items": [{ "title": "宽窄巷子古韵" }] },<br>
+{ "month": "Nov.", "city": "乐山", "items": [{ "title": "大佛景区摄影" }] },<br>
+{ "month": "Nov.", "city": "眉山", "items": [{ "title": "三苏祠故里" }] },<br>
+{ "month": "Dec.", "city": "重庆", "items": [{ "title": "洪崖洞夜景" }] },<br>
+{ "month": "Dec.", "city": "奉节", "items": [{ "title": "瞿塘峡漂流" }] },<br>
+{ "month": "Dec.", "city": "万州", "items": [{ "title": "三峡地质公园" }] }<br>
+],<br>
+"media": [<br>
+{ "month": "Jan.", "books": ["《活着》", "《呼兰河传》", "《许三观卖血记》"], "watch": ["《三体》", "《流浪地球》", "《诛仙》"], "shows": ["《狂飙》", "《长月烬明》", "《甄嬛传》"], "games": ["原神", "鹿鼎记", "崩坏星穹铁道"] },<br>
+{ "month": "Feb.", "books": ["《平凡的世界》", "《人生》", "《白鹿原》"], "watch": ["《星汉灿烂》", "《知否知否》", "《琅琊榜》"], "shows": ["《长安十二时辰》", "《延禧攻略》", "《鹤唳华亭》"], "games": ["提瓦特冒险", "仙剑奇侠传", "艾尔登法环"] },<br>
+{ "month": "Mar.", "books": ["《百年孤独》", "《了不起的盖茨比》", "《小王子》"], "watch": ["《苍兰诀》", "《沉香如屑》", "《尘埃落定》"], "shows": ["《陆贞传奇》", "《甜蜜家园》", "《怒晴湘西》"], "games": ["黑神话悟空", "死亡搁浅", "赛博朋克2077"] },<br>
+{ "month": "Apr.", "books": ["《红楼梦》", "《三体III》", "《活着》"], "watch": ["《云之羽》", "《白月光心上人》", "《断金》"], "shows": ["《军师联盟》", "《沙海》", "《暗黑破坏神》"], "games": ["博德之门3", "仙剑7", "胡闹厨房"] },<br>
+{ "month": "May.", "books": ["《天龙八部》", "《笑傲江湖》", "《鹿鼎记》"], "watch": ["《恐怖游轮》", "《肖申克救赎》", "《霸王别姬》"], "shows": ["《琅琊榜之风起长林》", "《你迟到的许多年》", "《大宋北斗司》"], "games": ["双人成行", "我的世界", "塞尔达传说"] },<br>
+{ "month": "Jun.", "books": [], "watch": [], "shows": [], "games": [] },<br>
+{ "month": "Jul.", "books": ["《飘》", "《简爱》", "《傲慢与偏见》"], "watch": ["《茶馆》", "《秋菊打官司》", "《活着》"], "shows": ["《甄嬛传之崛起》", "《步步惊心》", "《还珠格格》"], "games": ["健身环大冒险", "集合啦动物森友会", "马里奥奥德赛"] },<br>
+{ "month": "Aug.", "books": ["《契诃夫短篇集》", "《莫泊桑短篇选》", "《欧亨利短篇集》"], "watch": ["《归来》", "《搜索》", "《老炮儿》"], "shows": ["《琅琊榜之海上纷争》", "《香蜜沉沉烬如霜》", "《时间都知道》"], "games": ["返校", "孤岛惊魂", "看火人"] },<br>
+{ "month": "Sep.", "books": ["《挪威的森林》", "《海边的卡夫卡》", "《骑士与仙姑》"], "watch": ["《一个都不能少》", "《美丽人生》", "《城市猎人》"], "shows": ["《三十而已》", "《我和我的经纪人》", "《演员请就位》"], "games": ["碧海黑帆", "地平线零之曙光", "最后幸存者"] },<br>
+{ "month": "Oct.", "books": ["《月亮与六便士》", "《人性的弱点》", "《目送》"], "watch": ["《寄生虫》", "《釜山行》", "《绿皮书》"], "shows": ["《隐秘的角落》", "《白夜追凶》", "《非凡案件》"], "games": ["极限竞速", "守望先锋", "堡垒之夜"] },<br>
+{ "month": "Nov.", "books": ["《挣扎》", "《生命的意义》", "《幸福的方法》"], "watch": ["《触不可及》", "《海上钢琴师》", "《饮食男女》"], "shows": ["《陈情令》", "《镇魂》", "《天官赐福》"], "games": ["战神》、《巫师3、《荒野大镖客2"] },<br>
+{ "month": "Dec.", "books": ["《人间失格》", "《白夜行》", "《解忧杂货店》"], "watch": ["《光荣时代》", "《二十不惑》", "《尽管如此》"], "shows": ["《爱在深秋》", "《故事里的人》", "《浪漫的体质》"], "games": ["恐怖黎明", "暗黑血统", "生化危机8"] }<br>
+],<br>
+"posters": []<br>
+},<br>
+"2026": {<br>
+"travel": [<br>
+{<br>
+"month": "Jun.",<br>
+"city": "家里",<br>
+"items": [<br>
+{ "title": "写博客开始构建" }<br>
+]<br>
+},<br>
+{<br>
+"month": "Jun.",<br>
+"city": "学校",<br>
+"items": [<br>
+{ "title": "博客V3版本基本完成" }<br>
+]<br>
+}<br>
+],<br>
+"media": [],<br>
+"posters": [<br>
+{<br>
+"title": "Guidebook",<br>
+"image": "https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/Guidebook.png"<br>
+},<br>
+{<br>
+"title": "Library",<br>
+"image": "https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/Library.png"<br>
+},<br>
+{<br>
+"title": "AI",<br>
+"image": "https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/doc/AI.png"<br>
+}<br>
+]<br>
+},<br>
+"2027": {<br>
+"travel": [],<br>
+"media": [],<br>
+"posters": []<br>
+}<br>
+}<br>
+}</p>
+</div>
+<div style="font-size:small;margin-top:8px;float:right;"></div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://luliyer6-ux.github.io">Blog Title</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if(""!=""){
+    var startSite=new Date("");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+cmButton=document.getElementById("cmButton");
+    span=document.createElement("span");
+    span.setAttribute("class","Counter");
+    span.innerHTML="1";
+    cmButton.appendChild(span);
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","luliyer6-ux/luliyer6-ux.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+
+
+</script>
+
+
+</html>
