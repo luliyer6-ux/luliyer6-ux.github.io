@@ -1,0 +1,779 @@
+/* ============================================================
+   ΔιάΝους 极简系统 —— 独立版 enhance.js
+   黑白灰 + 衬线大标题 + 账本式留白。
+   依赖 Gmeek 生成的 postList.json（归档/书架）和
+   chronicle-data Issue（编年史）。无任何第三方库。
+   ============================================================ */
+(function () {
+  'use strict';
+  var root = document.documentElement;
+
+  /* ---- 工具函数 ---- */
+  function ready(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function safe(fn, name) {
+    try { fn(); } catch (e) { try { console.warn('[luliy-min] init failed:', name, e); } catch (e2) {} }
+  }
+  function isIndexPage() {
+    return location.pathname === '/' || location.pathname === '/index.html' || location.pathname === '';
+  }
+  function isArchivePage() {
+    return /(^|\/)archive(\.html)?$/i.test(location.pathname);
+  }
+  function fetchPosts() {
+    function norm(data) {
+      if (Array.isArray(data)) return data;
+      if (data && typeof data === 'object') {
+        var colorDict = data.labelColorDict || {};
+        return Object.keys(data)
+          .filter(function (k) { return k !== 'labelColorDict'; })
+          .map(function (k) {
+            var p = data[k] || {};
+            if (typeof p === 'string') p = { postTitle: p };
+            var rawLabels = p.labels || p.tags || [];
+            var pinLevel = 0;
+            rawLabels.forEach(function (lbl) {
+              var m = /^pinned(?:-(\d+))?$/.exec(lbl);
+              if (m) pinLevel = Math.max(pinLevel, m[1] ? parseInt(m[1], 10) : 1);
+            });
+            var labels = rawLabels.map(function (lbl) {
+              return { name: lbl, color: (colorDict[lbl] || '0969da').replace(/^#/, '') };
+            });
+            return {
+              title: p.postTitle || p.title || p.name || k,
+              link:  p.postUrl  || p.link  || p.url  || ('post/' + k + '.html'),
+              created: p.createdDate || p.created || p.date || '',
+              labels: labels, pinned: pinLevel > 0, pinLevel: pinLevel
+            };
+          });
+      }
+      return [];
+    }
+    var tryUrls = [location.origin + '/postList.json', '/postList.json'];
+    function tryNext(urls) {
+      if (!urls.length) return Promise.resolve([]);
+      return fetch(urls[0], { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .catch(function () { return tryNext(urls.slice(1)); });
+    }
+    return tryNext(tryUrls).then(norm);
+  }
+
+  function buildPostLink(rawLink) {
+    var lnk = rawLink || '#';
+    if (lnk !== '#') {
+      lnk = lnk.replace(/^\//, '');
+      lnk = lnk.replace(/^post\/post\//, 'post/');
+      if (!/^post\//.test(lnk) && !/^https?:\/\//.test(lnk)) lnk = 'post/' + lnk;
+      lnk = '/' + lnk;
+    }
+    return lnk;
+  }
+
+  /* ============================================================
+     归档页 Archives —— 双标签页（Weekly / Other）+ 按年分组 + 分页
+     ★ 替换原来的「时间线视图」归档页。复用现成的 fetchPosts() /
+     esc() / buildPostLink()，赛博朋克风格沿用全站 CSS 变量。
+     ============================================================ */
+  var ARCHIVE_WEEKLY_LABELS = ['Weekly', 'weekly', '\u5468\u8bb0', '\u5468\u62a5', '\u4e8c\u5341\u56db\u8282\u6c14'];
+  var ARCHIVE_SYSTEM_LABELS = ['archives', 'archive', 'chronicle', 'chronicle-data',
+    'about', 'page', 'Pages', '\u9875\u9762', 'book', 'favorites', 'stock', 'link', 'gallery'];
+
+  function archiveIsWeekly(post) {
+    var names = (post.labels || []).map(function (l) { return l.name; });
+    for (var i = 0; i < names.length; i++) {
+      if (ARCHIVE_WEEKLY_LABELS.indexOf(names[i]) !== -1) return true;
+    }
+    return false;
+  }
+  function archiveIsSystem(post) {
+    var names = (post.labels || []).map(function (l) { return l.name; });
+    for (var i = 0; i < names.length; i++) {
+      if (ARCHIVE_SYSTEM_LABELS.indexOf(names[i]) !== -1) return true;
+    }
+    return false;
+  }
+  function archiveGroupByYear(posts) {
+    var groups = {};
+    posts.forEach(function (p) {
+      var y = (p.created || '').slice(0, 4) || '\u672a\u77e5';   /* 未知 */
+      if (!groups[y]) groups[y] = [];
+      groups[y].push(p);
+    });
+    return groups;
+  }
+
+  function initArchivesPage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    /* ★ 幂等防护：已经初始化过就直接返回，避免重复渲染/重复绑事件 */
+    if (document.getElementById('luliy-archives')) return;
+    /* 标记 body：隐藏 Gmeek 原生翻页器等 */
+    document.body.classList.add('luliy-archives-takeover', 'luliy-hide-pagination');
+
+    pb.innerHTML = '<div id="luliy-archives" class="luliy-archives">' +
+      '<div class="luliy-arch-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-archives');
+
+    var PER_PAGE = 10;
+    var TAB_KEY = 'luliy-archive-tab';
+    var state = {
+      tab: (localStorage.getItem(TAB_KEY) === 'other') ? 'other' : 'weekly',
+      pageWeekly: 1,
+      pageOther: 1,
+      weekly: [],
+      other: []
+    };
+
+    fetchPosts().then(function (posts) {
+      if (!posts || !posts.length) {
+        root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+          '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+        return;
+      }
+      /* 按日期降序 */
+      posts.sort(function (a, b) {
+        return String(b.created).localeCompare(String(a.created));
+      });
+      posts.forEach(function (p) {
+        if (archiveIsWeekly(p)) state.weekly.push(p);
+        else if (!archiveIsSystem(p)) state.other.push(p);
+      });
+      renderArchivesShell();
+    }).catch(function () {
+      root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+    });
+
+    function renderArchivesShell() {
+      root2.innerHTML =
+        '<div class="luliy-arch-header">' +
+          '<h1 class="luliy-arch-title">Archives</h1>' +
+          '<div class="luliy-arch-tabbar">' +
+            '<button type="button" class="luliy-arch-tab" data-tab="weekly">Weekly</button>' +
+            '<span class="luliy-arch-tabsep"></span>' +
+            '<button type="button" class="luliy-arch-tab" data-tab="other">Other</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="luliy-arch-body"></div>';
+
+      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var t = btn.getAttribute('data-tab');
+          if (t === state.tab) return;
+          state.tab = t;
+          localStorage.setItem(TAB_KEY, t);
+          renderArchiveBody();
+        });
+      });
+      renderArchiveBody();
+    }
+
+    function renderArchiveBody() {
+      /* 高亮当前标签 */
+      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-tab') === state.tab);
+      });
+      var body = root2.querySelector('.luliy-arch-body');
+      var list = (state.tab === 'weekly') ? state.weekly : state.other;
+      var page = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
+      var totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+      if (page > totalPages) { page = totalPages; }
+
+      if (!list.length) {
+        body.innerHTML = '<div class="luliy-arch-empty">\u6682\u65e0\u6587\u7ae0</div>';   /* 暂无文章 */
+        return;
+      }
+
+      var start = (page - 1) * PER_PAGE;
+      var pageItems = list.slice(start, start + PER_PAGE);
+      var groups = archiveGroupByYear(pageItems);
+      var years = Object.keys(groups).sort(function (a, b) { return b.localeCompare(a); });
+
+      var html = '<div class="luliy-arch-list">';
+      years.forEach(function (y) {
+        html += '<div class="luliy-arch-year">' + esc(y) + '</div>';
+        groups[y].forEach(function (p) {
+          var href = buildPostLink(p.link);
+          var date = (p.created || '').slice(0, 10);
+          html += '<a class="luliy-arch-row" href="' + esc(href) + '">' +
+            '<span class="luliy-arch-date">' + esc(date) + '</span>' +
+            '<span class="luliy-arch-name">' + esc(p.title) + '</span>' +
+          '</a>';
+        });
+      });
+      html += '</div>';
+
+      /* 分页（超过一页才显示） */
+      if (totalPages > 1) {
+        html += '<div class="luliy-arch-pagination">' +
+          '<button type="button" class="luliy-arch-pgbtn" data-dir="prev"' +
+            (page <= 1 ? ' disabled' : '') + '>&lt;</button>' +
+          '<span class="luliy-arch-pginfo">Page ' + page + ' of ' + totalPages + '</span>' +
+          '<button type="button" class="luliy-arch-pgbtn" data-dir="next"' +
+            (page >= totalPages ? ' disabled' : '') + '>&gt;</button>' +
+        '</div>';
+      }
+      body.innerHTML = html;
+
+      body.querySelectorAll('.luliy-arch-pgbtn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (btn.disabled) return;
+          var dir = btn.getAttribute('data-dir');
+          var cur = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
+          cur += (dir === 'next' ? 1 : -1);
+          cur = Math.max(1, Math.min(totalPages, cur));
+          if (state.tab === 'weekly') state.pageWeekly = cur; else state.pageOther = cur;
+          renderArchiveBody();
+          /* 翻页后滚回列表顶部，体验更顺 */
+          try { root2.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        });
+      });
+    }
+  }
+
+  /* ============================================================
+     编年史 Chronicle —— 年份 + 分类（出游/书影游/海报墙）
+     ★ 优先读 GitHub API（chronicle-data 标签的 issue），失败则
+     回退到页面内置的 JSON。赛博朋克风格沿用全站 CSS 变量。
+     ============================================================ */
+
+  function chronicleExtractJson(body) {
+    if (!body) return null;
+    var m = body.match(/<!--\s*chronicle:data:start\s*-->([\s\S]*?)<!--\s*chronicle:data:end\s*-->/);
+    if (!m) return null;
+    try { return JSON.parse(m[1].trim()); } catch (e) { return null; }
+  }
+
+  function chronicleFetchIssueData() {
+    var CHRONICLE_REPO = window.LULIY_CHRONICLE_REPO || 'luliyer6-ux/luliyer6-ux.github.io';
+    var url = 'https://api.github.com/repos/' + CHRONICLE_REPO +
+      '/issues?state=open&labels=chronicle-data&per_page=1';
+    return fetch(url, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (arr) {
+        if (!arr || !arr.length) return null;
+        return chronicleExtractJson(arr[0].body);
+      })
+      .catch(function () { return null; });
+  }
+
+  function chronicleGetFallback() {
+    var el = document.getElementById('luliy-chronicle-fallback');
+    if (!el) return null;
+    try { return JSON.parse(el.textContent.trim()); } catch (e) { return null; }
+  }
+
+  function initChroniclePage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    /* ★ 幂等防护：已经初始化过就直接返回 */
+    if (document.getElementById('luliy-chronicle')) return;
+    document.body.classList.add('luliy-chronicle-takeover', 'luliy-hide-pagination');
+
+    /* ★ 移除「预计阅读」和「文末字数」元素（Chronicle 不是普通文章，
+       不需要显示这些信息；CSS 也有隐藏，这里双重保险）。 */
+    ['luliy-readmeta', 'luliy-post-footer-bar'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    });
+
+    /* 把可能存在的内置 fallback JSON 先抢救出来（pb.innerHTML 会被覆盖） */
+    var fallbackJson = chronicleGetFallback();
+
+    pb.innerHTML = '<div id="luliy-chronicle" class="luliy-chronicle">' +
+      '<div class="luliy-chron-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-chronicle');
+
+    var YEAR_KEY = 'luliy-chronicle-year';
+    var CAT_KEY = 'luliy-chronicle-category';
+
+    chronicleFetchIssueData().then(function (apiData) {
+      var data = apiData || fallbackJson;
+      if (!data || !data.years || !data.years.length) {
+        root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
+        return;
+      }
+      renderChronicle(data);
+    }).catch(function () {
+      /* 兜底：万一渲染过程本身抛错（比如数据结构异常），也优雅降级 */
+      var data = fallbackJson;
+      if (data && data.years && data.years.length) {
+        try { renderChronicle(data); return; } catch (e) {}
+      }
+      root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
+    });
+
+    function renderChronicle(data) {
+      var years = data.years;
+      var cats = data.categories || [];
+
+      var savedYear = localStorage.getItem(YEAR_KEY);
+      var savedCat = localStorage.getItem(CAT_KEY);
+      var curYear = (years.indexOf(savedYear) !== -1) ? savedYear : years[0];
+      var catKeys = cats.map(function (c) { return c.key; });
+      var curCat = (catKeys.indexOf(savedCat) !== -1) ? savedCat : (cats[0] && cats[0].key);
+
+      root2.innerHTML =
+        '<div class="luliy-chron-header">' +
+          '<h1 class="luliy-chron-title">Chronicle</h1>' +
+          '<div class="luliy-chron-years"></div>' +
+        '</div>' +
+        '<div class="luliy-chron-cats"></div>' +
+        '<div class="luliy-chron-body"></div>';
+
+      var yearsBox = root2.querySelector('.luliy-chron-years');
+      years.forEach(function (y) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'luliy-chron-year-tab';
+        b.textContent = y;
+        b.setAttribute('data-year', y);
+        b.addEventListener('click', function () {
+          if (y === curYear) return;
+          curYear = y;
+          localStorage.setItem(YEAR_KEY, y);
+          syncTabs(); renderBody();
+        });
+        yearsBox.appendChild(b);
+      });
+
+      var catsBox = root2.querySelector('.luliy-chron-cats');
+      cats.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'luliy-chron-cat-tab';
+        b.textContent = c.label;
+        b.setAttribute('data-cat', c.key);
+        b.addEventListener('click', function () {
+          if (c.key === curCat) return;
+          curCat = c.key;
+          localStorage.setItem(CAT_KEY, c.key);
+          syncTabs(); renderBody();
+        });
+        catsBox.appendChild(b);
+      });
+
+      function syncTabs() {
+        root2.querySelectorAll('.luliy-chron-year-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-year') === curYear);
+        });
+        root2.querySelectorAll('.luliy-chron-cat-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-cat') === curCat);
+        });
+      }
+
+      function renderBody() {
+        var body = root2.querySelector('.luliy-chron-body');
+        var yearData = (data.data && data.data[curYear]) || {};
+        var list = yearData[curCat] || [];
+        if (curCat === 'travel') body.innerHTML = renderTravel(list);
+        else if (curCat === 'media') body.innerHTML = renderMedia(list);
+        else if (curCat === 'posters') body.innerHTML = renderPosters(list);
+        else body.innerHTML = '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      }
+
+      syncTabs();
+      renderBody();
+    }
+
+    /* —— 出游：月份 | 城市 | 活动 三列 ——
+       ★ 同月份的多条记录合并月份格（rowspan），实现"Jan. 跨多行"效果。 */
+    function renderTravel(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
+        '<th>\u6708\u4efd</th><th>\u57ce\u5e02</th><th>\u6d3b\u52a8</th></tr></thead><tbody>';
+
+      function makeActs(row) {
+        return (row.items || []).map(function (it) {
+          if (it && it.url) {
+            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
+          }
+          return esc((it && it.title) || String(it || ''));
+        }).join('\u3001');
+      }
+
+      var i = 0;
+      while (i < list.length) {
+        var month = list[i].month || '';
+        /* 统计连续相同月份的条数，用于 rowspan */
+        var span = 1;
+        while (i + span < list.length && (list[i + span].month || '') === month) span++;
+
+        /* 第一行：带 rowspan 的月份格 */
+        h += '<tr>' +
+          '<td rowspan="' + span + '" class="luliy-chron-month-cell">' + esc(month) + '</td>' +
+          '<td data-label="\u57ce\u5e02">' + esc(list[i].city || '') + '</td>' +
+          '<td data-label="\u6d3b\u52a8">' + makeActs(list[i]) + '</td>' +
+        '</tr>';
+
+        /* 同月的后续行：不再重复月份格 */
+        for (var j = 1; j < span; j++) {
+          h += '<tr>' +
+            '<td data-label="\u57ce\u5e02">' + esc(list[i + j].city || '') + '</td>' +
+            '<td data-label="\u6d3b\u52a8">' + makeActs(list[i + j]) + '</td>' +
+          '</tr>';
+        }
+        i += span;
+      }
+      h += '</tbody></table></div></div>';
+      return h;
+    }
+
+    /* —— 书影游：月份 | 读书 | 观影 | 演出 | 游戏 五列 —— */
+    function renderMedia(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      function cell(arr) {
+        if (!arr || !arr.length) return '';
+        return arr.map(function (it) {
+          if (it && typeof it === 'object' && it.url) {
+            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
+          }
+          return esc(typeof it === 'object' ? (it.title || '') : String(it));
+        }).join(' / ');
+      }
+      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
+        '<th>\u6708\u4efd</th><th>\u8bfb\u4e66/\u6f2b\u753b</th><th>\u89c2\u5f71/\u5267\u96c6/\u756a\u5267</th>' +
+        '<th>\u6f14\u51fa/\u653e\u6620</th><th>\u6e38\u620f/\u5b9e\u51b5</th></tr></thead><tbody>';
+      list.forEach(function (row) {
+        h += '<tr><td class="luliy-chron-month-cell">' + esc(row.month || '') + '</td>' +
+          '<td data-label="\u8bfb\u4e66">' + cell(row.books) + '</td>' +
+          '<td data-label="\u89c2\u5f71">' + cell(row.watch) + '</td>' +
+          '<td data-label="\u6f14\u51fa">' + cell(row.shows) + '</td>' +
+          '<td data-label="\u6e38\u620f">' + cell(row.games) + '</td></tr>';
+      });
+      h += '</tbody></table></div></div>';
+      return h;
+    }
+
+    /* —— 海报墙：响应式网格 7/5/3 列 —— */
+    function renderPosters(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      var h = '<div class="luliy-chron-posters">';
+      list.forEach(function (p, i) {
+        /* ★ 点击海报触发灯箱，data-index 记录位置；有 url 的单独在灯箱里提供跳转按钮 */
+        h += '<button type="button" class="luliy-poster-item" data-index="' + i + '"' +
+          (p.url ? ' data-url="' + esc(buildPostLink(p.url)) + '"' : '') + '>' +
+          '<div class="luliy-poster-img" style="background-image:url(\'' + esc(p.image || '') + '\')"></div>' +
+          '<div class="luliy-poster-title">' + esc(p.title || '') + '</div>' +
+          '</button>';
+      });
+      h += '</div>';
+
+      /* 灯箱初始化（在 DOM 插入后由 body.click 事件委托触发） */
+      setTimeout(function () {
+        var body = document.querySelector('.luliy-chron-body');
+        if (!body || body._lightboxBound) return;
+        body._lightboxBound = true;
+
+        function openLightbox(idx) {
+          var lb = document.getElementById('luliy-lb');
+          if (!lb) {
+            lb = document.createElement('div'); lb.id = 'luliy-lb';
+            lb.innerHTML =
+              '<div class="luliy-lb-bg"></div>' +
+              '<button class="luliy-lb-prev" aria-label="\u4e0a\u4e00\u5f20">&#8249;</button>' +
+              '<button class="luliy-lb-next" aria-label="\u4e0b\u4e00\u5f20">&#8250;</button>' +
+              '<div class="luliy-lb-img-wrap"><img class="luliy-lb-img" alt=""><div class="luliy-lb-cap"></div>' +
+              '<a class="luliy-lb-link" target="_blank" rel="noopener">\u67e5\u770b\u6587\u7ae0 \u2192</a></div>' +
+              '<button class="luliy-lb-close" aria-label="\u5173\u95ed">&#10005;</button>';
+            document.body.appendChild(lb);
+
+            /* 背景/关闭按钮关闭 */
+            lb.querySelector('.luliy-lb-bg').addEventListener('click', closeLightbox);
+            lb.querySelector('.luliy-lb-close').addEventListener('click', closeLightbox);
+            lb.querySelector('.luliy-lb-prev').addEventListener('click', function () { navLightbox(-1); });
+            lb.querySelector('.luliy-lb-next').addEventListener('click', function () { navLightbox(1); });
+
+            /* 键盘 */
+            document.addEventListener('keydown', function (e) {
+              if (!lb.classList.contains('is-open')) return;
+              if (e.key === 'ArrowLeft'  || e.keyCode === 37) navLightbox(-1);
+              if (e.key === 'ArrowRight' || e.keyCode === 39) navLightbox(1);
+              if (e.key === 'Escape'     || e.keyCode === 27) closeLightbox();
+            });
+
+            /* 触摸滑动 */
+            var _tx = 0;
+            lb.addEventListener('touchstart', function (e) { _tx = e.touches[0].clientX; }, { passive: true });
+            lb.addEventListener('touchend', function (e) {
+              var diff = e.changedTouches[0].clientX - _tx;
+              if (Math.abs(diff) > 40) navLightbox(diff < 0 ? 1 : -1);
+            }, { passive: true });
+          }
+
+          lb._list = list; lb._idx = idx;
+          showLightboxItem(lb, idx);
+          lb.classList.add('is-open');
+          document.body.classList.add('luliy-lb-open');
+        }
+
+        function showLightboxItem(lb, idx) {
+          var p = lb._list[idx];
+          lb.querySelector('.luliy-lb-img').src = p.image || '';
+          lb.querySelector('.luliy-lb-cap').textContent = p.title || '';
+          var linkEl = lb.querySelector('.luliy-lb-link');
+          if (p.url) { linkEl.href = buildPostLink(p.url); linkEl.style.display = ''; }
+          else { linkEl.style.display = 'none'; }
+          /* 更新前后箭头可用状态 */
+          lb.querySelector('.luliy-lb-prev').disabled = idx <= 0;
+          lb.querySelector('.luliy-lb-next').disabled = idx >= lb._list.length - 1;
+          lb._idx = idx;
+        }
+
+        function navLightbox(dir) {
+          var lb = document.getElementById('luliy-lb');
+          if (!lb) return;
+          var next = lb._idx + dir;
+          if (next < 0 || next >= lb._list.length) return;
+          showLightboxItem(lb, next);
+        }
+
+        function closeLightbox() {
+          var lb = document.getElementById('luliy-lb');
+          if (lb) lb.classList.remove('is-open');
+          document.body.classList.remove('luliy-lb-open');
+        }
+
+        body.addEventListener('click', function (e) {
+          var btn = e.target.closest('.luliy-poster-item');
+          if (!btn) return;
+          var idx = parseInt(btn.getAttribute('data-index') || '0', 10);
+          openLightbox(idx);
+        });
+      }, 0);
+
+      return h;
+    }
+  }
+
+
+  function isChroniclePage() {
+    /* ★ 只用 URL 路径判断，绝不能再看「页面里有没有 fallback 元素」——
+       否则任何一篇文章只要正文里出现了 luliy-chronicle-fallback 这串字符
+       （比如把本功能的部署指南当文章发出来），就会被误判成 Chronicle 页、
+       整篇内容被接管替换掉。这是之前的严重 bug。
+       Gmeek 生成的单页文件名就是 chronicle.html，按路径认最稳妥。 */
+    return /(^|\/)chronicle(\.html)?$/i.test(location.pathname);
+  }
+
+  /* ============================================================
+     书架 Bookshelf（singlePage: book）—— 赛博朋克风
+     自动读 postList.json 里带 Library 标签的文章，按第二个标签
+     归入「小说 / 成长 / 投资 / 现实 / 杂项」五大类，带「在读」标签
+     的书额外放进右侧在读书堆。点击书脊跳到对应文章。
+     ============================================================ */
+  var BOOK_LABEL = 'Library';
+  var BOOK_CATEGORIES = ['\u5c0f\u8bf4', '\u6210\u957f', '\u6295\u8d44', '\u73b0\u5b9e', '\u6742\u9879'];  /* 小说 成长 投资 现实 杂项 */
+  var BOOK_READING_LABEL = '\u5728\u8bfb';   /* 在读 */
+  /* ★ 手动补充的书（还没写文章、想先占位的）：
+     { title, href, category, reading } —— category 必须是上面五类之一 */
+  var BOOK_EXTRA = (window.LULIY_EXTRA_BOOKS && Array.isArray(window.LULIY_EXTRA_BOOKS))
+    ? window.LULIY_EXTRA_BOOKS : [];
+
+  var BOOK_PALETTE = ['#7A2E6B', '#2C4E6B', '#2E5C5A', '#5C2E6B', '#6B2E4A', '#3E2E6B'];
+  function bookHash(s) {
+    var h = 0; s = String(s);
+    for (var i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
+    return Math.abs(h);
+  }
+
+  function isBookPage() {
+    return /(^|\/)book(\.html)?$/i.test(location.pathname);
+  }
+
+  function initBookPage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    if (document.getElementById('luliy-bookshelf')) return;   /* 幂等 */
+    document.body.classList.add('luliy-book-takeover', 'luliy-hide-pagination');
+
+    pb.innerHTML = '<div id="luliy-bookshelf" class="luliy-bookshelf">' +
+      '<div class="luliy-book-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-bookshelf');
+
+    fetchPosts().then(function (posts) {
+      var books = [];
+      (posts || []).forEach(function (p) {
+        var names = (p.labels || []).map(function (l) { return l.name; });
+        if (names.indexOf(BOOK_LABEL) === -1) return;   /* 只要 Library 文章 */
+        /* 分类 = 第一个命中五大类的标签，否则归杂项 */
+        var cat = '\u6742\u9879';
+        for (var i = 0; i < names.length; i++) {
+          if (BOOK_CATEGORIES.indexOf(names[i]) !== -1) { cat = names[i]; break; }
+        }
+        books.push({
+          title: p.title, href: buildPostLink(p.link), created: (p.created || '').slice(0, 10),
+          category: cat, reading: names.indexOf(BOOK_READING_LABEL) !== -1
+        });
+      });
+      /* 合并手动补充的书 */
+      BOOK_EXTRA.forEach(function (b) {
+        books.push({
+          title: b.title || '\u672a\u547d\u540d', href: b.href || '#',
+          created: b.created || '', category: BOOK_CATEGORIES.indexOf(b.category) !== -1 ? b.category : '\u6742\u9879',
+          reading: !!b.reading
+        });
+      });
+      renderBookshelf(books);
+    }).catch(function () {
+      root2.innerHTML = '<div class="luliy-book-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+    });
+
+    function renderBookshelf(books) {
+      var readingBooks = books.filter(function (b) { return b.reading; });
+
+      var html = '<div class="luliy-book-header">' +
+        '<h1 class="luliy-book-title">\u6211\u7684\u4e66\u67b6</h1>' +   /* 我的书架 */
+        '<p class="luliy-book-sub">\u70b9\u51fb\u4e66\u810a\uff0c\u524d\u5f80\u5bf9\u5e94\u7684\u6587\u7ae0 \u00b7 \u5171 ' +
+          books.length + ' \u672c</p></div>';   /* 点击书脊，前往对应的文章 · 共 N 本 */
+
+      html += '<div class="luliy-bookcase">';
+      BOOK_CATEGORIES.forEach(function (cat, ci) {
+        var inCat = books.filter(function (b) { return b.category === cat; });
+        html += '<section class="luliy-shelf">';
+        html += '<div class="luliy-shelf-plaque">' + esc(cat) +
+          ' <span class="luliy-shelf-count">' + inCat.length + ' \u672c</span></div>';   /* N 本 */
+        html += '<div class="luliy-shelf-row">';
+        if (!inCat.length) {
+          html += '<div class="luliy-shelf-empty">\u6682\u65e0\u4e66\u7c4d</div>';   /* 暂无书籍 */
+        } else {
+          inCat.forEach(function (b) { html += buildSpine(b); });
+        }
+        /* 在读书堆放在第一个有在读书的分类那一层尾部 */
+        if (ci === 0 && readingBooks.length) {
+          html += buildReadingZone(readingBooks);
+        }
+        html += '</div><div class="luliy-shelf-board"></div></section>';
+      });
+      html += '</div>';
+
+      root2.innerHTML = html;
+    }
+
+    function buildSpine(b) {
+      var h = bookHash(b.title);
+      var w = 44 + (h % 20);          /* 44–64px */
+      var ht = 150 + (h % 36);        /* 150–186px */
+      var tilt = (h % 7) - 3;         /* -3..3deg */
+      var color = BOOK_PALETTE[h % BOOK_PALETTE.length];
+      var meta = b.created ? ('<span class="luliy-spine-note">' + esc(b.created) + '</span>') : '';
+      return '<a class="luliy-spine" href="' + esc(b.href) + '" ' +
+        'style="--tilt:' + tilt + 'deg;width:' + w + 'px;height:' + ht + 'px;' +
+        'background:linear-gradient(90deg,' + color + ',' + color + 'cc);" ' +
+        'aria-label="' + esc(b.title) + '">' +
+        '<span class="luliy-spine-title">' + esc(b.title) + '</span>' +
+        '<span class="luliy-spine-tip"><strong>' + esc(b.title) + '</strong>' + meta + '</span>' +
+        '</a>';
+    }
+
+    function buildReadingZone(readingBooks) {
+      var h = '<div class="luliy-reading-zone"><span class="luliy-reading-label">\u5728\u8bfb</span>' +   /* 在读 */
+        '<div class="luliy-reading-stack">';
+      readingBooks.slice(0, 3).forEach(function (b, i) {
+        var color = BOOK_PALETTE[bookHash(b.title) % BOOK_PALETTE.length];
+        h += '<a class="luliy-flat-book' + (i === 0 ? ' is-top' : '') + '" href="' + esc(b.href) + '" ' +
+          'style="bottom:' + (i * 12) + 'px;z-index:' + (10 - i) + ';background:' + color + ';" ' +
+          'aria-label="\u5728\u8bfb\uff1a' + esc(b.title) + '">' + esc(b.title) + '</a>';
+      });
+      h += '</div></div>';
+      return h;
+    }
+  }
+
+  /* ★ 主页楼梯图：换成你的新仓库地址（把 happy.png 传到 static/img/ 即可） */
+  var MINIMAL_HOME_IMG = 'https://raw.githubusercontent.com/luliyer6-ux/luliyer6-ux.github.io/refs/heads/main/static/img/happy.png';
+
+  function initMinimalSystem() {
+    document.body.classList.add('luliy-minimal');
+
+    if (!isIndexPage()) buildMinimalNav();
+
+    if (isIndexPage()) {
+      renderMinimalHome();
+    } else if (isChroniclePage()) {
+      safe(initChroniclePage, 'chronicle');
+    } else if (isBookPage()) {
+      safe(initBookPage, 'book');
+    } else if (isArchivePage()) {
+      safe(initArchivesPage, 'archives');
+    } else {
+      renderMinimalArticle();
+    }
+  }
+
+  function buildMinimalNav() {
+    if (document.getElementById('luliy-min-nav')) return;
+    var nav = document.createElement('nav');
+    nav.id = 'luliy-min-nav';
+    var links = [
+      { label: 'Home', href: '/' },
+      { label: 'Archives', href: '/archive.html' },
+      { label: 'Chronicle', href: '/chronicle.html' },
+      { label: 'About', href: '/about.html' }
+    ];
+    nav.innerHTML = links.map(function (l) {
+      return '<a href="' + l.href + '">' + l.label + '</a>';
+    }).join('<span class="luliy-min-nav-sep">/</span>');
+    document.body.insertBefore(nav, document.body.firstChild);
+  }
+
+  function renderMinimalHome() {
+    /* 主页：背景铺满 + 楼梯图居中 + 顶部一排文字导航（在切换按钮左边） */
+    var nav = document.createElement('nav');
+    nav.id = 'luliy-min-home-nav';
+    var links = [
+      { href: '/archive.html',   label: 'Archives' },
+      { href: '/chronicle.html', label: 'Chronicle' },
+      { href: '/book.html',      label: 'Book' },
+      { href: '/about.html',     label: 'About' }
+    ];
+    nav.innerHTML = links.map(function (l) {
+      return '<a href="' + l.href + '">' + l.label + '</a>';
+    }).join('<span class="luliy-min-nav-sep">/</span>');
+    document.body.appendChild(nav);
+
+    var wrap = document.createElement('div');
+    wrap.id = 'luliy-min-home';
+    wrap.innerHTML =
+      '<div class="luliy-min-home-stage">' +
+        '<img class="luliy-min-home-img" src="' + MINIMAL_HOME_IMG + '" alt="" draggable="false">' +
+      '</div>';
+    document.body.appendChild(wrap);
+  }
+
+  function renderMinimalArticle() {
+    document.body.classList.add('luliy-min-article');
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    var heads = pb.querySelectorAll('h1, h2, h3');
+    if (heads.length >= 2) {
+      var toc = document.createElement('nav');
+      toc.id = 'luliy-min-toc';
+      var html = '';
+      heads.forEach(function (h, i) {
+        if (!h.id) h.id = 'luliy-min-h-' + i;
+        var lvl = h.tagName === 'H1' ? 'h1' : (h.tagName === 'H2' ? 'h2' : 'h3');
+        var prefix = lvl === 'h1' ? '#' : '\u2022';
+        html += '<a class="luliy-min-toc-' + lvl + '" href="#' + h.id + '">' +
+          prefix + ' ' + esc(h.textContent) + '</a>';
+      });
+      toc.innerHTML = html;
+      document.body.appendChild(toc);
+    }
+  }
+
+  /* ---- 入口 ---- */
+  ready(function () {
+    safe(initMinimalSystem, 'minimalSystem');
+  });
+
+})();
