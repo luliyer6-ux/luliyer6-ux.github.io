@@ -1,779 +1,1043 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@400;500;600&display=swap');
 /* ============================================================
-   ΔιάΝους 极简系统 —— 独立版 enhance.js
-   黑白灰 + 衬线大标题 + 账本式留白。
-   依赖 Gmeek 生成的 postList.json（归档/书架）和
-   chronicle-data Issue（编年史）。无任何第三方库。
+   ΔιάΝους 极简系统 —— 独立版 enhance.css
+   黑白灰 + 衬线大标题 + 账本式留白。配合 minimal-standalone.js 使用。
+   JS 会给 <body> 加上 .luliy-minimal 类，所有样式据此生效。
    ============================================================ */
-(function () {
-  'use strict';
-  var root = document.documentElement;
 
-  /* ---- 工具函数 ---- */
-  function ready(fn) {
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
-    else fn();
+/* 基础重置 + 全局变量兜底 */
+:root {
+  --luliy-glass-hue: 250;   /* 极简里基本不用，给个兜底值防止 hsla 报错 */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* ============================================================
+   组件基础样式 —— 极简配色版（黑白灰，无赛博色彩）
+   Archives / Chronicle / Bookshelf / Lightbox
+   ============================================================ */
+
+/* ── Archives ───────────────────────────────── */
+.luliy-archives { max-width: 800px; margin: 0 auto; padding: 8px 0 60px; }
+.luliy-arch-loading, .luliy-arch-empty {
+  padding: 40px 0; text-align: center; color: #8c8c8c; font-size: 14px;
+}
+.luliy-arch-error { color: #c0392b; padding: 20px 0; }
+.luliy-arch-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
+}
+.luliy-arch-title {
+  font-size: 32px; font-weight: 800; letter-spacing: 2px;
+  font-family: 'Noto Serif SC', Georgia, serif;
+  color: #1c1c1e; margin: 0;
+}
+.luliy-arch-tabbar { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.luliy-arch-tab {
+  background: none; border: none; cursor: pointer; padding: 4px 2px;
+  font-size: 14px; font-weight: 600; color: #8c8c8c; position: relative;
+  letter-spacing: 0.5px; transition: color 0.15s;
+}
+.luliy-arch-tab:hover { color: #3a3a3a; }
+.luliy-arch-tab.is-active { color: #1c1c1e; }
+.luliy-arch-tab.is-active::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 1.5px; background: #1c1c1e;
+}
+.luliy-arch-tabsep { width: 1px; height: 14px; background: #c8c8c8; }
+.luliy-arch-year {
+  font-size: 28px; font-weight: 700; font-style: italic;
+  font-family: 'Noto Serif SC', Georgia, serif;
+  color: #1c1c1e; margin: 52px 0 16px;
+}
+.luliy-arch-year:first-child { margin-top: 8px; }
+.luliy-arch-row {
+  display: flex; align-items: baseline; gap: 20px;
+  padding: 7px 8px; border-radius: 4px; text-decoration: none;
+  cursor: pointer; transition: background 0.12s;
+}
+.luliy-arch-row:hover { background: rgba(28,28,30,0.05); }
+.luliy-arch-date {
+  flex: 0 0 98px; font-size: 13px; color: #8c8c8c;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.luliy-arch-name {
+  flex: 1; font-size: 15px; color: #1c1c1e; font-weight: 400;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.luliy-arch-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-top: 44px; font-size: 13px;
+}
+.luliy-arch-pgbtn {
+  background: none; border: 1px solid #3a3a3a; color: #1c1c1e;
+  padding: 5px 16px; border-radius: 3px; cursor: pointer; font-size: 13px;
+  transition: background 0.15s;
+}
+.luliy-arch-pgbtn:hover:not(:disabled) { background: #1c1c1e; color: #f0ece2; }
+.luliy-arch-pgbtn:disabled { opacity: 0.3; cursor: default; }
+.luliy-arch-pginfo { color: #8c8c8c; font-variant-numeric: tabular-nums; }
+body.luliy-hide-pagination .paginator { display: none !important; }
+
+/* ── Chronicle ──────────────────────────────── */
+.luliy-chronicle { max-width: 1100px; margin: 0 auto; padding: 8px 0 60px; }
+.luliy-chron-loading { padding: 40px 0; text-align: center; color: #8c8c8c; font-size: 14px; }
+.luliy-chron-error  { padding: 20px 0; color: #c0392b; }
+.luliy-chron-empty  { padding: 24px 16px; color: #8c8c8c; font-style: italic; }
+.luliy-chron-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
+}
+.luliy-chron-title {
+  font-size: 32px; font-weight: 800; letter-spacing: 2px;
+  font-family: 'Noto Serif SC', Georgia, serif; color: #1c1c1e; margin: 0;
+}
+.luliy-chron-years { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.luliy-chron-year-tab {
+  background: none; border: none; cursor: pointer; padding: 4px 2px;
+  font-size: 15px; font-weight: 700; color: #8c8c8c; position: relative;
+  transition: color 0.15s;
+}
+.luliy-chron-year-tab:hover { color: #3a3a3a; }
+.luliy-chron-year-tab.is-active { color: #1c1c1e; }
+.luliy-chron-year-tab.is-active::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 1.5px; background: #1c1c1e;
+}
+.luliy-chron-cats { display: flex; gap: 20px; margin: 12px 0 20px; }
+.luliy-chron-cat-tab {
+  background: none; border: none; cursor: pointer; padding: 4px 2px;
+  font-size: 14px; font-weight: 600; color: #8c8c8c; position: relative;
+  transition: color 0.15s;
+}
+.luliy-chron-cat-tab:hover { color: #3a3a3a; }
+.luliy-chron-cat-tab.is-active { color: #1c1c1e; }
+.luliy-chron-cat-tab.is-active::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 1.5px; background: #1c1c1e;
+}
+.luliy-chron-body { margin-top: 12px; }
+.luliy-chron-scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+.luliy-chron-tablewrap { min-width: 580px; }
+.luliy-chron-table { width: 100%; border-collapse: collapse; font-size: 14px; background: transparent; }
+.luliy-chron-table th, .luliy-chron-table td {
+  border: 1px solid #3a3a3a; padding: 10px 14px;
+  text-align: left; vertical-align: top; color: #1c1c1e;
+  background: transparent;
+}
+.luliy-chron-table th { font-weight: 700; }
+.luliy-chron-month-cell {
+  font-weight: 700; white-space: nowrap; min-width: 52px;
+  text-align: center; vertical-align: middle;
+  border-right: 1px solid #3a3a3a;
+}
+.luliy-chron-table a { color: #1c1c1e; text-decoration: underline; }
+
+/* 海报墙 */
+.luliy-chron-posters { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+@media (max-width: 900px) { .luliy-chron-posters { grid-template-columns: repeat(2,1fr); } }
+.luliy-poster-item {
+  position: relative; display: block; overflow: hidden; border-radius: 4px;
+  aspect-ratio: 2/3; border: 1px solid #3a3a3a; background: #e8e4d8;
+  cursor: pointer; padding: 0; -webkit-appearance: none; appearance: none;
+}
+.luliy-poster-img { width: 100%; height: 100%; background-size: cover; background-position: center; }
+.luliy-poster-title {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(28,28,30,0.7), transparent);
+  color: #fff; font-size: 11px; padding: 8px 6px 5px; text-align: center;
+}
+.luliy-poster-item:hover .luliy-poster-title { opacity: 1; }
+
+/* Lightbox */
+#luliy-lb {
+  position: fixed; inset: 0; z-index: 200000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0.25s;
+}
+#luliy-lb.is-open { opacity: 1; visibility: visible; }
+body.luliy-lb-open { overflow: hidden; }
+.luliy-lb-bg {
+  position: absolute; inset: 0; background: rgba(28,28,30,0.88);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.luliy-lb-img-wrap {
+  position: relative; z-index: 1; display: flex; flex-direction: column;
+  align-items: center; max-width: min(90vw,520px); max-height: 90vh;
+}
+.luliy-lb-img {
+  display: block; max-width: 100%; max-height: calc(90vh - 80px);
+  object-fit: contain; border-radius: 4px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.luliy-lb-cap { margin-top: 12px; font-size: 13px; color: #e8e4d8; text-align: center; }
+.luliy-lb-link {
+  display: inline-block; margin-top: 8px; font-size: 12px;
+  color: #c8c4b4; text-decoration: none; opacity: 0.85;
+}
+.luliy-lb-link:hover { opacity: 1; text-decoration: underline; }
+.luliy-lb-prev, .luliy-lb-next {
+  position: absolute; z-index: 2; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.15); color: #fff; font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.luliy-lb-prev { left: 16px; }
+.luliy-lb-next { right: 16px; }
+.luliy-lb-prev:hover, .luliy-lb-next:hover { background: rgba(255,255,255,0.3); }
+.luliy-lb-prev:disabled, .luliy-lb-next:disabled { opacity: 0.2; cursor: default; }
+.luliy-lb-close {
+  position: absolute; z-index: 2; top: 16px; right: 16px;
+  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.15); color: #fff; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.luliy-lb-close:hover { background: rgba(255,255,255,0.3); }
+@media (max-width: 640px) {
+  .luliy-lb-prev { left: 4px; width: 36px; height: 36px; font-size: 18px; }
+  .luliy-lb-next { right: 4px; width: 36px; height: 36px; font-size: 18px; }
+}
+
+/* ── Bookshelf ──────────────────────────────── */
+.luliy-bookshelf { max-width: 1080px; margin: 0 auto; padding: 8px 0 60px; }
+.luliy-book-loading, .luliy-book-error { padding: 40px 0; text-align: center; color: #8c8c8c; }
+.luliy-book-error { color: #c0392b; }
+.luliy-book-header { text-align: left; margin-bottom: 28px; }
+.luliy-book-title {
+  font-size: 32px; font-weight: 800; font-family: 'Noto Serif SC', Georgia, serif;
+  color: #1c1c1e; margin: 0 0 6px;
+}
+.luliy-book-sub { color: #8c8c8c; font-size: 13px; margin: 0; }
+.luliy-bookcase { display: flex; flex-direction: column; gap: 40px; }
+.luliy-shelf { position: relative; }
+.luliy-shelf-plaque {
+  font-size: 18px; font-weight: 700; font-style: italic;
+  font-family: 'Noto Serif SC', Georgia, serif;
+  color: #1c1c1e; margin: 0 0 10px; display: inline-flex; align-items: baseline; gap: 6px;
+}
+.luliy-shelf-count { font-style: normal; font-size: 12px; color: #8c8c8c; font-weight: 500; }
+.luliy-shelf-row {
+  display: flex; flex-wrap: wrap; align-items: flex-end;
+  gap: 7px; padding: 0 0 12px; min-height: 50px;
+}
+.luliy-shelf-empty { color: #8c8c8c; font-size: 13px; font-style: italic; padding: 14px 0; }
+.luliy-shelf-board { height: 1px; background: #3a3a3a; opacity: 0.5; margin: 0; }
+.luliy-spine {
+  display: flex; align-items: center; justify-content: center; text-decoration: none;
+  color: #1c1c1e; border-radius: 2px; cursor: pointer; position: relative; padding: 10px 0;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: inset 0 0 0 1px #3a3a3a;
+}
+.luliy-spine:hover, .luliy-spine:focus-visible {
+  transform: translateY(-10px) rotate(0deg);
+  box-shadow: inset 0 0 0 1px #1c1c1e, 0 8px 16px rgba(0,0,0,0.12);
+  outline: none;
+}
+.luliy-spine-title {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-family: 'Noto Serif SC', Georgia, serif; font-weight: 700; font-size: 14px;
+  letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-height: 100%; color: #1c1c1e;
+}
+.luliy-spine-tip {
+  position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, 6px);
+  min-width: 110px; max-width: 190px;
+  background: #f0ece2; border: 1px solid #3a3a3a; color: #1c1c1e;
+  border-radius: 4px; padding: 7px 10px; writing-mode: horizontal-tb;
+  opacity: 0; pointer-events: none; margin-bottom: 6px; z-index: 5;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.luliy-spine:hover .luliy-spine-tip, .luliy-spine:focus-visible .luliy-spine-tip {
+  opacity: 1; transform: translate(-50%, 0);
+}
+.luliy-spine-tip strong { display: block; font-size: 13px; margin-bottom: 2px; color: #1c1c1e; }
+.luliy-spine-note { display: block; font-size: 11px; color: #8c8c8c; }
+.luliy-reading-zone {
+  margin-left: auto; display: flex; flex-direction: column;
+  align-items: center; gap: 6px; padding-bottom: 4px;
+}
+.luliy-reading-label { font-size: 10px; letter-spacing: 2px; color: #8c8c8c; font-weight: 700; }
+.luliy-reading-stack { position: relative; width: 88px; height: 50px; }
+.luliy-flat-book {
+  position: absolute; left: 0; width: 88px; height: 16px; border-radius: 2px;
+  text-decoration: none; display: flex; align-items: center; padding-left: 8px;
+  font-family: 'Noto Serif SC', Georgia, serif; font-size: 9px; color: #f0ece2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.15s ease;
+}
+.luliy-flat-book:hover { transform: translateX(3px); }
+.luliy-flat-book.is-top { transform: rotate(-5deg); }
+
+/* ── 文章页 ─────────────────────────────────── */
+body.luliy-min-article #content {
+  max-width: 1100px; margin: 0 auto; padding: 0 48px 120px;
+}
+body.luliy-min-article #postBody {
+  max-width: 680px; margin: 0; font-size: 16px; line-height: 1.9; color: #1c1c1e;
+}
+body.luliy-min-article #postBody h1 {
+  font-family: 'Noto Serif SC', Georgia, serif; font-weight: 700; font-size: 34px;
+  color: #1c1c1e; letter-spacing: 1px; margin: 18px 0 8px; line-height: 1.3;
+}
+body.luliy-min-article #postBody h2 {
+  font-weight: 700; font-size: 19px; color: #1c1c1e; margin: 44px 0 12px;
+}
+body.luliy-min-article #postBody h2::before { content: '# '; color: #8c8c8c; }
+body.luliy-min-article #postBody h3 {
+  font-weight: 600; font-size: 16px; color: #1c1c1e; margin: 28px 0 8px;
+}
+body.luliy-min-article #postBody p { margin: 0 0 24px; color: #3a3a3a; }
+body.luliy-min-article #postBody a { color: #1c1c1e; text-decoration: underline; text-underline-offset: 3px; }
+body.luliy-min-article #postBody strong, body.luliy-min-article #postBody b { color: #1c1c1e; font-weight: 700; }
+body.luliy-min-article #postBody blockquote {
+  margin: 20px 0; padding-left: 16px; border-left: 2px solid #3a3a3a;
+  color: #3a3a3a; background: transparent;
+}
+body.luliy-min-article #postBody pre, body.luliy-min-article #postBody code {
+  background: rgba(28,28,30,0.05); color: #1c1c1e; border: none; border-radius: 3px;
+}
+body.luliy-min-article #postBody pre { padding: 12px 16px; overflow-x: auto; }
+body.luliy-min-article #postBody img { max-width: 100%; border-radius: 2px; }
+body.luliy-min-article #postBody table { border-collapse: collapse; width: 100%; }
+body.luliy-min-article #postBody table th,
+body.luliy-min-article #postBody table td {
+  border: 1px solid #3a3a3a; padding: 8px 12px; color: #1c1c1e; text-align: left;
+}
+.luliy-readmeta, #luliy-readmeta {
+  font-size: 13px; color: #8c8c8c; margin-bottom: 32px; font-variant-numeric: tabular-nums;
+}
+
+/* 目录 */
+#luliy-min-toc {
+  position: fixed; top: 110px; right: max(40px, calc((100vw - 1100px) / 2 + 48px));
+  width: 200px; max-height: 70vh; overflow-y: auto;
+  font-size: 13px; line-height: 1.7; z-index: 60;
+}
+#luliy-min-toc a { display: block; color: #8c8c8c; text-decoration: none; transition: color 0.15s; }
+#luliy-min-toc a:hover { color: #1c1c1e; }
+#luliy-min-toc .luliy-min-toc-h1 { color: #3a3a3a; font-weight: 600; margin-top: 10px; }
+#luliy-min-toc .luliy-min-toc-h2 { padding-left: 14px; }
+#luliy-min-toc .luliy-min-toc-h3 { padding-left: 28px; font-size: 12px; }
+
+/* ── 手机端 ─────────────────────────────────── */
+@media (max-width: 1080px) { #luliy-min-toc { display: none; } }
+@media (max-width: 720px) {
+  body.luliy-min-article #content { padding: 0 20px 80px; }
+  .luliy-archives, .luliy-chronicle, .luliy-bookshelf { padding: 8px 20px 60px; }
+}
+@media (max-width: 640px) {
+  /* Chronicle 手机端卡片化 */
+  .luliy-chron-scroll-x { overflow-x: visible; }
+  .luliy-chron-tablewrap { min-width: 0; }
+  .luliy-chron-table, .luliy-chron-table thead,
+  .luliy-chron-table tbody, .luliy-chron-table tr,
+  .luliy-chron-table th, .luliy-chron-table td { display: block; width: 100% !important; box-sizing: border-box; }
+  .luliy-chron-table thead { display: none !important; }
+  .luliy-chron-table tbody tr {
+    margin-bottom: 10px; border: 1px solid #3a3a3a; border-radius: 4px; overflow: hidden;
   }
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
+  .luliy-chron-table td {
+    display: flex !important; align-items: baseline; gap: 8px;
+    padding: 7px 12px; border: none !important;
+    border-bottom: 1px solid rgba(58,58,58,0.2) !important;
   }
-  function safe(fn, name) {
-    try { fn(); } catch (e) { try { console.warn('[luliy-min] init failed:', name, e); } catch (e2) {} }
+  .luliy-chron-table td:last-child { border-bottom: none !important; }
+  .luliy-chron-table td:not(.luliy-chron-month-cell)::before {
+    content: attr(data-label); flex: 0 0 3.5em;
+    font-size: 11px; font-weight: 700; color: #8c8c8c; white-space: nowrap;
   }
-  function isIndexPage() {
-    return location.pathname === '/' || location.pathname === '/index.html' || location.pathname === '';
+  .luliy-chron-table .luliy-chron-month-cell {
+    justify-content: center !important; font-weight: 800; font-size: 13px;
+    background: rgba(28,28,30,0.04) !important;
+    border-bottom: 1px solid rgba(58,58,58,0.3) !important;
   }
-  function isArchivePage() {
-    return /(^|\/)archive(\.html)?$/i.test(location.pathname);
-  }
-  function fetchPosts() {
-    function norm(data) {
-      if (Array.isArray(data)) return data;
-      if (data && typeof data === 'object') {
-        var colorDict = data.labelColorDict || {};
-        return Object.keys(data)
-          .filter(function (k) { return k !== 'labelColorDict'; })
-          .map(function (k) {
-            var p = data[k] || {};
-            if (typeof p === 'string') p = { postTitle: p };
-            var rawLabels = p.labels || p.tags || [];
-            var pinLevel = 0;
-            rawLabels.forEach(function (lbl) {
-              var m = /^pinned(?:-(\d+))?$/.exec(lbl);
-              if (m) pinLevel = Math.max(pinLevel, m[1] ? parseInt(m[1], 10) : 1);
-            });
-            var labels = rawLabels.map(function (lbl) {
-              return { name: lbl, color: (colorDict[lbl] || '0969da').replace(/^#/, '') };
-            });
-            return {
-              title: p.postTitle || p.title || p.name || k,
-              link:  p.postUrl  || p.link  || p.url  || ('post/' + k + '.html'),
-              created: p.createdDate || p.created || p.date || '',
-              labels: labels, pinned: pinLevel > 0, pinLevel: pinLevel
-            };
-          });
-      }
-      return [];
-    }
-    var tryUrls = [location.origin + '/postList.json', '/postList.json'];
-    function tryNext(urls) {
-      if (!urls.length) return Promise.resolve([]);
-      return fetch(urls[0], { cache: 'no-store' })
-        .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-        .catch(function () { return tryNext(urls.slice(1)); });
-    }
-    return tryNext(tryUrls).then(norm);
-  }
-
-  function buildPostLink(rawLink) {
-    var lnk = rawLink || '#';
-    if (lnk !== '#') {
-      lnk = lnk.replace(/^\//, '');
-      lnk = lnk.replace(/^post\/post\//, 'post/');
-      if (!/^post\//.test(lnk) && !/^https?:\/\//.test(lnk)) lnk = 'post/' + lnk;
-      lnk = '/' + lnk;
-    }
-    return lnk;
-  }
-
-  /* ============================================================
-     归档页 Archives —— 双标签页（Weekly / Other）+ 按年分组 + 分页
-     ★ 替换原来的「时间线视图」归档页。复用现成的 fetchPosts() /
-     esc() / buildPostLink()，赛博朋克风格沿用全站 CSS 变量。
-     ============================================================ */
-  var ARCHIVE_WEEKLY_LABELS = ['Weekly', 'weekly', '\u5468\u8bb0', '\u5468\u62a5', '\u4e8c\u5341\u56db\u8282\u6c14'];
-  var ARCHIVE_SYSTEM_LABELS = ['archives', 'archive', 'chronicle', 'chronicle-data',
-    'about', 'page', 'Pages', '\u9875\u9762', 'book', 'favorites', 'stock', 'link', 'gallery'];
-
-  function archiveIsWeekly(post) {
-    var names = (post.labels || []).map(function (l) { return l.name; });
-    for (var i = 0; i < names.length; i++) {
-      if (ARCHIVE_WEEKLY_LABELS.indexOf(names[i]) !== -1) return true;
-    }
-    return false;
-  }
-  function archiveIsSystem(post) {
-    var names = (post.labels || []).map(function (l) { return l.name; });
-    for (var i = 0; i < names.length; i++) {
-      if (ARCHIVE_SYSTEM_LABELS.indexOf(names[i]) !== -1) return true;
-    }
-    return false;
-  }
-  function archiveGroupByYear(posts) {
-    var groups = {};
-    posts.forEach(function (p) {
-      var y = (p.created || '').slice(0, 4) || '\u672a\u77e5';   /* 未知 */
-      if (!groups[y]) groups[y] = [];
-      groups[y].push(p);
-    });
-    return groups;
-  }
-
-  function initArchivesPage() {
-    var pb = document.getElementById('postBody');
-    if (!pb) return;
-    /* ★ 幂等防护：已经初始化过就直接返回，避免重复渲染/重复绑事件 */
-    if (document.getElementById('luliy-archives')) return;
-    /* 标记 body：隐藏 Gmeek 原生翻页器等 */
-    document.body.classList.add('luliy-archives-takeover', 'luliy-hide-pagination');
-
-    pb.innerHTML = '<div id="luliy-archives" class="luliy-archives">' +
-      '<div class="luliy-arch-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
-    var root2 = document.getElementById('luliy-archives');
-
-    var PER_PAGE = 10;
-    var TAB_KEY = 'luliy-archive-tab';
-    var state = {
-      tab: (localStorage.getItem(TAB_KEY) === 'other') ? 'other' : 'weekly',
-      pageWeekly: 1,
-      pageOther: 1,
-      weekly: [],
-      other: []
-    };
-
-    fetchPosts().then(function (posts) {
-      if (!posts || !posts.length) {
-        root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
-          '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
-        return;
-      }
-      /* 按日期降序 */
-      posts.sort(function (a, b) {
-        return String(b.created).localeCompare(String(a.created));
-      });
-      posts.forEach(function (p) {
-        if (archiveIsWeekly(p)) state.weekly.push(p);
-        else if (!archiveIsSystem(p)) state.other.push(p);
-      });
-      renderArchivesShell();
-    }).catch(function () {
-      root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
-        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
-    });
-
-    function renderArchivesShell() {
-      root2.innerHTML =
-        '<div class="luliy-arch-header">' +
-          '<h1 class="luliy-arch-title">Archives</h1>' +
-          '<div class="luliy-arch-tabbar">' +
-            '<button type="button" class="luliy-arch-tab" data-tab="weekly">Weekly</button>' +
-            '<span class="luliy-arch-tabsep"></span>' +
-            '<button type="button" class="luliy-arch-tab" data-tab="other">Other</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="luliy-arch-body"></div>';
-
-      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var t = btn.getAttribute('data-tab');
-          if (t === state.tab) return;
-          state.tab = t;
-          localStorage.setItem(TAB_KEY, t);
-          renderArchiveBody();
-        });
-      });
-      renderArchiveBody();
-    }
-
-    function renderArchiveBody() {
-      /* 高亮当前标签 */
-      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
-        btn.classList.toggle('is-active', btn.getAttribute('data-tab') === state.tab);
-      });
-      var body = root2.querySelector('.luliy-arch-body');
-      var list = (state.tab === 'weekly') ? state.weekly : state.other;
-      var page = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
-      var totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
-      if (page > totalPages) { page = totalPages; }
-
-      if (!list.length) {
-        body.innerHTML = '<div class="luliy-arch-empty">\u6682\u65e0\u6587\u7ae0</div>';   /* 暂无文章 */
-        return;
-      }
-
-      var start = (page - 1) * PER_PAGE;
-      var pageItems = list.slice(start, start + PER_PAGE);
-      var groups = archiveGroupByYear(pageItems);
-      var years = Object.keys(groups).sort(function (a, b) { return b.localeCompare(a); });
-
-      var html = '<div class="luliy-arch-list">';
-      years.forEach(function (y) {
-        html += '<div class="luliy-arch-year">' + esc(y) + '</div>';
-        groups[y].forEach(function (p) {
-          var href = buildPostLink(p.link);
-          var date = (p.created || '').slice(0, 10);
-          html += '<a class="luliy-arch-row" href="' + esc(href) + '">' +
-            '<span class="luliy-arch-date">' + esc(date) + '</span>' +
-            '<span class="luliy-arch-name">' + esc(p.title) + '</span>' +
-          '</a>';
-        });
-      });
-      html += '</div>';
-
-      /* 分页（超过一页才显示） */
-      if (totalPages > 1) {
-        html += '<div class="luliy-arch-pagination">' +
-          '<button type="button" class="luliy-arch-pgbtn" data-dir="prev"' +
-            (page <= 1 ? ' disabled' : '') + '>&lt;</button>' +
-          '<span class="luliy-arch-pginfo">Page ' + page + ' of ' + totalPages + '</span>' +
-          '<button type="button" class="luliy-arch-pgbtn" data-dir="next"' +
-            (page >= totalPages ? ' disabled' : '') + '>&gt;</button>' +
-        '</div>';
-      }
-      body.innerHTML = html;
-
-      body.querySelectorAll('.luliy-arch-pgbtn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          if (btn.disabled) return;
-          var dir = btn.getAttribute('data-dir');
-          var cur = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
-          cur += (dir === 'next' ? 1 : -1);
-          cur = Math.max(1, Math.min(totalPages, cur));
-          if (state.tab === 'weekly') state.pageWeekly = cur; else state.pageOther = cur;
-          renderArchiveBody();
-          /* 翻页后滚回列表顶部，体验更顺 */
-          try { root2.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-        });
-      });
-    }
-  }
-
-  /* ============================================================
-     编年史 Chronicle —— 年份 + 分类（出游/书影游/海报墙）
-     ★ 优先读 GitHub API（chronicle-data 标签的 issue），失败则
-     回退到页面内置的 JSON。赛博朋克风格沿用全站 CSS 变量。
-     ============================================================ */
-
-  function chronicleExtractJson(body) {
-    if (!body) return null;
-    var m = body.match(/<!--\s*chronicle:data:start\s*-->([\s\S]*?)<!--\s*chronicle:data:end\s*-->/);
-    if (!m) return null;
-    try { return JSON.parse(m[1].trim()); } catch (e) { return null; }
-  }
-
-  function chronicleFetchIssueData() {
-    var CHRONICLE_REPO = window.LULIY_CHRONICLE_REPO || 'luliyer6-ux/luliyer6-ux.github.io';
-    var url = 'https://api.github.com/repos/' + CHRONICLE_REPO +
-      '/issues?state=open&labels=chronicle-data&per_page=1';
-    return fetch(url, { cache: 'no-store' })
-      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-      .then(function (arr) {
-        if (!arr || !arr.length) return null;
-        return chronicleExtractJson(arr[0].body);
-      })
-      .catch(function () { return null; });
-  }
-
-  function chronicleGetFallback() {
-    var el = document.getElementById('luliy-chronicle-fallback');
-    if (!el) return null;
-    try { return JSON.parse(el.textContent.trim()); } catch (e) { return null; }
-  }
-
-  function initChroniclePage() {
-    var pb = document.getElementById('postBody');
-    if (!pb) return;
-    /* ★ 幂等防护：已经初始化过就直接返回 */
-    if (document.getElementById('luliy-chronicle')) return;
-    document.body.classList.add('luliy-chronicle-takeover', 'luliy-hide-pagination');
-
-    /* ★ 移除「预计阅读」和「文末字数」元素（Chronicle 不是普通文章，
-       不需要显示这些信息；CSS 也有隐藏，这里双重保险）。 */
-    ['luliy-readmeta', 'luliy-post-footer-bar'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el && el.parentNode) el.parentNode.removeChild(el);
-    });
-
-    /* 把可能存在的内置 fallback JSON 先抢救出来（pb.innerHTML 会被覆盖） */
-    var fallbackJson = chronicleGetFallback();
-
-    pb.innerHTML = '<div id="luliy-chronicle" class="luliy-chronicle">' +
-      '<div class="luliy-chron-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
-    var root2 = document.getElementById('luliy-chronicle');
-
-    var YEAR_KEY = 'luliy-chronicle-year';
-    var CAT_KEY = 'luliy-chronicle-category';
-
-    chronicleFetchIssueData().then(function (apiData) {
-      var data = apiData || fallbackJson;
-      if (!data || !data.years || !data.years.length) {
-        root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
-        return;
-      }
-      renderChronicle(data);
-    }).catch(function () {
-      /* 兜底：万一渲染过程本身抛错（比如数据结构异常），也优雅降级 */
-      var data = fallbackJson;
-      if (data && data.years && data.years.length) {
-        try { renderChronicle(data); return; } catch (e) {}
-      }
-      root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
-    });
-
-    function renderChronicle(data) {
-      var years = data.years;
-      var cats = data.categories || [];
-
-      var savedYear = localStorage.getItem(YEAR_KEY);
-      var savedCat = localStorage.getItem(CAT_KEY);
-      var curYear = (years.indexOf(savedYear) !== -1) ? savedYear : years[0];
-      var catKeys = cats.map(function (c) { return c.key; });
-      var curCat = (catKeys.indexOf(savedCat) !== -1) ? savedCat : (cats[0] && cats[0].key);
-
-      root2.innerHTML =
-        '<div class="luliy-chron-header">' +
-          '<h1 class="luliy-chron-title">Chronicle</h1>' +
-          '<div class="luliy-chron-years"></div>' +
-        '</div>' +
-        '<div class="luliy-chron-cats"></div>' +
-        '<div class="luliy-chron-body"></div>';
-
-      var yearsBox = root2.querySelector('.luliy-chron-years');
-      years.forEach(function (y) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'luliy-chron-year-tab';
-        b.textContent = y;
-        b.setAttribute('data-year', y);
-        b.addEventListener('click', function () {
-          if (y === curYear) return;
-          curYear = y;
-          localStorage.setItem(YEAR_KEY, y);
-          syncTabs(); renderBody();
-        });
-        yearsBox.appendChild(b);
-      });
-
-      var catsBox = root2.querySelector('.luliy-chron-cats');
-      cats.forEach(function (c) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'luliy-chron-cat-tab';
-        b.textContent = c.label;
-        b.setAttribute('data-cat', c.key);
-        b.addEventListener('click', function () {
-          if (c.key === curCat) return;
-          curCat = c.key;
-          localStorage.setItem(CAT_KEY, c.key);
-          syncTabs(); renderBody();
-        });
-        catsBox.appendChild(b);
-      });
-
-      function syncTabs() {
-        root2.querySelectorAll('.luliy-chron-year-tab').forEach(function (b) {
-          b.classList.toggle('is-active', b.getAttribute('data-year') === curYear);
-        });
-        root2.querySelectorAll('.luliy-chron-cat-tab').forEach(function (b) {
-          b.classList.toggle('is-active', b.getAttribute('data-cat') === curCat);
-        });
-      }
-
-      function renderBody() {
-        var body = root2.querySelector('.luliy-chron-body');
-        var yearData = (data.data && data.data[curYear]) || {};
-        var list = yearData[curCat] || [];
-        if (curCat === 'travel') body.innerHTML = renderTravel(list);
-        else if (curCat === 'media') body.innerHTML = renderMedia(list);
-        else if (curCat === 'posters') body.innerHTML = renderPosters(list);
-        else body.innerHTML = '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
-      }
-
-      syncTabs();
-      renderBody();
-    }
-
-    /* —— 出游：月份 | 城市 | 活动 三列 ——
-       ★ 同月份的多条记录合并月份格（rowspan），实现"Jan. 跨多行"效果。 */
-    function renderTravel(list) {
-      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
-      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
-        '<th>\u6708\u4efd</th><th>\u57ce\u5e02</th><th>\u6d3b\u52a8</th></tr></thead><tbody>';
-
-      function makeActs(row) {
-        return (row.items || []).map(function (it) {
-          if (it && it.url) {
-            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
-          }
-          return esc((it && it.title) || String(it || ''));
-        }).join('\u3001');
-      }
-
-      var i = 0;
-      while (i < list.length) {
-        var month = list[i].month || '';
-        /* 统计连续相同月份的条数，用于 rowspan */
-        var span = 1;
-        while (i + span < list.length && (list[i + span].month || '') === month) span++;
-
-        /* 第一行：带 rowspan 的月份格 */
-        h += '<tr>' +
-          '<td rowspan="' + span + '" class="luliy-chron-month-cell">' + esc(month) + '</td>' +
-          '<td data-label="\u57ce\u5e02">' + esc(list[i].city || '') + '</td>' +
-          '<td data-label="\u6d3b\u52a8">' + makeActs(list[i]) + '</td>' +
-        '</tr>';
-
-        /* 同月的后续行：不再重复月份格 */
-        for (var j = 1; j < span; j++) {
-          h += '<tr>' +
-            '<td data-label="\u57ce\u5e02">' + esc(list[i + j].city || '') + '</td>' +
-            '<td data-label="\u6d3b\u52a8">' + makeActs(list[i + j]) + '</td>' +
-          '</tr>';
-        }
-        i += span;
-      }
-      h += '</tbody></table></div></div>';
-      return h;
-    }
-
-    /* —— 书影游：月份 | 读书 | 观影 | 演出 | 游戏 五列 —— */
-    function renderMedia(list) {
-      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
-      function cell(arr) {
-        if (!arr || !arr.length) return '';
-        return arr.map(function (it) {
-          if (it && typeof it === 'object' && it.url) {
-            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
-          }
-          return esc(typeof it === 'object' ? (it.title || '') : String(it));
-        }).join(' / ');
-      }
-      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
-        '<th>\u6708\u4efd</th><th>\u8bfb\u4e66/\u6f2b\u753b</th><th>\u89c2\u5f71/\u5267\u96c6/\u756a\u5267</th>' +
-        '<th>\u6f14\u51fa/\u653e\u6620</th><th>\u6e38\u620f/\u5b9e\u51b5</th></tr></thead><tbody>';
-      list.forEach(function (row) {
-        h += '<tr><td class="luliy-chron-month-cell">' + esc(row.month || '') + '</td>' +
-          '<td data-label="\u8bfb\u4e66">' + cell(row.books) + '</td>' +
-          '<td data-label="\u89c2\u5f71">' + cell(row.watch) + '</td>' +
-          '<td data-label="\u6f14\u51fa">' + cell(row.shows) + '</td>' +
-          '<td data-label="\u6e38\u620f">' + cell(row.games) + '</td></tr>';
-      });
-      h += '</tbody></table></div></div>';
-      return h;
-    }
-
-    /* —— 海报墙：响应式网格 7/5/3 列 —— */
-    function renderPosters(list) {
-      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
-      var h = '<div class="luliy-chron-posters">';
-      list.forEach(function (p, i) {
-        /* ★ 点击海报触发灯箱，data-index 记录位置；有 url 的单独在灯箱里提供跳转按钮 */
-        h += '<button type="button" class="luliy-poster-item" data-index="' + i + '"' +
-          (p.url ? ' data-url="' + esc(buildPostLink(p.url)) + '"' : '') + '>' +
-          '<div class="luliy-poster-img" style="background-image:url(\'' + esc(p.image || '') + '\')"></div>' +
-          '<div class="luliy-poster-title">' + esc(p.title || '') + '</div>' +
-          '</button>';
-      });
-      h += '</div>';
-
-      /* 灯箱初始化（在 DOM 插入后由 body.click 事件委托触发） */
-      setTimeout(function () {
-        var body = document.querySelector('.luliy-chron-body');
-        if (!body || body._lightboxBound) return;
-        body._lightboxBound = true;
-
-        function openLightbox(idx) {
-          var lb = document.getElementById('luliy-lb');
-          if (!lb) {
-            lb = document.createElement('div'); lb.id = 'luliy-lb';
-            lb.innerHTML =
-              '<div class="luliy-lb-bg"></div>' +
-              '<button class="luliy-lb-prev" aria-label="\u4e0a\u4e00\u5f20">&#8249;</button>' +
-              '<button class="luliy-lb-next" aria-label="\u4e0b\u4e00\u5f20">&#8250;</button>' +
-              '<div class="luliy-lb-img-wrap"><img class="luliy-lb-img" alt=""><div class="luliy-lb-cap"></div>' +
-              '<a class="luliy-lb-link" target="_blank" rel="noopener">\u67e5\u770b\u6587\u7ae0 \u2192</a></div>' +
-              '<button class="luliy-lb-close" aria-label="\u5173\u95ed">&#10005;</button>';
-            document.body.appendChild(lb);
-
-            /* 背景/关闭按钮关闭 */
-            lb.querySelector('.luliy-lb-bg').addEventListener('click', closeLightbox);
-            lb.querySelector('.luliy-lb-close').addEventListener('click', closeLightbox);
-            lb.querySelector('.luliy-lb-prev').addEventListener('click', function () { navLightbox(-1); });
-            lb.querySelector('.luliy-lb-next').addEventListener('click', function () { navLightbox(1); });
-
-            /* 键盘 */
-            document.addEventListener('keydown', function (e) {
-              if (!lb.classList.contains('is-open')) return;
-              if (e.key === 'ArrowLeft'  || e.keyCode === 37) navLightbox(-1);
-              if (e.key === 'ArrowRight' || e.keyCode === 39) navLightbox(1);
-              if (e.key === 'Escape'     || e.keyCode === 27) closeLightbox();
-            });
-
-            /* 触摸滑动 */
-            var _tx = 0;
-            lb.addEventListener('touchstart', function (e) { _tx = e.touches[0].clientX; }, { passive: true });
-            lb.addEventListener('touchend', function (e) {
-              var diff = e.changedTouches[0].clientX - _tx;
-              if (Math.abs(diff) > 40) navLightbox(diff < 0 ? 1 : -1);
-            }, { passive: true });
-          }
-
-          lb._list = list; lb._idx = idx;
-          showLightboxItem(lb, idx);
-          lb.classList.add('is-open');
-          document.body.classList.add('luliy-lb-open');
-        }
-
-        function showLightboxItem(lb, idx) {
-          var p = lb._list[idx];
-          lb.querySelector('.luliy-lb-img').src = p.image || '';
-          lb.querySelector('.luliy-lb-cap').textContent = p.title || '';
-          var linkEl = lb.querySelector('.luliy-lb-link');
-          if (p.url) { linkEl.href = buildPostLink(p.url); linkEl.style.display = ''; }
-          else { linkEl.style.display = 'none'; }
-          /* 更新前后箭头可用状态 */
-          lb.querySelector('.luliy-lb-prev').disabled = idx <= 0;
-          lb.querySelector('.luliy-lb-next').disabled = idx >= lb._list.length - 1;
-          lb._idx = idx;
-        }
-
-        function navLightbox(dir) {
-          var lb = document.getElementById('luliy-lb');
-          if (!lb) return;
-          var next = lb._idx + dir;
-          if (next < 0 || next >= lb._list.length) return;
-          showLightboxItem(lb, next);
-        }
-
-        function closeLightbox() {
-          var lb = document.getElementById('luliy-lb');
-          if (lb) lb.classList.remove('is-open');
-          document.body.classList.remove('luliy-lb-open');
-        }
-
-        body.addEventListener('click', function (e) {
-          var btn = e.target.closest('.luliy-poster-item');
-          if (!btn) return;
-          var idx = parseInt(btn.getAttribute('data-index') || '0', 10);
-          openLightbox(idx);
-        });
-      }, 0);
-
-      return h;
-    }
-  }
-
-
-  function isChroniclePage() {
-    /* ★ 只用 URL 路径判断，绝不能再看「页面里有没有 fallback 元素」——
-       否则任何一篇文章只要正文里出现了 luliy-chronicle-fallback 这串字符
-       （比如把本功能的部署指南当文章发出来），就会被误判成 Chronicle 页、
-       整篇内容被接管替换掉。这是之前的严重 bug。
-       Gmeek 生成的单页文件名就是 chronicle.html，按路径认最稳妥。 */
-    return /(^|\/)chronicle(\.html)?$/i.test(location.pathname);
-  }
-
-  /* ============================================================
-     书架 Bookshelf（singlePage: book）—— 赛博朋克风
-     自动读 postList.json 里带 Library 标签的文章，按第二个标签
-     归入「小说 / 成长 / 投资 / 现实 / 杂项」五大类，带「在读」标签
-     的书额外放进右侧在读书堆。点击书脊跳到对应文章。
-     ============================================================ */
-  var BOOK_LABEL = 'Library';
-  var BOOK_CATEGORIES = ['\u5c0f\u8bf4', '\u6210\u957f', '\u6295\u8d44', '\u73b0\u5b9e', '\u6742\u9879'];  /* 小说 成长 投资 现实 杂项 */
-  var BOOK_READING_LABEL = '\u5728\u8bfb';   /* 在读 */
-  /* ★ 手动补充的书（还没写文章、想先占位的）：
-     { title, href, category, reading } —— category 必须是上面五类之一 */
-  var BOOK_EXTRA = (window.LULIY_EXTRA_BOOKS && Array.isArray(window.LULIY_EXTRA_BOOKS))
-    ? window.LULIY_EXTRA_BOOKS : [];
-
-  var BOOK_PALETTE = ['#7A2E6B', '#2C4E6B', '#2E5C5A', '#5C2E6B', '#6B2E4A', '#3E2E6B'];
-  function bookHash(s) {
-    var h = 0; s = String(s);
-    for (var i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
-    return Math.abs(h);
-  }
-
-  function isBookPage() {
-    return /(^|\/)book(\.html)?$/i.test(location.pathname);
-  }
-
-  function initBookPage() {
-    var pb = document.getElementById('postBody');
-    if (!pb) return;
-    if (document.getElementById('luliy-bookshelf')) return;   /* 幂等 */
-    document.body.classList.add('luliy-book-takeover', 'luliy-hide-pagination');
-
-    pb.innerHTML = '<div id="luliy-bookshelf" class="luliy-bookshelf">' +
-      '<div class="luliy-book-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
-    var root2 = document.getElementById('luliy-bookshelf');
-
-    fetchPosts().then(function (posts) {
-      var books = [];
-      (posts || []).forEach(function (p) {
-        var names = (p.labels || []).map(function (l) { return l.name; });
-        if (names.indexOf(BOOK_LABEL) === -1) return;   /* 只要 Library 文章 */
-        /* 分类 = 第一个命中五大类的标签，否则归杂项 */
-        var cat = '\u6742\u9879';
-        for (var i = 0; i < names.length; i++) {
-          if (BOOK_CATEGORIES.indexOf(names[i]) !== -1) { cat = names[i]; break; }
-        }
-        books.push({
-          title: p.title, href: buildPostLink(p.link), created: (p.created || '').slice(0, 10),
-          category: cat, reading: names.indexOf(BOOK_READING_LABEL) !== -1
-        });
-      });
-      /* 合并手动补充的书 */
-      BOOK_EXTRA.forEach(function (b) {
-        books.push({
-          title: b.title || '\u672a\u547d\u540d', href: b.href || '#',
-          created: b.created || '', category: BOOK_CATEGORIES.indexOf(b.category) !== -1 ? b.category : '\u6742\u9879',
-          reading: !!b.reading
-        });
-      });
-      renderBookshelf(books);
-    }).catch(function () {
-      root2.innerHTML = '<div class="luliy-book-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
-        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
-    });
-
-    function renderBookshelf(books) {
-      var readingBooks = books.filter(function (b) { return b.reading; });
-
-      var html = '<div class="luliy-book-header">' +
-        '<h1 class="luliy-book-title">\u6211\u7684\u4e66\u67b6</h1>' +   /* 我的书架 */
-        '<p class="luliy-book-sub">\u70b9\u51fb\u4e66\u810a\uff0c\u524d\u5f80\u5bf9\u5e94\u7684\u6587\u7ae0 \u00b7 \u5171 ' +
-          books.length + ' \u672c</p></div>';   /* 点击书脊，前往对应的文章 · 共 N 本 */
-
-      html += '<div class="luliy-bookcase">';
-      BOOK_CATEGORIES.forEach(function (cat, ci) {
-        var inCat = books.filter(function (b) { return b.category === cat; });
-        html += '<section class="luliy-shelf">';
-        html += '<div class="luliy-shelf-plaque">' + esc(cat) +
-          ' <span class="luliy-shelf-count">' + inCat.length + ' \u672c</span></div>';   /* N 本 */
-        html += '<div class="luliy-shelf-row">';
-        if (!inCat.length) {
-          html += '<div class="luliy-shelf-empty">\u6682\u65e0\u4e66\u7c4d</div>';   /* 暂无书籍 */
-        } else {
-          inCat.forEach(function (b) { html += buildSpine(b); });
-        }
-        /* 在读书堆放在第一个有在读书的分类那一层尾部 */
-        if (ci === 0 && readingBooks.length) {
-          html += buildReadingZone(readingBooks);
-        }
-        html += '</div><div class="luliy-shelf-board"></div></section>';
-      });
-      html += '</div>';
-
-      root2.innerHTML = html;
-    }
-
-    function buildSpine(b) {
-      var h = bookHash(b.title);
-      var w = 44 + (h % 20);          /* 44–64px */
-      var ht = 150 + (h % 36);        /* 150–186px */
-      var tilt = (h % 7) - 3;         /* -3..3deg */
-      var color = BOOK_PALETTE[h % BOOK_PALETTE.length];
-      var meta = b.created ? ('<span class="luliy-spine-note">' + esc(b.created) + '</span>') : '';
-      return '<a class="luliy-spine" href="' + esc(b.href) + '" ' +
-        'style="--tilt:' + tilt + 'deg;width:' + w + 'px;height:' + ht + 'px;' +
-        'background:linear-gradient(90deg,' + color + ',' + color + 'cc);" ' +
-        'aria-label="' + esc(b.title) + '">' +
-        '<span class="luliy-spine-title">' + esc(b.title) + '</span>' +
-        '<span class="luliy-spine-tip"><strong>' + esc(b.title) + '</strong>' + meta + '</span>' +
-        '</a>';
-    }
-
-    function buildReadingZone(readingBooks) {
-      var h = '<div class="luliy-reading-zone"><span class="luliy-reading-label">\u5728\u8bfb</span>' +   /* 在读 */
-        '<div class="luliy-reading-stack">';
-      readingBooks.slice(0, 3).forEach(function (b, i) {
-        var color = BOOK_PALETTE[bookHash(b.title) % BOOK_PALETTE.length];
-        h += '<a class="luliy-flat-book' + (i === 0 ? ' is-top' : '') + '" href="' + esc(b.href) + '" ' +
-          'style="bottom:' + (i * 12) + 'px;z-index:' + (10 - i) + ';background:' + color + ';" ' +
-          'aria-label="\u5728\u8bfb\uff1a' + esc(b.title) + '">' + esc(b.title) + '</a>';
-      });
-      h += '</div></div>';
-      return h;
-    }
-  }
-
-  /* ★ 主页楼梯图：换成你的新仓库地址（把 happy.png 传到 static/img/ 即可） */
-  var MINIMAL_HOME_IMG = 'https://raw.githubusercontent.com/luliyer6-ux/luliyer6-ux.github.io/refs/heads/main/static/img/happy.png';
-
-  function initMinimalSystem() {
-    document.body.classList.add('luliy-minimal');
-
-    if (!isIndexPage()) buildMinimalNav();
-
-    if (isIndexPage()) {
-      renderMinimalHome();
-    } else if (isChroniclePage()) {
-      safe(initChroniclePage, 'chronicle');
-    } else if (isBookPage()) {
-      safe(initBookPage, 'book');
-    } else if (isArchivePage()) {
-      safe(initArchivesPage, 'archives');
-    } else {
-      renderMinimalArticle();
-    }
-  }
-
-  function buildMinimalNav() {
-    if (document.getElementById('luliy-min-nav')) return;
-    var nav = document.createElement('nav');
-    nav.id = 'luliy-min-nav';
-    var links = [
-      { label: 'Home', href: '/' },
-      { label: 'Archives', href: '/archive.html' },
-      { label: 'Chronicle', href: '/chronicle.html' },
-      { label: 'About', href: '/about.html' }
-    ];
-    nav.innerHTML = links.map(function (l) {
-      return '<a href="' + l.href + '">' + l.label + '</a>';
-    }).join('<span class="luliy-min-nav-sep">/</span>');
-    document.body.insertBefore(nav, document.body.firstChild);
-  }
-
-  function renderMinimalHome() {
-    /* 主页：背景铺满 + 楼梯图居中 + 顶部一排文字导航（在切换按钮左边） */
-    var nav = document.createElement('nav');
-    nav.id = 'luliy-min-home-nav';
-    var links = [
-      { href: '/archive.html',   label: 'Archives' },
-      { href: '/chronicle.html', label: 'Chronicle' },
-      { href: '/book.html',      label: 'Book' },
-      { href: '/about.html',     label: 'About' }
-    ];
-    nav.innerHTML = links.map(function (l) {
-      return '<a href="' + l.href + '">' + l.label + '</a>';
-    }).join('<span class="luliy-min-nav-sep">/</span>');
-    document.body.appendChild(nav);
-
-    var wrap = document.createElement('div');
-    wrap.id = 'luliy-min-home';
-    wrap.innerHTML =
-      '<div class="luliy-min-home-stage">' +
-        '<img class="luliy-min-home-img" src="' + MINIMAL_HOME_IMG + '" alt="" draggable="false">' +
-      '</div>';
-    document.body.appendChild(wrap);
-  }
-
-  function renderMinimalArticle() {
-    document.body.classList.add('luliy-min-article');
-    var pb = document.getElementById('postBody');
-    if (!pb) return;
-    var heads = pb.querySelectorAll('h1, h2, h3');
-    if (heads.length >= 2) {
-      var toc = document.createElement('nav');
-      toc.id = 'luliy-min-toc';
-      var html = '';
-      heads.forEach(function (h, i) {
-        if (!h.id) h.id = 'luliy-min-h-' + i;
-        var lvl = h.tagName === 'H1' ? 'h1' : (h.tagName === 'H2' ? 'h2' : 'h3');
-        var prefix = lvl === 'h1' ? '#' : '\u2022';
-        html += '<a class="luliy-min-toc-' + lvl + '" href="#' + h.id + '">' +
-          prefix + ' ' + esc(h.textContent) + '</a>';
-      });
-      toc.innerHTML = html;
-      document.body.appendChild(toc);
-    }
-  }
-
-  /* ---- 入口 ---- */
-  ready(function () {
-    safe(initMinimalSystem, 'minimalSystem');
-  });
-
-})();
+  .luliy-chron-posters { grid-template-columns: repeat(2,1fr) !important; }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   极简系统 Minimal System
+   黑白灰 + 衬线大标题 + 账本式留白。配色/字体/留白/组件/布局
+   严格按规范。只在 body.luliy-minimal 下生效，绝不影响赛博系统。
+   ════════════════════════════════════════════════════════════ */
+body.luliy-minimal {
+  /* —— 配色 —— */
+  --min-bg: rgb(230, 225, 212);
+  --min-title: #1c1c1e;       /* 标题：近黑炭灰 */
+  --min-text: #3a3a3a;        /* 正文：深灰，不用纯黑 */
+  --min-muted: #8c8c8c;       /* 次要：中灰（日期/字数/未激活tab） */
+  --min-line: #3a3a3a;        /* 硬边框线：深灰近黑 */
+  --min-serif: 'Noto Serif SC', 'Songti SC', Georgia, 'Times New Roman', serif;
+  --min-sans: 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  background: var(--min-bg) !important;
+  color: var(--min-text);
+  font-family: var(--min-sans);
+  zoom: 1 !important;
+}
+/* 极简系统下：彻底隐藏所有赛博系统的元素（保险，即使没初始化） */
+body.luliy-minimal #luliy-cyber-canvas,
+body.luliy-minimal #luliy-sakura-canvas,
+body.luliy-minimal #luliy-splash,
+body.luliy-minimal #luliy-brand,
+body.luliy-minimal #luliy-subtitle,
+body.luliy-minimal #luliy-issues-link,
+body.luliy-minimal #luliy-to-minimal,
+body.luliy-minimal #luliy-ham-btn,
+body.luliy-minimal #luliy-drawer,
+body.luliy-minimal #luliy-drawer-scrim,
+body.luliy-minimal #luliy-aplayer,
+body.luliy-minimal #luliy-ap-fab,
+body.luliy-minimal #luliy-ctrl-panel,
+body.luliy-minimal #luliy-ctrl-fab,
+body.luliy-minimal .luliy-cats,
+body.luliy-minimal #header,
+body.luliy-minimal #footer {
+  display: none !important;
+}
+body.luliy-minimal #content { background: transparent !important; }
+
+/* —— 顶部导航：Home / Archives / Chronicle / About —— */
+#luliy-min-nav {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 48px 0;
+  font-family: var(--min-sans);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: var(--min-muted);
+}
+#luliy-min-nav a {
+  color: var(--min-title);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+#luliy-min-nav a:hover { opacity: 0.55; }
+.luliy-min-nav-sep { margin: 0 10px; color: var(--min-muted); }
+
+/* —— 系统切换按钮（极简 → 赛博） —— */
+#luliy-system-toggle {
+  position: fixed; top: 22px; right: 28px; z-index: 100;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--min-line);
+  background: transparent; color: var(--min-title);
+  font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+#luliy-system-toggle:hover { background: var(--min-title); color: var(--min-bg); }
+
+/* —— 赛博系统里「切到极简」的按钮（放沉思者图标旁） —— */
+#luliy-to-minimal {
+  position: fixed; top: 14px; z-index: 10002;
+  width: 30px; height: 44px;
+  background: transparent; border: none; cursor: pointer;
+  color: #fff; font-size: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  opacity: 0.7;
+  filter: drop-shadow(0 0 6px rgba(110,199,255,0.6));
+  transition: opacity 0.2s, transform 0.2s;
+}
+#luliy-to-minimal:hover { opacity: 1; transform: scale(1.15); }
+
+/* ════════ 主页：楼梯图 + 隐形热区 ════════ */
+#luliy-min-home {
+  position: fixed; inset: 0;
+  background: var(--min-bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50;
+}
+.luliy-min-home-stage {
+  position: relative;
+  width: 100%; max-width: 1400px;
+  margin: 0 auto;
+}
+.luliy-min-home-img {
+  display: block; width: 100%; height: auto;
+  user-select: none; -webkit-user-drag: none;
+}
+.luliy-min-hot {
+  position: absolute;
+  display: block;
+  cursor: pointer;
+  /* 透明热区；hover 时极淡描边提示可点击 */
+  border-radius: 4px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.luliy-min-hot:hover {
+  background: rgba(28,28,30,0.04);
+  box-shadow: inset 0 0 0 1px rgba(28,28,30,0.18);
+}
+
+/* ════════ 普通文章 / about：极简排版 ════════ */
+body.luliy-min-article #content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px 120px;
+}
+body.luliy-min-article #postBody {
+  max-width: 680px;          /* 正文主列偏左、不居中 */
+  margin: 0;
+  margin-right: auto;
+  font-family: var(--min-sans);
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--min-text);
+}
+/* 文章标题：衬线、全站最大 */
+body.luliy-min-article #postBody h1 {
+  font-family: var(--min-serif);
+  font-weight: 700;
+  font-size: 34px;
+  color: var(--min-title);
+  letter-spacing: 1px;
+  margin: 18px 0 8px;
+  line-height: 1.3;
+}
+/* 二级小标题：无衬线加粗 + # 前缀 */
+body.luliy-min-article #postBody h2 {
+  font-family: var(--min-sans);
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--min-title);
+  margin: 48px 0 14px;
+}
+body.luliy-min-article #postBody h2::before { content: '# '; color: var(--min-muted); }
+body.luliy-min-article #postBody h3 {
+  font-family: var(--min-sans);
+  font-weight: 600; font-size: 16px; color: var(--min-title);
+  margin: 32px 0 10px;
+}
+body.luliy-min-article #postBody p {
+  margin: 0 0 26px;          /* 段落间留白明显大于行内行距 */
+  color: var(--min-text);
+}
+body.luliy-min-article #postBody a { color: var(--min-title); text-decoration: underline; text-underline-offset: 3px; }
+body.luliy-min-article #postBody img { max-width: 100%; border-radius: 2px; }
+/* 文章 meta（日期/字数）：最小、浅灰、等宽数字感 */
+body.luliy-min-article #postBody .luliy-readmeta,
+body.luliy-min-article .luliy-readmeta {
+  font-family: var(--min-sans);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px; color: var(--min-muted) !important;
+  margin-bottom: 40px;
+}
+
+/* —— 右侧悬浮目录（漂浮在留白区，不占主列） —— */
+#luliy-min-toc {
+  position: fixed;
+  top: 120px; right: max(40px, calc((100vw - 1100px) / 2 + 48px));
+  width: 220px; max-height: 70vh; overflow-y: auto;
+  font-family: var(--min-sans); font-size: 13px; line-height: 1.7;
+  z-index: 40;
+}
+#luliy-min-toc a { display: block; color: var(--min-muted); text-decoration: none; transition: color 0.15s; }
+#luliy-min-toc a:hover { color: var(--min-title); }
+#luliy-min-toc .luliy-min-toc-h1 { color: var(--min-text); font-weight: 600; margin-top: 10px; }
+#luliy-min-toc .luliy-min-toc-h2 { padding-left: 14px; }
+#luliy-min-toc .luliy-min-toc-h3 { padding-left: 28px; font-size: 12px; }
+@media (max-width: 1080px) {
+  #luliy-min-toc { display: none; }   /* 窄屏不显示边注目录 */
+  body.luliy-min-article #content { padding: 0 24px 80px; }
+}
+
+/* ════════ Archives / Chronicle / Book 的极简皮肤 ════════
+   复用现有结构，只覆盖颜色/字体/边框，做成黑白灰账本风。 */
+body.luliy-minimal .luliy-archives,
+body.luliy-minimal .luliy-chronicle,
+body.luliy-minimal .luliy-bookshelf {
+  max-width: 1100px; margin: 0 auto; padding: 8px 48px 80px;
+}
+/* 年份/分组大标题：衬线斜体数字感 */
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-book-title,
+body.luliy-minimal .luliy-arch-year {
+  font-family: var(--min-serif) !important;
+  font-weight: 700 !important; font-style: italic;
+  color: var(--min-title) !important;
+  text-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-book-title { font-size: 32px !important; font-style: normal; }
+body.luliy-minimal .luliy-arch-year {
+  font-size: 28px !important; margin: 56px 0 14px !important;   /* 年份间大留白 */
+}
+/* Tab：纯文字，激活态仅下划线 */
+body.luliy-minimal .luliy-arch-tab,
+body.luliy-minimal .luliy-chron-year-tab,
+body.luliy-minimal .luliy-chron-cat-tab {
+  background: none !important; color: var(--min-muted) !important;
+  text-shadow: none !important; font-family: var(--min-sans) !important;
+  border-radius: 0 !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active,
+body.luliy-minimal .luliy-chron-year-tab.is-active,
+body.luliy-minimal .luliy-chron-cat-tab.is-active {
+  color: var(--min-title) !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active::after,
+body.luliy-minimal .luliy-chron-year-tab.is-active::after,
+body.luliy-minimal .luliy-chron-cat-tab.is-active::after {
+  background: var(--min-title) !important; box-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-tabsep { background: var(--min-muted) !important; }
+/* 归档列表：无卡片无分割线，靠两栏对齐 + 行距 */
+body.luliy-minimal .luliy-arch-row { background: none !important; }
+body.luliy-minimal .luliy-arch-row:hover { background: rgba(28,28,30,0.04) !important; transform: none !important; }
+body.luliy-minimal .luliy-arch-date { color: var(--min-muted) !important; font-variant-numeric: tabular-nums; }
+body.luliy-minimal .luliy-arch-name { color: var(--min-title) !important; }
+body.luliy-minimal .luliy-arch-row:hover .luliy-arch-date,
+body.luliy-minimal .luliy-arch-row:hover .luliy-arch-name { color: var(--min-title) !important; }
+body.luliy-minimal .luliy-arch-header,
+body.luliy-minimal .luliy-chron-header { border-bottom: none !important; }
+/* 分页 */
+body.luliy-minimal .luliy-arch-pgbtn {
+  background: none !important; border: 1px solid var(--min-line) !important;
+  color: var(--min-title) !important; box-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-pgbtn:hover:not(:disabled) {
+  background: var(--min-title) !important; color: var(--min-bg) !important;
+}
+body.luliy-minimal .luliy-arch-pginfo { color: var(--min-muted) !important; font-variant-numeric: tabular-nums; }
+
+/* 编年史表格：全站唯一硬边框组件，1px 直角网格，无底色无斑马纹 */
+body.luliy-minimal .luliy-chron-table { background: transparent !important; }
+body.luliy-minimal .luliy-chron-table th,
+body.luliy-minimal .luliy-chron-table td {
+  border: 1px solid var(--min-line) !important;
+  color: var(--min-text) !important;
+  background: transparent !important;
+}
+body.luliy-minimal .luliy-chron-table th {
+  font-weight: 700 !important; color: var(--min-title) !important;
+  background: transparent !important;
+}
+body.luliy-minimal .luliy-chron-month-cell {
+  border-right: 1px solid var(--min-line) !important;
+  color: var(--min-title) !important; font-weight: 700 !important;
+}
+body.luliy-minimal .luliy-chron-table a { color: var(--min-title) !important; text-decoration: underline; }
+/* 海报墙：去霓虹，简单灰边框 */
+body.luliy-minimal .luliy-poster-item {
+  background: rgba(28,28,30,0.04) !important; border: 1px solid var(--min-line) !important;
+}
+body.luliy-minimal .luliy-poster-title { background: linear-gradient(to top, rgba(28,28,30,0.8), transparent) !important; }
+
+/* 书架：去木质/霓虹，做成极简层架 */
+body.luliy-minimal .luliy-bookcase {
+  background: transparent !important; border: none !important;
+  box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  gap: 40px !important;
+}
+body.luliy-minimal .luliy-shelf-plaque {
+  background: none !important; color: var(--min-title) !important;
+  box-shadow: none !important; font-family: var(--min-serif) !important;
+  font-style: italic; font-size: 18px !important; padding-left: 0 !important; margin-left: 0 !important;
+}
+body.luliy-minimal .luliy-shelf-count { color: var(--min-muted) !important; }
+body.luliy-minimal .luliy-shelf-board {
+  background: var(--min-line) !important; opacity: 1 !important; height: 1px !important; box-shadow: none !important;
+}
+body.luliy-minimal .luliy-spine {
+  background: rgba(28,28,30,0.06) !important;
+  color: var(--min-title) !important;
+  box-shadow: inset 0 0 0 1px var(--min-line) !important;
+}
+body.luliy-minimal .luliy-spine:hover {
+  box-shadow: inset 0 0 0 1px var(--min-line), 0 8px 16px rgba(0,0,0,0.12) !important;
+}
+body.luliy-minimal .luliy-spine-title { color: var(--min-title) !important; text-shadow: none !important; }
+body.luliy-minimal .luliy-spine-tip {
+  background: var(--min-bg) !important; border: 1px solid var(--min-line) !important; color: var(--min-text) !important;
+}
+body.luliy-minimal .luliy-spine-note { color: var(--min-muted) !important; }
+body.luliy-minimal .luliy-flat-book { color: var(--min-title) !important; background: rgba(28,28,30,0.08) !important; }
+body.luliy-minimal .luliy-reading-label { color: var(--min-muted) !important; }
+body.luliy-minimal .luliy-book-sub,
+body.luliy-minimal .luliy-shelf-empty { color: var(--min-muted) !important; }
+
+@media (max-width: 720px) {
+  #luliy-min-nav { padding: 20px 20px 0; }
+  body.luliy-minimal .luliy-archives,
+  body.luliy-minimal .luliy-chronicle,
+  body.luliy-minimal .luliy-bookshelf { padding: 8px 20px 60px; }
+}
+
+/* ── 极简系统：强制压过赛博系统的文章面板/标题装饰/文字色 ── */
+body.luliy-minimal #postBody,
+body.luliy-min-article #postBody {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+body.luliy-min-article #postBody h1,
+body.luliy-min-article #postBody h2,
+body.luliy-min-article #postBody h3 {
+  color: #1c1c1e !important;
+  border: none !important;
+  border-left: none !important;
+  padding-left: 0 !important;
+  background: none !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-shadow: none !important;
+}
+body.luliy-min-article #postBody h1 {
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+body.luliy-min-article #postBody p,
+body.luliy-min-article #postBody li {
+  color: #3a3a3a !important;
+  -webkit-text-fill-color: #3a3a3a !important;
+}
+/* 去掉赛博系统给 h2 加的竖条/色块装饰 */
+body.luliy-min-article #postBody h2::after,
+body.luliy-min-article #postBody h2::marker { content: none !important; }
+
+/* ════════════════════════════════════════════════════════════
+   极简系统 v2 总清洗 —— 彻底压掉所有泄漏的赛博样式
+   规则：背景全屏 RGB(230,225,212)、文字纯黑/灰、表格无底色、
+   md 装饰色全清、面板透明、目录在右。优先级用 html/body 双重限定。
+   ════════════════════════════════════════════════════════════ */
+
+/* —— 1. 背景全屏铺满（html + body + 所有容器都强制纯色） —— */
+html:has(body.luliy-minimal),
+html:has(body.luliy-minimal) body.luliy-minimal {
+  background: rgb(230,225,212) !important;
+  background-image: none !important;
+}
+body.luliy-minimal,
+body.luliy-minimal #content,
+body.luliy-minimal .markdown-body,
+body.luliy-minimal #postBody,
+body.luliy-minimal .SideNav,
+body.luliy-minimal main,
+body.luliy-minimal article {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+/* body 本体保留底色（作为全屏背景） */
+body.luliy-minimal { background: rgb(230,225,212) !important; }
+
+/* —— 2. 所有文字强制黑/灰，清除一切发光、渐变、彩色 —— */
+body.luliy-minimal #postBody,
+body.luliy-minimal #postBody *,
+body.luliy-minimal .luliy-archives *,
+body.luliy-minimal .luliy-chronicle *,
+body.luliy-minimal .luliy-bookshelf * {
+  text-shadow: none !important;
+}
+/* md 正文里所有元素：统一深灰，标题近黑 */
+body.luliy-min-article #postBody,
+body.luliy-min-article #postBody p,
+body.luliy-min-article #postBody li,
+body.luliy-min-article #postBody span,
+body.luliy-min-article #postBody td,
+body.luliy-min-article #postBody div,
+body.luliy-min-article #postBody strong,
+body.luliy-min-article #postBody em,
+body.luliy-min-article #postBody blockquote {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: transparent !important;
+}
+body.luliy-min-article #postBody h1,
+body.luliy-min-article #postBody h2,
+body.luliy-min-article #postBody h3,
+body.luliy-min-article #postBody h4 {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+/* md 链接：黑色带下划线 */
+body.luliy-min-article #postBody a {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-decoration: underline !important;
+}
+/* md 里的 blockquote / 代码块 / 高亮：去掉所有底色和彩边，变成极简 */
+body.luliy-min-article #postBody blockquote {
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid #3a3a3a !important;
+  padding-left: 16px !important;
+  margin-left: 0 !important;
+}
+body.luliy-min-article #postBody pre,
+body.luliy-min-article #postBody code {
+  background: rgba(28,28,30,0.05) !important;
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+body.luliy-min-article #postBody pre * {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+/* —— 3. 编年史表格：全屏背景下无底色、纯黑细线网格、文字纯黑 —— */
+body.luliy-minimal .luliy-chron-table,
+body.luliy-minimal .luliy-chron-table thead,
+body.luliy-minimal .luliy-chron-table tbody,
+body.luliy-minimal .luliy-chron-table tr {
+  background: transparent !important;
+}
+body.luliy-minimal .luliy-chron-table th,
+body.luliy-minimal .luliy-chron-table td,
+body.luliy-minimal .luliy-chron-month-cell {
+  background: transparent !important;
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  border: 1px solid #3a3a3a !important;
+  text-shadow: none !important;
+}
+body.luliy-minimal .luliy-chron-table th { font-weight: 700 !important; }
+body.luliy-minimal .luliy-chron-table a {
+  color: #1c1c1e !important; -webkit-text-fill-color: #1c1c1e !important;
+  text-decoration: underline !important;
+}
+/* 表格外层那个圆角玻璃容器也去掉 */
+body.luliy-minimal .luliy-chron-tablewrap,
+body.luliy-minimal .luliy-chron-scroll-x {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* —— 4. 归档列表：文字纯黑/灰，无底色，激活行不要色块 —— */
+body.luliy-minimal .luliy-arch-row,
+body.luliy-minimal .luliy-arch-row * {
+  background: transparent !important;
+  text-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-name { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+body.luliy-minimal .luliy-arch-date { color: #8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+body.luliy-minimal .luliy-arch-row:hover { background: rgba(28,28,30,0.05) !important; }
+/* 标题 Chronicle/Archives：去掉粉色渐变和下划线发光，改纯黑衬线 */
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-book-title {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: none !important;
+  text-shadow: none !important;
+  border-bottom: none !important;
+}
+/* 标题下面那条粉色装饰线删除 */
+body.luliy-minimal .luliy-arch-title::after,
+body.luliy-minimal .luliy-chron-title::after,
+body.luliy-minimal .luliy-book-title::after { display: none !important; }
+
+/* —— 5. Tab 文字（事件/书影音/海报墙、年份、Weekly|Other）：灰→黑，激活仅下划线 —— */
+body.luliy-minimal .luliy-arch-tab,
+body.luliy-minimal .luliy-chron-cat-tab,
+body.luliy-minimal .luliy-chron-year-tab {
+  color: #8c8c8c !important; -webkit-text-fill-color: #8c8c8c !important;
+  text-shadow: none !important; background: none !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active,
+body.luliy-minimal .luliy-chron-cat-tab.is-active,
+body.luliy-minimal .luliy-chron-year-tab.is-active {
+  color: #1c1c1e !important; -webkit-text-fill-color: #1c1c1e !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active::after,
+body.luliy-minimal .luliy-chron-cat-tab.is-active::after,
+body.luliy-minimal .luliy-chron-year-tab.is-active::after {
+  background: #1c1c1e !important; box-shadow: none !important;
+}
+
+/* —— 6. 目录固定在右侧（之前可能被覆盖），切换按钮左边留给主页导航 —— */
+#luliy-min-toc {
+  position: fixed !important;
+  top: 110px !important;
+  right: 40px !important;
+  left: auto !important;
+  width: 200px !important;
+  text-align: left;
+  z-index: 60 !important;
+}
+#luliy-min-toc a { color: #8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+#luliy-min-toc a:hover,
+#luliy-min-toc .luliy-min-toc-h1 { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+
+/* —— 7. 主页：背景全屏 + 图片居中 + 顶部文字导航（切换按钮左边） —— */
+#luliy-min-home {
+  position: fixed !important; inset: 0 !important;
+  background: rgb(230,225,212) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  z-index: 50 !important;
+}
+#luliy-min-home-nav {
+  position: fixed; top: 24px; right: 76px; z-index: 120;
+  font-family: var(--min-sans); font-size: 14px; letter-spacing: 0.5px;
+  color: #8c8c8c;
+}
+#luliy-min-home-nav a { color: #1c1c1e; text-decoration: none; }
+#luliy-min-home-nav a:hover { opacity: 0.55; }
+#luliy-min-home-nav .luliy-min-nav-sep { margin: 0 8px; color: #8c8c8c; }
+
+/* —— 8. 切换按钮：极简风、放右上角 —— */
+#luliy-system-toggle {
+  background: transparent !important;
+  border: 1px solid #3a3a3a !important;
+  color: #1c1c1e !important;
+}
+#luliy-system-toggle:hover { background: #1c1c1e !important; color: rgb(230,225,212) !important; }
+
+@media (max-width: 1080px) {
+  #luliy-min-toc { display: none !important; }
+}
+@media (max-width: 720px) {
+  #luliy-min-home-nav { right: 64px; font-size: 12px; }
+  #luliy-min-home-nav .luliy-min-nav-sep { margin: 0 5px; }
+}
+
+/* —— v2 补丁：标题/表头颜色 + 表格外框，更强覆盖 —— */
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-book-title {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: none !important; background-clip: border-box !important;
+  -webkit-background-clip: border-box !important;
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+  font-style: normal !important;
+}
+/* 表头文字纯黑（去青色） */
+body.luliy-minimal .luliy-chron-table th,
+body.luliy-minimal .luliy-chron-table thead th,
+body.luliy-minimal .luliy-chron-table thead td {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+/* 表格内容文字纯黑（去淡蓝） */
+body.luliy-minimal .luliy-chron-table tbody td,
+body.luliy-minimal .luliy-chron-table tbody th,
+body.luliy-minimal .luliy-chron-month-cell {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+/* 表格最外层容器：去圆角去描边去阴影 */
+body.luliy-minimal .luliy-chron-tablewrap,
+body.luliy-minimal .luliy-chron-scroll-x,
+body.luliy-minimal .luliy-chronicle .luliy-chron-body {
+  border: none !important; border-radius: 0 !important;
+  box-shadow: none !important; background: transparent !important;
+  outline: none !important;
+}
+/* 表格本身直角无圆角 */
+body.luliy-minimal .luliy-chron-table { border-radius: 0 !important; overflow: visible !important; }
+
+/* ════════ v3 最终覆盖：用 [data-color-mode] 前缀提足优先级 ════════
+   赛博的泄漏规则多是 [data-color-mode="dark"] body:not([data-luliy-theme]) #xxx，
+   优先级很高。极简覆盖必须同等或更高，这里统一加 [data-color-mode] 前缀。 */
+
+/* 文章面板：彻底透明（压掉 :not([data-luliy-theme]) #postBody 的深色面板） */
+[data-color-mode] body.luliy-minimal #postBody,
+[data-color-mode] body.luliy-minimal .markdown-body,
+[data-color-mode] body.luliy-minimal #content {
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Chronicle/Archives/Book 标题：纯黑衬线（压掉粉色渐变） */
+[data-color-mode] body.luliy-minimal .luliy-chron-title,
+[data-color-mode] body.luliy-minimal .luliy-arch-title,
+[data-color-mode] body.luliy-minimal .luliy-book-title {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+  text-shadow: none !important;
+}
+
+/* 表头 + 表格内容：纯黑（压掉青色/淡蓝） */
+[data-color-mode] body.luliy-minimal .luliy-chron-table th,
+[data-color-mode] body.luliy-minimal .luliy-chron-table td,
+[data-color-mode] body.luliy-minimal .luliy-chron-month-cell,
+[data-color-mode] body.luliy-minimal .luliy-chron-table tbody td,
+[data-color-mode] body.luliy-minimal .luliy-chron-table thead th {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: transparent !important;
+  border: 1px solid #3a3a3a !important;
+  text-shadow: none !important;
+}
+
+/* 归档列表文字 */
+[data-color-mode] body.luliy-minimal .luliy-arch-name { color:#1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+[data-color-mode] body.luliy-minimal .luliy-arch-date { color:#8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+
+/* Tab 文字 */
+[data-color-mode] body.luliy-minimal .luliy-arch-tab,
+[data-color-mode] body.luliy-minimal .luliy-chron-cat-tab,
+[data-color-mode] body.luliy-minimal .luliy-chron-year-tab { color:#8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+[data-color-mode] body.luliy-minimal .luliy-arch-tab.is-active,
+[data-color-mode] body.luliy-minimal .luliy-chron-cat-tab.is-active,
+[data-color-mode] body.luliy-minimal .luliy-chron-year-tab.is-active { color:#1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+
+/* ════════ v4 终极方案：极简模式下重定义所有主题色变量为黑/灰 ════════
+   赛博的标题/表头/链接大量用 var(--th-accent) var(--th-h1) 等，
+   与其逐个覆盖，不如直接把这些变量在极简模式下全设成黑灰，
+   所有引用它们的地方自动变成极简配色。这是最干净的根治。 */
+[data-color-mode] body.luliy-minimal,
+body.luliy-minimal {
+  --th-accent: #1c1c1e !important;
+  --th-accent-soft: rgba(28,28,30,0.08) !important;
+  --th-accent-hover: rgba(28,28,30,0.15) !important;
+  --th-h1: #1c1c1e !important;
+  --th-h2: #1c1c1e !important;
+  --th-h3: #1c1c1e !important;
+  --th-h4: #1c1c1e !important;
+  --th-strong: #1c1c1e !important;
+  --th-h1-border: none !important;
+  --th-h2-bl: none !important;
+  --th-h2-bg: transparent !important;
+  --luliy-glass-opacity: 0 !important;
+}
+
+/* ════════ v5 暴力覆盖：html 前缀拉满特异性，强制标题/表头黑色 ════════ */
+html body.luliy-minimal .luliy-chron-title,
+html body.luliy-minimal .luliy-arch-title,
+html body.luliy-minimal .luliy-book-title,
+html body.luliy-minimal .luliy-chron-table th,
+html body.luliy-minimal .luliy-chron-table thead th,
+html body.luliy-minimal .luliy-chron-table td,
+html body.luliy-minimal .luliy-chron-month-cell,
+html body.luliy-minimal .luliy-arch-year {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-fill-color: #1c1c1e !important;
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  text-shadow: none !important;
+}
+html body.luliy-minimal .luliy-chron-title,
+html body.luliy-minimal .luliy-arch-title,
+html body.luliy-minimal .luliy-book-title,
+html body.luliy-minimal .luliy-arch-year {
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+}
