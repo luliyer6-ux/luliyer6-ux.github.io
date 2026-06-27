@@ -5638,7 +5638,7 @@
      · 极简系统下不加载任何赛博特效，走自己的黑白灰衬线排版。
      ============================================================ */
   var SYSTEM_KEY = 'luliy-system';
-  var MINIMAL_HOME_IMG = '/static/img/banner.svg';
+  var MINIMAL_HOME_IMG = 'https://free.picui.cn/free/2026/06/27/6a3f70ae1d959.png';
 
   function getSystem() {
     try { return localStorage.getItem(SYSTEM_KEY) === 'minimal' ? 'minimal' : 'cyber'; }
@@ -5701,20 +5701,19 @@
   function renderMinimalHome() {
     var wrap = document.createElement('div');
     wrap.id = 'luliy-min-home';
-    var hot = [
-      { href: '/about.html',     label: 'About',     style: 'left:74%;top:54%;width:8%;height:34%;' },
-      { href: '/book.html',      label: 'Book',      style: 'left:84%;top:42%;width:9%;height:38%;' },
-      { href: '/archive.html',   label: 'Archives',  style: 'left:12%;top:8%;width:58%;height:62%;' },
-      { href: '/chronicle.html', label: 'Chronicle', style: 'left:55%;top:62%;width:6%;height:34%;' }
+    var links = [
+      { href: '/about.html',     label: 'About' },
+      { href: '/book.html',      label: 'Book' },
+      { href: '/archive.html',   label: 'Archives' },
+      { href: '/chronicle.html', label: 'Chronicle' }
     ];
-    var hotHtml = hot.map(function (h) {
-      return '<a class="luliy-min-hot" href="' + h.href + '" aria-label="' + h.label +
-        '" style="' + h.style + '"></a>';
-    }).join('');
+    var navHtml = links.map(function (l) {
+      return '<a href="' + l.href + '">' + l.label + '</a>';
+    }).join('<span class="luliy-min-nav-sep">/</span>');
     wrap.innerHTML =
       '<div class="luliy-min-home-stage">' +
         '<img class="luliy-min-home-img" src="' + MINIMAL_HOME_IMG + '" alt="" draggable="false">' +
-        hotHtml +
+        '<nav class="luliy-min-home-nav">' + navHtml + '</nav>' +
       '</div>';
     document.body.appendChild(wrap);
   }
