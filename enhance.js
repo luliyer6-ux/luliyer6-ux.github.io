@@ -5736,6 +5736,36 @@
       });
       toc.innerHTML = html;
       document.body.appendChild(toc);
+
+      /* ★ 跟随页面滚动，高亮当前所在标题（scroll-spy） */
+      var tocLinks = Array.prototype.slice.call(toc.querySelectorAll('a'));
+      var headEls = Array.prototype.slice.call(heads);
+      function setCurrent(id) {
+        tocLinks.forEach(function (a) {
+          var match = a.getAttribute('href') === '#' + id;
+          a.classList.toggle('is-current', match);
+        });
+      }
+      if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(function (entries) {
+          var visible = entries.filter(function (en) { return en.isIntersecting; });
+          if (visible.length) {
+            visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+            setCurrent(visible[0].target.id);
+          }
+        }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+        headEls.forEach(function (h) { io.observe(h); });
+      } else {
+        var onScroll = function () {
+          var cur = headEls[0];
+          headEls.forEach(function (h) {
+            if (h.getBoundingClientRect().top <= 120) cur = h;
+          });
+          if (cur) setCurrent(cur.id);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
     }
   }
 
