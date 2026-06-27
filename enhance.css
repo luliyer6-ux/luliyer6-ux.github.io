@@ -4800,17 +4800,27 @@ body.luliy-minimal #content { background: transparent !important; }
   display: block; width: 100%; height: auto;
   user-select: none; -webkit-user-drag: none;
 }
-.luliy-min-hot {
+.luliy-min-home-nav {
   position: absolute;
-  display: block;
-  cursor: pointer;
-  /* 透明热区；hover 时极淡描边提示可点击 */
-  border-radius: 4px;
-  transition: background 0.2s, box-shadow 0.2s;
+  top: 28px; right: 32px;
+  display: flex; gap: 18px;
+  z-index: 2;
 }
-.luliy-min-hot:hover {
-  background: rgba(28,28,30,0.04);
-  box-shadow: inset 0 0 0 1px rgba(28,28,30,0.18);
+.luliy-min-home-nav a {
+  font-family: 'Noto Serif SC', Georgia, serif;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--min-title);
+  text-decoration: none;
+  background: rgba(255,255,255,0.78);
+  padding: 6px 14px;
+  border-radius: 3px;
+  transition: opacity 0.15s, background 0.15s;
+}
+.luliy-min-home-nav a:hover { opacity: 0.7; background: rgba(255,255,255,0.95); }
+@media (max-width: 640px) {
+  .luliy-min-home-nav { top: 14px; right: 14px; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .luliy-min-home-nav a { font-size: 12px; padding: 5px 10px; }
 }
 
 /* ════════ 普通文章 / about：极简排版 ════════ */
