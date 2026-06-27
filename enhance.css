@@ -1,2173 +1,888 @@
-/* enhance.css - Luliy Blog (Minimal-only build)
+/* enhance.js - Luliy Blog (Minimal-only build)
    只保留极简模式（黑白灰衬线排版）+ 文章阅读宽度调节。
-   已删除：Hero 全屏首图、分类卡片首页、Navbar 液态玻璃、悬浮工具栏、
-   左滑抽屉导航、樱花/粒子特效、APlayer 音乐播放器、赏赞码、灯箱、
-   自定义鼠标样式等全部"赛博系统"专属视觉效果。
+   已删除：赛博朋克皮肤、Hero 全屏首图、分类卡片首页、APlayer 音乐播放器、
+   悬浮工具栏/主题切换、左滑抽屉导航、樱花/粒子特效、灯箱看图、
+   鼠标拖尾、视图过渡动画、标签云等全部"赛博系统"专属功能。
 
-   保留章节：
-   01  CSS Variables + Reset（含文章宽度变量 --luliy-pb-extra）
-   02  Archives 归档页 / Chronicle 编年史 / Book 书架（结构化布局，
-       原本就是黑白灰风格，未改动）
-   03  响应式表格（窄屏卡片化，文章内 Markdown 表格用）
-   04  极简系统全部样式（首页/导航/文章排版/TOC/日夜对比度收尾层）
-   05  文章宽度控件（新增，替代已删除的悬浮工具栏滑杆）
+   Modules:
+   00  Utilities (ready / esc)
+   01  Page-type detection (index / archive / chronicle / book)
+   02  fetchPosts() — 读取 postList.json
+   03  relativeTime() — 相对时间文案
+   04  Reading width control (--luliy-pb-extra), 含极简风格的 +/- 控件
+   05  buildPostLink + Archives 归档页 + Chronicle 编年史 + Book 书架
+       （直接复用原版逻辑，三个页面都已是黑白灰排版，未改动）
+   06  极简首页（自定义图 + 右上角文字导航）
+   07  极简文章页（侧边目录 TOC）
+   08  极简全站导航（非首页顶部文字导航）
+   09  主入口
 */
+(function (root) {
+  'use strict';
 
-/* ══════════════════════════════════════════════════════════
-   00  Font imports
-   思源黑体 (Noto Sans SC) for headings
-   霞鹜文楷 Screen (LXGW WenKai) for body
-   霞鹜文楷等宽 (LXGW WenKai Mono) for code
-══════════════════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
-@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
-@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+  /* ════════════════════════════════════════════════════════
+     SITE OPTIONS — 按需修改
+  ════════════════════════════════════════════════════════ */
+  var LULIY_OPTS = {
+    /* 极简首页大图 —— 换成你自己的图片直链即可 */
+    homeImage: 'https://free.picui.cn/free/2026/06/27/6a3f70ae1d959.png'
+  };
+  var MINIMAL_HOME_IMG = LULIY_OPTS.homeImage;
 
-
-/* ══════════════════════════════════════════════════════════
-   01  CSS Variables + Reset
-══════════════════════════════════════════════════════════ */
-:root {
-  --card-c1: #8250df;
-  --card-c2: #0969da;
-  --card-c3: #e05c8a;
-  --card-c4: #f0b429;
-
-  /* Article theme defaults (overridden per theme) */
-  --th-h1:         #1a0a3a;
-  --th-h1-border:  2px solid rgba(130,80,223,0.25);
-  --th-h2:         #0f1e4a;
-  --th-h2-bl:      5px solid #8250df;
-  --th-h2-bg:      rgba(130,80,223,0.06);
-  --th-h3:         #2a1a4a;
-  --th-h4:         #3a2a5a;
-  --th-strong:     #8250df;
-
-  /* 合并自原第二个 :root 块（消除重复声明） */
-  --luliy-pb-extra: 0px;
-
-  /* ★ 液态玻璃可调参数（设置面板里三个滑块联动这三个变量）：
-     模糊程度 / 不透明度 / 色调。用于深色模式下的卡片、文章正文面板、
-     标签云容器——统一替换掉之前写死的 rgba(...) 数值。
-     默认不透明度刻意调低（0.5 而不是原来的 0.72/0.75），
-     避免再叠加出"看起来像纯黑"的效果。 */
-  --luliy-glass-blur: 22px;
-  --luliy-glass-opacity: 0.5;
-  --luliy-glass-hue: 250;
-
-  /* ★ 主页卡片宽 / 高，可在设置面板滑块调节 */
-  --luliy-cat-w: 1700px;   /* ★ 默认再横向加宽 */
-  --luliy-cat-h: 338px;
-
-  /* ★ 文章正文面板独立不透明度（和卡片/标签云的玻璃透明度分开控制） */
-  --luliy-article-opacity: 0.5;
-}
-
-html { scroll-behavior: smooth; zoom: 1.1; }
-*, *::before, *::after { box-sizing: border-box; }
-
-/* Force page containers transparent so bg shows through */
-html,
-#content, .main,
-.container, .container-xl, .container-lg,
-[class*="Layout"], [class*="layout"] {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* Guard: 100vw elements (hero) must never cause horizontal scroll.
-   IMPORTANT: clip on <html> ONLY — Gmeek's <body> is a centred
-   max-width container; clipping it would crop the full-bleed hero. */
-html { overflow-x: clip; }
-@supports not (overflow-x: clip) {
-  html { overflow-x: hidden; }
-}
-
-/* Reading-panel width control — widens the article container
-   symmetrically (centred), pushing both edges outward by the
-   user-set delta. Article pages only. */
-body.luliy-post-page .markdown-body,
-body.luliy-post-page #postBody {
-  max-width: calc(100% + var(--luliy-pb-extra, 0px) * 2) !important;
-  margin-left: calc(var(--luliy-pb-extra, 0px) * -1) !important;
-  margin-right: calc(var(--luliy-pb-extra, 0px) * -1) !important;
-}
-
-
-/* ── 旧的重复文章列表样式已删除（duplicateList，见 initTagCloud 改造说明） ── */
-.luliy-tag-bubble.is-active {
-  background: var(--tag-c, #8250df) !important;
-  color: #fff !important;
-  transform: scale(1.12);
-}
-@media (max-width: 768px) {
-  /* Never overflow on mobile */
-  body.luliy-post-page .markdown-body,
-  body.luliy-post-page #postBody {
-    max-width: 100% !important;
-    margin-left: 0 !important; margin-right: 0 !important;
+  /* ---- 00  Utilities --------------------------------------- */
+  function ready(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
   }
-}
-
-/* ══════════════════════════════════════════════════════════
-
-/* ══════════════════════════════════════════════════════════
-   02  Archives / Chronicle / Book —— 归档·编年史·书架
-══════════════════════════════════════════════════════════ */
-   28  NEW (v10) — gradient headings, blockquotes, card list,
-       skeletons, series, search, tag cloud, archive calendar,
-       trail, fireflies, focus mode, reduce motion
-══════════════════════════════════════════════════════════ */
-
-/* ── 28.1 Theme gradient headings (background-clip:text) ──── */
-#postBody h1, #postBody h2 {
-  background-image: linear-gradient(120deg, var(--th-h1, #1a0a3a), var(--th-accent, #8250df));
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: var(--th-h1, #8250df);
-}
-/* Graceful fallback where background-clip:text unsupported */
-@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-  #postBody h1, #postBody h2 { -webkit-text-fill-color: currentColor; color: var(--th-h2, #8250df); }
-}
-body[data-luliy-theme="mono"] #postBody h1,
-body[data-luliy-theme="mono"] #postBody h2 {
-  background-image: none; -webkit-text-fill-color: currentColor;
-  color: var(--th-h1, #111) !important;
-}
-
-/* ── 28.2 Blockquote beautify (theme gradient bar + quote) ── */
-#postBody blockquote {
-  position: relative;
-  margin: 1.5em 0; padding: 14px 20px 14px 26px;
-  border: none !important;
-  border-radius: 0 12px 12px 0;
-  background: var(--th-accent-soft, rgba(130,80,223,0.06));
-  overflow: hidden;
-}
-#postBody blockquote::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-  background: linear-gradient(to bottom, var(--th-accent, #8250df), transparent);
-}
-#postBody blockquote::after {
-  content: '\201C'; position: absolute; right: 12px; top: 2px;
-  font-size: 46px; line-height: 1; font-family: Georgia, serif;
-  color: var(--th-accent, #8250df); opacity: 0.14; pointer-events: none;
-}
-#postBody blockquote p { margin: 0.3em 0; }
-[data-color-mode="dark"] #postBody blockquote { background: var(--th-accent-soft, rgba(130,80,223,0.14)); }
-
-/* ── 28.3 Card list & timeline views ──────────────────────── */
-#luliy-cardview-bar {
-  display: flex; justify-content: flex-start; margin: 0 0 14px;
-}
-#luliy-cardview-toggle {
-  display: inline-flex; border-radius: 10px; overflow: hidden;
-  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.28));
-  background: var(--th-accent-soft, rgba(130,80,223,0.06));
-}
-#luliy-cardview-toggle button {
-  padding: 5px 13px; font-size: 15px; color: var(--th-accent, #8250df);
-  background: transparent; border: none; cursor: pointer;
-  transition: background 0.18s, color 0.18s; line-height: 1.2;
-}
-#luliy-cardview-toggle button:hover { background: var(--th-accent-soft, rgba(130,80,223,0.12)); }
-#luliy-cardview-toggle[data-view="grid"] .cv-grid,
-#luliy-cardview-toggle[data-view="list"] .cv-list,
-#luliy-cardview-toggle[data-view="timeline"] .cv-timeline {
-  background: var(--th-accent, #8250df); color: #fff;
-}
-[data-color-mode="dark"] #luliy-cardview-toggle button { color: var(--th-accent, #cba6f7); }
-[data-color-mode="dark"] #luliy-cardview-toggle[data-view="grid"] .cv-grid,
-[data-color-mode="dark"] #luliy-cardview-toggle[data-view="list"] .cv-list,
-[data-color-mode="dark"] #luliy-cardview-toggle[data-view="timeline"] .cv-timeline { color: #fff; }
-
-/* List layout: single column, show summary row */
-.luliy-card-grid.luliy-card-list {
-  grid-template-columns: 1fr !important;
-}
-.luliy-card-list .luliy-card { border-radius: 12px; }
-.luliy-card-list .luliy-card-inner {
-  flex-direction: row !important; align-items: center; gap: 14px;
-  min-height: 0 !important; padding: 12px 18px;
-}
-.luliy-card-list .luliy-card-title { font-size: 15px; margin: 0; }
-.luliy-card-list .luliy-card-date { order: 3; margin-left: auto; flex-shrink: 0; }
-.luliy-card-list .luliy-card-tags { order: 2; flex-shrink: 0; }
-.luliy-card-list .luliy-card-deco { display: none; }
-.luliy-card-list .luliy-card-yeardiv { grid-column: 1 / -1; }
-
-/* ── Timeline view: vertical spine with dotted cards ──────── */
-/* ── Timeline: centre spine, cards alternate left ↔ right ─── */
-.luliy-card-grid.luliy-card-timeline {
-  display: block !important;      /* leave grid — use normal flow */
-  position: relative;
-  padding: 0 0 40px !important;
-}
-/* Centre vertical spine */
-.luliy-card-timeline::before {
-  content: '';
-  position: absolute;
-  left: 50%; top: 0; bottom: 0;
-  width: 2px; margin-left: -1px;
-  background: linear-gradient(to bottom,
-    var(--th-accent, #8250df),
-    var(--th-accent-soft, rgba(130,80,223,0.15)));
-  border-radius: 2px;
-  pointer-events: none;
-}
-
-/* Year divider — full-width centred header */
-.luliy-card-timeline .luliy-card-yeardiv {
-  display: flex !important;
-  justify-content: center !important;
-  margin: 28px 0 18px !important;
-  grid-column: unset !important;
-  position: relative; z-index: 2;
-}
-.luliy-card-timeline .luliy-card-yeardiv span {
-  background: var(--th-accent, #8250df);
-  color: #fff; padding: 4px 20px;
-  border-radius: 30px;
-  font-size: 14px; font-weight: 800; letter-spacing: 2px;
-  box-shadow: 0 4px 14px var(--th-accent-soft, rgba(130,80,223,0.40));
-}
-.luliy-card-timeline .luliy-card-yeardiv::after { display: none !important; }
-
-/* Individual timeline card — alternates left / right */
-.luliy-card-timeline .luliy-card {
-  position: relative;
-  width: calc(50% - 36px);
-  margin-bottom: 18px;
-  border-radius: 14px;
-  /* default: right side */
-  margin-left: calc(50% + 18px);
-}
-/* Even-indexed cards go to the left */
-.luliy-card-timeline .luliy-card:nth-child(even) {
-  margin-left: 0;
-  margin-right: calc(50% + 18px);
-}
-
-/* Connector dot on the spine */
-.luliy-card-timeline .luliy-card::before {
-  content: '';
-  position: absolute;
-  top: 22px;
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--th-accent, #8250df);
-  border: 3px solid var(--color-canvas-default, #fff);
-  box-shadow: 0 0 0 2px var(--th-accent-soft, rgba(130,80,223,0.4));
-  opacity: 1; z-index: 3;
-  /* Right-side card: spine is to its LEFT → dot sits at left edge.
-     Card's left edge is 18px right of spine; dot is 12px + 6px border ⇒
-     centre the dot on the spine: left = -(18 + 9) = -27px */
-  left: -27px;
-  right: auto;
-}
-/* Left-side card: spine is to its RIGHT → dot at right edge */
-.luliy-card-timeline .luliy-card:nth-child(even)::before {
-  left: auto;
-  right: -27px;
-}
-[data-color-mode="dark"] .luliy-card-timeline .luliy-card::before {
-  border-color: rgba(10,6,20,0.95);
-}
-
-/* Card inner: compact single row */
-.luliy-card-timeline .luliy-card-inner {
-  flex-direction: column !important;
-  min-height: 0 !important;
-  padding: 12px 16px !important;
-  gap: 6px !important;
-}
-.luliy-card-timeline .luliy-card-title { font-size: 14px; margin: 0; }
-.luliy-card-timeline .luliy-card-date { order: 0; font-size: 11px; }
-.luliy-card-timeline .luliy-card-tags { order: 2; }
-.luliy-card-timeline .luliy-card-deco { display: none; }
-
-/* ── Infinite-scroll sentinel (timeline view) ─────────────── */
-#luliy-tl-sentinel {
-  text-align: center;
-  padding: 22px 0 30px;
-  font-size: 13px;
-  letter-spacing: 2px;
-  color: var(--th-accent, #8250df);
-  opacity: 0.75;
-  font-family: 'Noto Sans SC', sans-serif;
-  animation: luliyTlPulse 1.4s ease-in-out infinite;
-}
-#luliy-tl-sentinel.is-done {
-  animation: none;
-  opacity: 0.55;
-  color: var(--color-fg-muted, #888);
-}
-@keyframes luliyTlPulse {
-  0%, 100% { opacity: 0.45; }
-  50%      { opacity: 0.95; }
-}
-/* Timeline infinite mode: hide page-based navigation (it no longer applies) */
-body.luliy-tl-infinite .pagination,
-body.luliy-tl-infinite .paginate,
-body.luliy-tl-infinite #pagination,
-body.luliy-tl-infinite .Paginate,
-body.luliy-tl-infinite .pagenav,
-body.luliy-tl-infinite a[href*="?page="],
-/* ★ 分类页 / 归档页：始终隐藏 Gmeek 原生「上一页/下一页」翻页器
-   （含运行时包裹的 .paginate-container 层） */
-body.luliy-hide-pagination .pagination,
-body.luliy-hide-pagination .paginate-container,
-body.luliy-hide-pagination .paginate,
-body.luliy-hide-pagination #pagination,
-body.luliy-hide-pagination .Paginate,
-body.luliy-hide-pagination .pagenav {
-  display: none !important;
-}
-
-/* ============================================================
-   归档页 Archives —— 双标签页 + 按年分组 + 分页（赛博朋克风）
-   ============================================================ */
-.luliy-archives { max-width: 760px; margin: 0 auto; padding: 8px 0 40px; }
-.luliy-arch-loading, .luliy-arch-error, .luliy-arch-empty {
-  text-align: center; padding: 40px 16px;
-  color: rgba(220,210,245,0.7); font-size: 15px;
-}
-.luliy-arch-error { color: #ff6ec7; }
-.luliy-arch-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
-  padding-bottom: 14px; margin-bottom: 18px;
-  border-bottom: 1px solid rgba(255,43,214,0.28);
-}
-.luliy-arch-title {
-  margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 2px;
-  color: #fff; text-shadow: 0 0 10px rgba(255,110,199,0.5), 0 0 28px rgba(110,199,255,0.3);
-}
-.luliy-arch-tabbar { display: flex; align-items: center; gap: 12px; }
-.luliy-arch-tab {
-  background: none; border: none; cursor: pointer;
-  font-size: 15px; font-weight: 600; letter-spacing: 1px;
-  color: rgba(200,190,230,0.55); padding: 4px 2px;
-  transition: color 0.2s, text-shadow 0.2s;
-}
-.luliy-arch-tab:hover { color: rgba(255,255,255,0.85); }
-.luliy-arch-tab.is-active {
-  color: #fff; text-shadow: 0 0 10px var(--th-accent, #00e5ff);
-}
-.luliy-arch-tabsep { width: 1px; height: 16px; background: rgba(255,255,255,0.25); }
-
-.luliy-arch-year {
-  font-size: 22px; font-weight: 800; letter-spacing: 1px;
-  color: var(--th-accent, #00e5ff);
-  margin: 26px 0 10px; padding-bottom: 4px;
-  text-shadow: 0 0 12px rgba(0,229,255,0.35);
-}
-.luliy-arch-year:first-child { margin-top: 4px; }
-.luliy-arch-row {
-  display: flex; align-items: baseline; gap: 16px;
-  padding: 9px 10px; border-radius: 8px;
-  text-decoration: none !important;
-  transition: background 0.18s, transform 0.18s;
-}
-.luliy-arch-row:hover {
-  background: hsla(var(--luliy-glass-hue, 250), 50%, 50%, 0.10);
-  transform: translateX(4px);
-}
-.luliy-arch-date {
-  flex: 0 0 auto; width: 96px;
-  font-family: 'Courier New', monospace; font-size: 13px;
-  color: rgba(180,170,210,0.7);
-}
-.luliy-arch-name {
-  flex: 1 1 auto; font-size: 15px; line-height: 1.5;
-  color: rgba(235,230,250,0.92);
-  transition: color 0.18s;
-}
-.luliy-arch-row:hover .luliy-arch-name { color: #fff; }
-.luliy-arch-row:hover .luliy-arch-date { color: var(--th-accent, #00e5ff); }
-
-.luliy-arch-pagination {
-  display: flex; align-items: center; justify-content: center; gap: 18px;
-  margin-top: 32px; padding-top: 18px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-.luliy-arch-pgbtn {
-  width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
-  background: hsla(var(--luliy-glass-hue, 250), 50%, 50%, 0.12);
-  border: 1px solid rgba(255,43,214,0.30);
-  color: #fff; font-size: 16px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
-}
-.luliy-arch-pgbtn:hover:not(:disabled) {
-  background: var(--th-accent, #00e5ff);
-  color: #0a0e2a;
-  box-shadow: 0 0 16px rgba(0,229,255,0.5);
-}
-.luliy-arch-pgbtn:disabled { opacity: 0.3; cursor: default; }
-.luliy-arch-pginfo {
-  font-family: 'Courier New', monospace; font-size: 14px;
-  color: rgba(210,200,235,0.8); letter-spacing: 0.5px;
-}
-
-/* ============================================================
-   编年史 Chronicle —— 年份/分类切换 + 三种表格（赛博朋克风）
-   ============================================================ */
-.luliy-chronicle { max-width: 1100px; margin: 0 auto; padding: 8px 0 40px; }
-.luliy-chron-loading, .luliy-chron-error, .luliy-chron-empty {
-  text-align: center; padding: 40px 16px;
-  color: rgba(220,210,245,0.7); font-size: 15px;
-}
-.luliy-chron-error { color: #ff6ec7; }
-.luliy-chron-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255,43,214,0.28);
-}
-.luliy-chron-title {
-  margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 2px;
-  color: #fff; text-shadow: 0 0 10px rgba(255,110,199,0.5), 0 0 28px rgba(110,199,255,0.3);
-}
-.luliy-chron-years { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.luliy-chron-year-tab {
-  background: none; border: none; cursor: pointer;
-  font-size: 15px; font-weight: 700; letter-spacing: 1px;
-  color: rgba(200,190,230,0.5); padding: 4px 2px; position: relative;
-  transition: color 0.2s;
-}
-.luliy-chron-year-tab:hover { color: rgba(255,255,255,0.85); }
-.luliy-chron-year-tab.is-active { color: #fff; }
-.luliy-chron-year-tab.is-active::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 2px;
-  background: var(--th-accent, #00e5ff); box-shadow: 0 0 8px var(--th-accent, #00e5ff);
-}
-
-.luliy-chron-cats {
-  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
-  margin: 18px 0 22px;
-}
-.luliy-chron-cat-tab {
-  background: none; border: none; cursor: pointer;
-  font-size: 16px; font-weight: 600; letter-spacing: 1px;
-  color: rgba(200,190,230,0.5); padding: 4px 2px; position: relative;
-  transition: color 0.2s;
-}
-.luliy-chron-cat-tab:hover { color: rgba(255,255,255,0.85); }
-.luliy-chron-cat-tab.is-active { color: #fff; text-shadow: 0 0 10px rgba(255,110,199,0.4); }
-.luliy-chron-cat-tab.is-active::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 2px;
-  background: #ff2bd6; box-shadow: 0 0 8px #ff2bd6;
-}
-
-/* 横向滚动用外层容器处理，避免 overflow-x:auto 隐式把 overflow-y 也改成
-   auto，导致表格高度被截断、内容从顶部被裁掉 */
-.luliy-chron-scroll-x {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  width: 100%;
-}
-.luliy-chron-tablewrap {
-  /* 不再在这里设置 overflow */
-  min-width: 580px;   /* 确保窄屏下触发外层横向滚动 */
-}
-.luliy-chron-table {
-  width: 100%; border-collapse: collapse; font-size: 14px;
-  background: transparent;   /* ★ 表格整体透明 */
-}
-.luliy-chron-table td[rowspan],
-.luliy-chron-table .luliy-chron-month-cell {
-  vertical-align: middle;    /* ★ 垂直居中 */
-  font-weight: 600;
-  white-space: nowrap;
-  min-width: 52px;
-  text-align: center;        /* ★ 水平居中 */
-  border-right: 1px solid rgba(255,255,255,0.35);
-}
-.luliy-chron-table th, .luliy-chron-table td {
-  border: 1px solid rgba(255,255,255,0.25);
-  padding: 10px 14px; text-align: left; vertical-align: top;
-}
-.luliy-chron-table th {
-  background: hsla(var(--luliy-glass-hue, 250), 55%, 14%, 0.55);
-  color: var(--th-accent, #00e5ff); font-weight: 700;
-  white-space: nowrap; letter-spacing: 0.5px;
-}
-/* ★ 夜间模式下 td 完全无底纹 */
-[data-color-mode="dark"] .luliy-chron-table td,
-.luliy-chron-table td { background: transparent; color: rgba(230,225,250,0.9); }
-.luliy-chron-table a { color: var(--th-accent, #6ec7ff); text-decoration: none; }
-.luliy-chron-table a:hover { text-decoration: underline; color: #fff; }
-
-/* ★ Chronicle 页面：隐藏顶部「预计阅读 X 分钟 | 共 XX 字」和文末字数信息条 */
-body.luliy-chronicle-takeover #luliy-readmeta,
-body.luliy-chronicle-takeover #luliy-post-footer-bar { display: none !important; }
-
-/* 海报墙 7/5/3 列响应式 */
-.luliy-chron-posters {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;
-}
-.luliy-poster-item {
-  position: relative; display: block; overflow: hidden; border-radius: 10px;
-  aspect-ratio: 2 / 3; text-decoration: none !important;
-  border: 1px solid rgba(255,43,214,0.22);
-  background: hsla(var(--luliy-glass-hue, 250), 45%, 9%, 0.4);
-  cursor: pointer; padding: 0;   /* button reset */
-  -webkit-appearance: none; appearance: none;
-}
-
-/* ══════════════════════════════════════════════════════
-   海报灯箱（全屏展示 + 左右切换 + 触摸滑动）
-══════════════════════════════════════════════════════ */
-#luliy-lb {
-  position: fixed; inset: 0; z-index: 200000;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; visibility: hidden;
-  transition: opacity 0.25s, visibility 0.25s;
-}
-#luliy-lb.is-open { opacity: 1; visibility: visible; }
-body.luliy-lb-open { overflow: hidden; }
-
-.luliy-lb-bg {
-  position: absolute; inset: 0;
-  background: rgba(0,0,0,0.88);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-}
-.luliy-lb-img-wrap {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center;
-  max-width: min(90vw, 520px); max-height: 90vh;
-}
-.luliy-lb-img {
-  display: block; max-width: 100%; max-height: calc(90vh - 80px);
-  object-fit: contain; border-radius: 12px;
-  box-shadow: 0 8px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,43,214,0.25);
-  transition: opacity 0.2s;
-}
-.luliy-lb-cap {
-  margin-top: 12px; font-size: 14px; color: rgba(240,235,255,0.85);
-  text-align: center; letter-spacing: 0.5px;
-  text-shadow: 0 0 12px rgba(180,140,255,0.4);
-}
-.luliy-lb-link {
-  display: inline-block; margin-top: 8px;
-  font-size: 12px; color: var(--th-accent, #00e5ff);
-  text-decoration: none; letter-spacing: 0.5px;
-  opacity: 0.8; transition: opacity 0.15s;
-}
-.luliy-lb-link:hover { opacity: 1; text-decoration: underline; }
-
-/* 左右箭头 */
-.luliy-lb-prev, .luliy-lb-next {
-  position: absolute; z-index: 2; top: 50%; transform: translateY(-50%);
-  width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
-  background: rgba(255,255,255,0.10); color: #fff; font-size: 26px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-  transition: background 0.15s, transform 0.15s;
-}
-.luliy-lb-prev { left: 16px; }
-.luliy-lb-next { right: 16px; }
-.luliy-lb-prev:hover, .luliy-lb-next:hover { background: rgba(255,43,214,0.40); transform: translateY(-50%) scale(1.08); }
-.luliy-lb-prev:disabled, .luliy-lb-next:disabled { opacity: 0.2; cursor: default; }
-
-/* 关闭按钮 */
-.luliy-lb-close {
-  position: absolute; z-index: 2; top: 16px; right: 16px;
-  width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
-  background: rgba(255,255,255,0.12); color: #fff; font-size: 16px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s;
-}
-.luliy-lb-close:hover { background: rgba(255,43,214,0.45); }
-
-@media (max-width: 640px) {
-  .luliy-lb-prev { left: 4px; width: 38px; height: 38px; font-size: 20px; }
-  .luliy-lb-next { right: 4px; width: 38px; height: 38px; font-size: 20px; }
-  .luliy-lb-img-wrap { max-width: 96vw; }
-}
-
-.luliy-poster-img {
-  position: absolute; inset: 0;
-  background-size: cover; background-position: center;
-  transition: transform 0.4s ease;
-}
-.luliy-poster-item:hover .luliy-poster-img { transform: scale(1.08); }
-.luliy-poster-title {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 18px 8px 8px; font-size: 12px; line-height: 1.4; color: #fff;
-  background: linear-gradient(to top, rgba(6,5,16,0.92), transparent);
-  opacity: 0; transition: opacity 0.25s ease;
-}
-.luliy-poster-item:hover .luliy-poster-title { opacity: 1; }
-
-@media (max-width: 900px) {
-  .luliy-chron-posters { grid-template-columns: repeat(5, 1fr); }
-}
-@media (max-width: 560px) {
-  .luliy-chron-posters { grid-template-columns: repeat(3, 1fr); }
-  .luliy-arch-date { width: 78px; }
-  .luliy-arch-title, .luliy-chron-title { font-size: 23px; }
-}
-
-/* ══════════════════════════════════════════════════════
-   Chronicle 手机端适配（≤ 640px）
-   两个表格在小屏下从「多列横排」转为「卡片堆叠」，
-   每条记录变成一块独立卡片，清晰易读。
-   ══════════════════════════════════════════════════════ */
-@media (max-width: 640px) {
-  /* 容器收窄 */
-  .luliy-chronicle { padding: 4px 0 32px; }
-
-  /* 标题和年份标签竖排（年份多时不挤在一行） */
-  .luliy-chron-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .luliy-chron-years  { gap: 12px; }
-  .luliy-chron-cats   { gap: 16px; margin: 12px 0 16px; }
-  .luliy-chron-title  { font-size: 22px; }
-
-  /* ── 出游 / 书影游：卡片化 ── */
-  /* 关掉外层横向滚动，改用纵向卡片堆叠 */
-  .luliy-chron-scroll-x { overflow-x: visible; }
-  .luliy-chron-tablewrap { min-width: 0; }
-
-  /* 整个表格变成 block 流式排列 */
-  .luliy-chron-table,
-  .luliy-chron-table thead,
-  .luliy-chron-table tbody,
-  .luliy-chron-table tr,
-  .luliy-chron-table th,
-  .luliy-chron-table td { display: block; width: 100% !important; box-sizing: border-box; }
-
-  /* 表头隐藏 */
-  .luliy-chron-table thead { display: none !important; }
-
-  /* 每行变成一张卡片 */
-  .luliy-chron-table tbody tr {
-    margin-bottom: 10px;
-    border: 1px solid rgba(255,255,255,0.14);
-    border-radius: 10px;
-    overflow: hidden;
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
   }
 
-  /* 每个 td：flex 横排「列名 + 内容」 */
-  .luliy-chron-table td {
-    display: flex !important;
-    align-items: baseline;
-    gap: 8px;
-    padding: 8px 14px;
-    border: none !important;
-    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
-    text-align: left !important;
-    vertical-align: top !important;
-    white-space: normal !important;
-    min-width: 0;
-  }
-  .luliy-chron-table td:last-child { border-bottom: none !important; }
-
-  /* data-label 前置标签（给非月份格用） */
-  .luliy-chron-table td:not(.luliy-chron-month-cell)::before {
-    content: attr(data-label);
-    flex: 0 0 4.5em;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
-    color: var(--th-accent, #00e5ff);
-    opacity: 0.75;
-    white-space: nowrap;
-    padding-top: 1px;
+  /* ---- 01  Page-type detection ------------------------------ */
+  function isIndexPage() {
+    return location.pathname === '/' ||
+      location.pathname === '/index.html' ||
+      location.pathname === '';
   }
 
-  /* 月份行：居中、加粗、深色背景突出 */
-  .luliy-chron-table .luliy-chron-month-cell {
-    justify-content: center !important;
-    background: hsla(var(--luliy-glass-hue,250), 55%, 20%, 0.45) !important;
-    font-size: 13px; font-weight: 800;
-    border-bottom: 1px solid rgba(255,255,255,0.15) !important;
-    border-right: none !important;
-    white-space: nowrap !important;
+  /* ---- 02/03  fetchPosts() + isArchivePage() + relativeTime() ---- */
+  function isArchivePage() {
+    /* ★ 精确匹配 archive.html，不用宽松的 includes('archive')——
+       否则 URL 里凑巧含 archive 的普通文章会被误判成归档页。 */
+    return /(^|\/)archive(\.html)?$/i.test(location.pathname);
+  }
+  function fetchPosts() {
+    function norm(data) {
+      if (Array.isArray(data)) return data;
+      if (data && typeof data === 'object') {
+        var colorDict = data.labelColorDict || {};
+        return Object.keys(data)
+          .filter(function (k) { return k !== 'labelColorDict'; })
+          .map(function (k) {
+            var p = data[k] || {};
+            if (typeof p === 'string') p = { postTitle: p };
+            var rawLabels = p.labels || p.tags || [];
+            /* Multi-level pinning: 'pinned' = level 1; 'pinned-2', 'pinned-3'
+               sort higher. Lower number = higher position. */
+            var pinLevel = 0;
+            rawLabels.forEach(function (lbl) {
+              var m = /^pinned(?:-(\d+))?$/.exec(lbl);
+              if (m) pinLevel = Math.max(pinLevel, m[1] ? parseInt(m[1], 10) : 1);
+            });
+            var labels = rawLabels.map(function (lbl) {
+              return {
+                name: lbl,
+                color: (colorDict[lbl] || '0969da').replace(/^#/, '')
+              };
+            });
+            return {
+              title: p.postTitle || p.title || p.name || k,
+              link:  p.postUrl  || p.link  || p.url  || ('post/' + k + '.html'),
+              created: p.createdDate || p.created || p.date || '',
+              labels: labels,
+              pinned: pinLevel > 0,
+              pinLevel: pinLevel
+            };
+          });
+      }
+      return [];
+    }
+    var tryUrls = [location.origin + '/postList.json', '/postList.json'];
+    function tryNext(urls) {
+      if (!urls.length) return Promise.resolve([]);
+      return fetch(urls[0], { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .catch(function () { return tryNext(urls.slice(1)); });
+    }
+    return tryNext(tryUrls).then(norm);
   }
 
-  /* 海报墙：手机端 2 列（3 列图片偏小） */
-  .luliy-chron-posters { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
-}
-
-/* Mobile: collapse to single left-aligned column */
-@media (max-width: 768px) {
-  .luliy-card-timeline::before { left: 16px; margin-left: 0; }
-  .luliy-card-timeline .luliy-card,
-  .luliy-card-timeline .luliy-card:nth-child(even) {
-    width: calc(100% - 44px);
-    margin-left: 44px !important;
-    margin-right: 0 !important;
+  /* Relative time: 今天 / 3天前 / 2个月前 / 1年前 */
+  function relativeTime(dateStr) {
+    if (!dateStr) return '';
+    var t = new Date(String(dateStr).slice(0, 10).replace(/-/g, '/')).getTime();
+    if (isNaN(t)) return '';
+    var d = Date.now() - t;
+    if (d < 0) return '';
+    var days = Math.floor(d / 86400000);
+    if (days === 0) return '\u4eca\u5929';
+    if (days < 30) return days + '\u5929\u524d';
+    if (days < 365) return Math.floor(days / 30) + '\u4e2a\u6708\u524d';
+    return Math.floor(days / 365) + '\u5e74\u524d';
   }
-  .luliy-card-timeline .luliy-card::before,
-  .luliy-card-timeline .luliy-card:nth-child(even)::before {
-    left: -33px !important; right: auto !important;
+
+  /* ---- 04  Reading width control ---------------------------- */
+  function applyPbWidth() {
+    /* 默认最大宽度 400；用户若手动调过则用其值 */
+    var raw = localStorage.getItem('luliy-pbwidth');
+    var d = (raw === null) ? 400 : (parseInt(raw, 10) || 0);
+    d = Math.min(400, Math.max(0, d));   /* 0..400px extra width, each side */
+    document.documentElement.style.setProperty('--luliy-pb-extra', d + 'px');
   }
-}
+  root._luliyApplyPbWidth = applyPbWidth;
 
-/* focus-exit 按钮、退出提示已删除（专注模式整体移除） */
+  /* 极简风格的"文章宽度"控件 —— 一个固定在右下角的小按钮，
+     点开后是一条横向滑杆，拖动即调整 --luliy-pb-extra（0~400px，
+     每侧各加宽这么多）。只在文章页显示，因为只有文章页用到这个变量。 */
+  function initWidthControl() {
+    if (document.getElementById('luliy-width-ctrl')) return;
+    var raw = localStorage.getItem('luliy-pbwidth');
+    var cur = (raw === null) ? 400 : (parseInt(raw, 10) || 0);
+    cur = Math.min(400, Math.max(0, cur));
 
-/* ══════════════════════════════════════════════════════
-   书架 Bookshelf —— 赛博朋克风
-   ══════════════════════════════════════════════════════ */
-.luliy-bookshelf { max-width: 1080px; margin: 0 auto; padding: 8px 0 40px; }
-.luliy-book-loading, .luliy-book-error {
-  text-align: center; padding: 40px 16px;
-  color: rgba(220,210,245,0.7); font-size: 15px;
-}
-.luliy-book-error { color: #ff6ec7; }
+    var wrap = document.createElement('div');
+    wrap.id = 'luliy-width-ctrl';
+    wrap.innerHTML =
+      '<button type="button" id="luliy-width-btn" aria-label="\u6587\u7ae0\u5bbd\u5ea6" title="\u6587\u7ae0\u5bbd\u5ea6">\u2194</button>' +
+      '<div id="luliy-width-panel">' +
+        '<label for="luliy-width-range">\u6587\u7ae0\u5bbd\u5ea6</label>' +
+        '<input type="range" id="luliy-width-range" min="0" max="400" step="10" value="' + cur + '">' +
+      '</div>';
+    document.body.appendChild(wrap);
 
-.luliy-book-header { text-align: center; margin-bottom: 32px; }
-.luliy-book-title {
-  margin: 0 0 8px; font-size: 30px; font-weight: 800; letter-spacing: 3px;
-  color: #fff;
-  text-shadow: 0 0 10px rgba(255,110,199,0.5), 0 0 28px rgba(110,199,255,0.35);
-}
-.luliy-book-sub { margin: 0; font-size: 13px; color: rgba(190,180,225,0.7); letter-spacing: 1px; }
+    var btn   = wrap.querySelector('#luliy-width-btn');
+    var panel = wrap.querySelector('#luliy-width-panel');
+    var range = wrap.querySelector('#luliy-width-range');
 
-/* 书柜外框：暗色玻璃 + 霓虹描边 */
-.luliy-bookcase {
-  background: linear-gradient(180deg, hsla(var(--luliy-glass-hue,250),45%,12%,0.55), hsla(var(--luliy-glass-hue,250),50%,7%,0.65));
-  border: 1px solid rgba(255,43,214,0.30);
-  border-radius: 14px;
-  padding: 28px 18px 18px;
-  display: flex; flex-direction: column; gap: 30px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 40px rgba(110,199,255,0.06);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-}
-
-.luliy-shelf { position: relative; }
-.luliy-shelf-plaque {
-  display: inline-flex; align-items: baseline; gap: 6px;
-  background: linear-gradient(90deg, var(--th-accent, #00e5ff), #6ec7ff);
-  color: #0a0e2a; font-weight: 800; font-size: 13px;
-  padding: 4px 14px 5px; border-radius: 4px 4px 0 0; margin-left: 14px;
-  letter-spacing: 1px;
-  box-shadow: 0 0 14px rgba(0,229,255,0.4);
-}
-.luliy-shelf-count { font-size: 11px; font-weight: 600; opacity: 0.7; }
-
-.luliy-shelf-row {
-  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 7px;
-  padding: 0 16px 12px; min-height: 60px;
-}
-.luliy-shelf-empty {
-  color: rgba(180,170,210,0.5); font-size: 13px; padding: 18px 6px; font-style: italic;
-}
-.luliy-shelf-board {
-  height: 5px; margin: 0 6px; border-radius: 3px;
-  background: linear-gradient(90deg, transparent, var(--th-accent, #00e5ff), #ff2bd6, transparent);
-  opacity: 0.55;
-  box-shadow: 0 0 12px rgba(0,229,255,0.4);
-}
-
-/* 书脊 */
-.luliy-spine {
-  display: flex; align-items: center; justify-content: center;
-  text-decoration: none !important; color: #fff;
-  border-radius: 3px 3px 1px 1px;
-  box-shadow: inset -3px 0 6px rgba(0,0,0,0.35), inset 2px 0 0 rgba(255,255,255,0.14), 0 3px 8px rgba(0,0,0,0.4);
-  cursor: pointer; position: relative; padding: 10px 0;
-  transform: rotate(var(--tilt, 0deg));
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-.luliy-spine:hover, .luliy-spine:focus-visible {
-  transform: translateY(-12px) rotate(0deg);
-  box-shadow: inset -3px 0 6px rgba(0,0,0,0.35), inset 2px 0 0 rgba(255,255,255,0.14),
-    0 14px 22px rgba(0,0,0,0.5), 0 0 22px rgba(255,110,199,0.5);
-  outline: none;
-}
-.luliy-spine-title {
-  writing-mode: vertical-rl; text-orientation: mixed;
-  font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 15px;
-  letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-height: 100%; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-}
-/* 悬停提示卡 */
-.luliy-spine-tip {
-  position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, 6px);
-  min-width: 120px; max-width: 200px;
-  background: hsla(var(--luliy-glass-hue,250),50%,16%,0.96);
-  border: 1px solid rgba(255,43,214,0.35);
-  color: #fff; border-radius: 8px; padding: 8px 12px;
-  writing-mode: horizontal-tb; text-orientation: initial;
-  opacity: 0; pointer-events: none; margin-bottom: 8px; z-index: 5;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-}
-.luliy-spine:hover .luliy-spine-tip, .luliy-spine:focus-visible .luliy-spine-tip {
-  opacity: 1; transform: translate(-50%, 0);
-}
-.luliy-spine-tip strong { display: block; font-size: 13px; margin-bottom: 2px; }
-.luliy-spine-note { display: block; font-size: 11px; color: var(--th-accent, #6ec7ff); }
-
-/* 在读书堆 */
-.luliy-reading-zone {
-  margin-left: auto; display: flex; flex-direction: column; align-items: center;
-  gap: 6px; padding-bottom: 4px;
-}
-.luliy-reading-label {
-  font-size: 10px; letter-spacing: 2px; color: var(--th-accent, #00e5ff); font-weight: 700;
-}
-.luliy-reading-stack { position: relative; width: 88px; height: 50px; }
-.luliy-flat-book {
-  position: absolute; left: 0; width: 88px; height: 16px; border-radius: 2px;
-  text-decoration: none !important; display: flex; align-items: center; padding-left: 8px;
-  font-family: 'Noto Serif SC', serif; font-size: 9px; color: #fff;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.12);
-  transition: transform 0.15s ease;
-}
-.luliy-flat-book:hover { transform: translateX(3px); }
-.luliy-flat-book.is-top { transform: rotate(-5deg); }
-
-@media (max-width: 560px) {
-  .luliy-bookcase { padding: 22px 10px 12px; gap: 24px; }
-  .luliy-book-title { font-size: 24px; }
-  .luliy-shelf-row { padding: 0 8px 10px; gap: 5px; }
-  .luliy-spine-title { font-size: 13px; }
-  .luliy-reading-zone { margin-left: 0; margin-top: 10px; }
-}
-
-
-
-/* ── 28.4 Card skeleton ───────────────────────────────────── */
-.luliy-card-skeleton {
-  border-radius: 16px; padding: 16px 18px; min-height: 110px;
-  background: rgba(255,255,255,0.45);
-  border: 1px solid rgba(255,255,255,0.4);
-  list-style: none; overflow: hidden;
-}
-[data-color-mode="dark"] .luliy-card-skeleton { background: rgba(18,14,34,0.5); border-color: rgba(255,255,255,0.08); }
-.luliy-card-skeleton .sk-line {
-  height: 12px; border-radius: 6px; margin-bottom: 10px;
-  background: linear-gradient(90deg,
-    var(--th-accent-soft, rgba(130,80,223,0.10)) 25%,
-    var(--th-accent-hover, rgba(130,80,223,0.20)) 37%,
-    var(--th-accent-soft, rgba(130,80,223,0.10)) 63%);
-  background-size: 400% 100%;
-  animation: luliySkeleton 1.4s ease infinite;
-}
-.luliy-card-skeleton .sk-date { width: 40%; height: 9px; }
-.luliy-card-skeleton .sk-title { width: 85%; height: 14px; }
-.luliy-card-skeleton .sk-title2 { width: 60%; height: 14px; }
-.luliy-card-skeleton .sk-tags { display: flex; gap: 6px; margin-top: 14px; }
-.luliy-card-skeleton .sk-tags span {
-  width: 44px; height: 16px; border-radius: 20px;
-  background: var(--th-accent-soft, rgba(130,80,223,0.12));
-}
-@keyframes luliySkeleton { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-
-/* ── 28.5 Series navigation ───────────────────────────────── */
-.luliy-series {
-  margin: 0 0 26px; padding: 16px 18px;
-  border-radius: 14px;
-  background: var(--th-accent-soft, rgba(130,80,223,0.07));
-  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.20));
-}
-.luliy-series-head { font-size: 14px; color: var(--th-h2, #8250df); margin-bottom: 10px; }
-.luliy-series-head b { color: var(--th-accent, #8250df); }
-.luliy-series-prog {
-  float: right; font-size: 12px; font-family: 'LXGW WenKai Mono', monospace;
-  background: var(--th-accent, #8250df); color: #fff !important;
-  padding: 3px 10px; border-radius: 20px;
-  font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-}
-.luliy-series-prog b { font-size: 14px; }
-.luliy-series-prog-sep { opacity: 0.7; margin: 0 2px; }
-/* Per-theme high-contrast badge colours */
-body[data-luliy-theme="sunset"] .luliy-series-prog   { background: #d9930d; }
-body[data-luliy-theme="mono"] .luliy-series-prog     { background: #444; }
-body[data-luliy-theme="your-name"] .luliy-series-prog{ background: #1e6fd4; }
-body[data-luliy-theme="sakura"] .luliy-series-prog   { background: #c94070; }
-body[data-luliy-theme="space"] .luliy-series-prog    { background: #0070b8; }
-body[data-luliy-theme="cyberpunk"] .luliy-series-prog    { background: #0070b8; }
-.luliy-series-dots { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-.luliy-series-dot {
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--th-accent-soft, rgba(130,80,223,0.25));
-  transition: transform 0.2s; cursor: pointer;
-}
-.luliy-series-dot:hover { transform: scale(1.5); }
-.luliy-series-dot.is-current { background: var(--th-accent, #8250df); transform: scale(1.35); }
-/* Collapsed: hide the title list, show only dots */
-.luliy-series.is-collapsed .luliy-series-dots { margin-bottom: 0; }
-.luliy-series-list.is-collapsed {
-  max-height: 0 !important; overflow: hidden !important;
-  opacity: 0; margin: 0; padding: 0;
-  transition: max-height 0.3s ease, opacity 0.25s ease;
-}
-.luliy-series-list {
-  list-style: none; padding: 0; margin: 8px 0 0;
-  /* Show 5 items (~5 × 28px), scroll beyond */
-  max-height: none;   /* JS controls max-height during animation */
-  overflow: hidden; opacity: 1;
-  transition: max-height 0.35s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
-  scrollbar-width: thin;
-  scrollbar-color: var(--th-accent-soft, rgba(130,80,223,0.20)) transparent;
-}
-.luliy-series-list::-webkit-scrollbar { width: 3px; }
-.luliy-series-list::-webkit-scrollbar-thumb {
-  background: var(--th-accent-soft, rgba(130,80,223,0.28)); border-radius: 2px;
-}
-.luliy-series-list li {
-  display: flex; align-items: baseline; gap: 8px; padding: 4px 0; font-size: 13px;
-}
-.luliy-series-list .ls-num {
-  width: 20px; height: 20px; flex-shrink: 0; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 11px; background: var(--th-accent-soft, rgba(130,80,223,0.16));
-  color: var(--th-accent, #8250df); font-family: 'LXGW WenKai Mono', monospace;
-}
-.luliy-series-list li.is-current .ls-num { background: var(--th-accent, #8250df); color: #fff; }
-.luliy-series-list a { text-decoration: none; color: var(--color-fg-default, #333); }
-[data-color-mode="dark"] .luliy-series-list a { color: #cdd6f4; }
-.luliy-series-list a:hover { color: var(--th-accent, #8250df); }
-.luliy-series-list .ls-cur { font-weight: 700; color: var(--th-accent, #8250df); }
-
-/* ── 28.6 Resume reading toast ────────────────────────────── */
-.luliy-resume {
-  position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 80px);
-  background: var(--th-accent, #8250df); color: #fff;
-  padding: 11px 22px; border-radius: 30px; font-size: 13px; cursor: pointer;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.28); z-index: 9990;
-  opacity: 0; transition: transform 0.4s cubic-bezier(.2,.7,.3,1), opacity 0.4s;
-}
-.luliy-resume.is-in { transform: translate(-50%, 0); opacity: 1; }
-.luliy-resume b { font-weight: 700; }
-
-/* ── 28.7 In-page search ──────────────────────────────────── */
-#luliy-search-fab {
-  position: fixed; bottom: 164px; right: 22px;
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--th-accent-soft, rgba(130,80,223,0.22));
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.35));
-  color: var(--th-accent, #8250df); font-size: 17px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.28s, transform 0.28s; z-index: 9994;
-}
-#luliy-search-fab.is-visible { opacity: 1; pointer-events: all; }
-#luliy-search-fab:hover { transform: translateY(-3px); }
-
-/* ── TOC FAB — same glass style as back-top / search ─────── */
-#luliy-toc-fab {
-  position: fixed; bottom: 216px; right: 22px;
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--th-accent-soft, rgba(130,80,223,0.22));
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.35));
-  color: var(--th-accent, #8250df); font-size: 19px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; z-index: 9994;
-  transition: opacity 0.28s, transform 0.28s, background 0.25s, color 0.25s;
-}
-#luliy-toc-fab.is-visible { opacity: 1; pointer-events: all; }
-#luliy-toc-fab.is-active {
-  background: var(--th-accent, #8250df) !important;
-  color: #fff !important;
-  border-color: var(--th-accent, #8250df) !important;
-}
-#luliy-toc-fab:hover { transform: translateY(-3px); background: var(--th-accent-hover, rgba(130,80,223,0.35)); }
-[data-color-mode="dark"] #luliy-toc-fab { color: var(--th-accent, #cba6f7); }
-
-#luliy-search-bar {
-  position: fixed; top: 70px; left: 50%; transform: translate(-50%, -130%);
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 10px; border-radius: 14px;
-  background: rgba(255,255,255,0.96);
-  backdrop-filter: blur(22px) saturate(1.8);
-  -webkit-backdrop-filter: blur(22px) saturate(1.8);
-  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.25));
-  box-shadow: 0 14px 40px rgba(0,0,0,0.22);
-  z-index: 99990; opacity: 0; transition: transform 0.3s cubic-bezier(.2,.7,.3,1), opacity 0.3s;
-  width: min(92vw, 420px);
-  pointer-events: none;   /* closed = click-through */
-}
-[data-color-mode="dark"] #luliy-search-bar { background: rgba(16,12,30,0.97); }
-#luliy-search-bar.is-open { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
-.luliy-search-icon { font-size: 15px; opacity: 0.7; flex-shrink: 0; }
-#luliy-search-input {
-  flex: 1; border: none; background: transparent; outline: none;
-  font-size: 14px; color: var(--color-fg-default, #1e1032); min-width: 0;
-  font-family: 'Noto Sans SC', sans-serif;
-}
-[data-color-mode="dark"] #luliy-search-input { color: #e8e8f8; }
-#luliy-search-count {
-  font-size: 12px; color: #888; font-family: 'LXGW WenKai Mono', monospace;
-  flex-shrink: 0; min-width: 38px; text-align: center;
-}
-#luliy-search-bar button {
-  border: none; background: var(--th-accent-soft, rgba(130,80,223,0.10));
-  color: var(--th-accent, #8250df); width: 28px; height: 28px; border-radius: 8px;
-  cursor: pointer; flex-shrink: 0; font-size: 13px;
-  display: flex; align-items: center; justify-content: center; transition: background 0.15s;
-}
-#luliy-search-bar button:hover { background: var(--th-accent-hover, rgba(130,80,223,0.20)); }
-[data-color-mode="dark"] #luliy-search-bar button { color: var(--th-accent, #cba6f7); }
-mark.luliy-search-hit {
-  background: rgba(255,220,90,0.55); color: inherit; border-radius: 3px; padding: 0 1px;
-}
-mark.luliy-search-hit.is-current {
-  background: var(--th-accent, #8250df); color: #fff;
-  box-shadow: 0 0 0 2px var(--th-accent-soft, rgba(130,80,223,0.4));
-}
-
-/* ── 28.8 Tag cloud page ──────────────────────────────────── */
-#luliy-tagcloud { margin: 0 0 30px; }
-.luliy-tagcloud-title {
-  font-size: 24px; font-weight: 800; margin: 10px 0 20px;
-  color: var(--th-h1, #8250df);
-  font-family: 'Noto Sans SC', sans-serif;
-}
-.luliy-tagcloud-body {
-  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
-  padding: 22px; border-radius: 18px;
-  background: rgba(255,255,255,0.40);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.30);
-}
-[data-color-mode="dark"] .luliy-tagcloud-body {
-  background: hsla(var(--luliy-glass-hue), 45%, 14%, calc(var(--luliy-glass-opacity) * 0.9));
-  -webkit-backdrop-filter: blur(var(--luliy-glass-blur));
-  backdrop-filter: blur(var(--luliy-glass-blur));
-  border-color: rgba(255,255,255,0.08);
-}
-.luliy-tag-bubble {
-  --tag-c: #8250df;
-  display: inline-flex; align-items: baseline; gap: 2px;
-  padding: 5px 14px; border-radius: 24px;
-  text-decoration: none; line-height: 1.2; font-weight: 600;
-  color: var(--tag-c);
-  background: color-mix(in srgb, var(--tag-c) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--tag-c) 30%, transparent);
-  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
-}
-.luliy-tag-bubble:hover {
-  transform: translateY(-3px) scale(1.06);
-  background: color-mix(in srgb, var(--tag-c) 22%, transparent);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--tag-c) 30%, transparent);
-}
-.luliy-tag-bubble sup { font-size: 0.6em; opacity: 0.7; font-weight: 700; }
-/* Fallback for browsers without color-mix */
-@supports not (color: color-mix(in srgb, red 50%, blue)) {
-  .luliy-tag-bubble { background: rgba(130,80,223,0.12); border-color: rgba(130,80,223,0.3); }
-}
-
-/* ── 28.9 Archive: tabs + calendar ────────────────────────── */
-.luliy-archive-head {
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 12px;
-  border-bottom: 2px solid var(--th-accent-soft, rgba(240,180,41,0.4));
-  padding-bottom: 12px; margin-bottom: 26px;
-}
-.luliy-archive-head h1 { margin: 0; font-size: 22px; }
-.luliy-archive-tabs { display: inline-flex; gap: 4px; border-radius: 10px;
-  background: var(--th-accent-soft, rgba(130,80,223,0.08)); padding: 3px; }
-.luliy-archive-tabs button {
-  border: none; background: transparent; cursor: pointer;
-  padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-  color: var(--th-accent, #8250df); transition: background 0.18s, color 0.18s;
-  font-family: 'Noto Sans SC', sans-serif;
-}
-.luliy-archive-tabs button.is-active { background: var(--th-accent, #8250df); color: #fff; }
-[data-color-mode="dark"] .luliy-archive-tabs button { color: var(--th-accent, #cba6f7); }
-[data-color-mode="dark"] .luliy-archive-tabs button.is-active { color: #fff; }
-.tl-count { font-size: 12px; font-weight: 500; opacity: 0.6; margin-left: 8px; }
-.tl-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  background: var(--th-accent, #8250df); margin-right: 4px;
-}
-/* Calendar */
-.cal-month { margin-bottom: 28px; }
-.cal-mhead {
-  font-size: 16px; font-weight: 700; margin-bottom: 10px;
-  color: var(--th-h2, #8250df); font-family: 'Noto Sans SC', sans-serif;
-}
-.cal-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
-}
-.cal-dow {
-  text-align: center; font-size: 11px; color: #999; padding: 4px 0; font-weight: 600;
-}
-.cal-cell {
-  aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
-  position: relative; border-radius: 8px; font-size: 12px;
-  color: var(--color-fg-default, #555);
-  background: rgba(255,255,255,0.20);
-  border: 1px solid rgba(255,255,255,0.15);
-  text-decoration: none;
-}
-[data-color-mode="dark"] .cal-cell { color: #aaa; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
-.cal-cell.cal-empty { background: transparent; border: none; }
-.cal-cell.cal-has {
-  background: var(--th-accent-soft, rgba(130,80,223,0.16));
-  border-color: var(--th-accent, #8250df);
-  color: var(--th-accent, #8250df); font-weight: 700;
-  transition: transform 0.18s, box-shadow 0.18s;
-}
-.cal-cell.cal-has:hover {
-  transform: scale(1.12); z-index: 2;
-  box-shadow: 0 4px 14px var(--th-accent-soft, rgba(130,80,223,0.4));
-}
-.cal-badge {
-  position: absolute; top: -4px; right: -4px;
-  min-width: 14px; height: 14px; padding: 0 3px; border-radius: 8px;
-  background: var(--th-accent, #8250df); color: #fff;
-  font-size: 9px; line-height: 14px; text-align: center; font-weight: 700;
-}
-
-
-/* ── 28.11 Mouse trail ────────────────────────────────────── */
-.luliy-trail-dot {
-  position: fixed; pointer-events: none; z-index: 99997;
-  font-size: 14px; transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
-  animation: luliyTrail 1.1s ease-out forwards; will-change: transform, opacity;
-}
-@keyframes luliyTrail {
-  0% { opacity: 0.9; }
-  100% { opacity: 0; transform: translate(-50%, 20px) rotate(var(--rot, 0deg)) scale(0.4); }
-}
-
-/* 专注模式整段样式已删除（好处已并入文章默认样式，见上方 04/21 区块） */
-
-
-/* ── 28.13 Reduce motion ──────────────────────────────────── */
-body.luliy-reduce-motion #luliy-sakura-canvas,
-body.luliy-reduce-motion #luliy-firefly-canvas { display: none !important; }
-body.luliy-reduce-motion * {
-  animation-duration: 0.001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.001ms !important;
-  scroll-behavior: auto !important;
-}
-@media (prefers-reduced-motion: reduce) {
-  #luliy-sakura-canvas, .luliy-trail-dot { display: none !important; }
-}
-
-/* ── 28.15 View Transitions cross-page fade ───────────────── */
-@media (prefers-reduced-motion: no-preference) {
-  /* Default: simple fade */
-  ::view-transition-old(root) { animation: luliyVtOut 0.22s ease both; }
-  ::view-transition-new(root) { animation: luliyVtIn  0.28s ease both; }
-
-  /* home → article: slide up */
-  html[data-vt-dir="post"] ::view-transition-old(root) {
-    animation: luliyVtSlideOut 0.30s ease both;
+    btn.addEventListener('click', function () {
+      wrap.classList.toggle('is-open');
+    });
+    range.addEventListener('input', function () {
+      var v = parseInt(range.value, 10) || 0;
+      document.documentElement.style.setProperty('--luliy-pb-extra', v + 'px');
+      try { localStorage.setItem('luliy-pbwidth', String(v)); } catch (e) {}
+    });
+    document.addEventListener('click', function (e) {
+      if (!wrap.contains(e.target)) wrap.classList.remove('is-open');
+    });
   }
-  html[data-vt-dir="post"] ::view-transition-new(root) {
-    animation: luliyVtSlideIn 0.35s cubic-bezier(.2,.7,.3,1) both;
+
+  /* ---- 05  buildPostLink + Archives + Chronicle + Book ------
+     以下完整保留原版逻辑（黑白灰排版，未改动任何视觉效果），
+     三个页面都通过 GitHub API / postList.json 读取数据，与极简
+     首页/文章页共用同一套工具函数（esc / fetchPosts / relativeTime）。 */
+  function buildPostLink(rawLink) {
+    var lnk = rawLink || '#';
+    if (lnk !== '#') {
+      lnk = lnk.replace(/^\//, '');
+      lnk = lnk.replace(/^post\/post\//, 'post/');
+      if (!/^post\//.test(lnk) && !/^https?:\/\//.test(lnk)) lnk = 'post/' + lnk;
+      lnk = '/' + lnk;
+    }
+    return lnk;
   }
-  /* article → home: slide down */
-  html[data-vt-dir="home"] ::view-transition-old(root) {
-    animation: luliyVtDown 0.28s ease both;
+
+  /* ============================================================
+     归档页 Archives —— 双标签页（Weekly / Other）+ 按年分组 + 分页
+     ★ 替换原来的「时间线视图」归档页。复用现成的 fetchPosts() /
+     esc() / buildPostLink()，赛博朋克风格沿用全站 CSS 变量。
+     ============================================================ */
+  var ARCHIVE_WEEKLY_LABELS = ['Weekly', 'weekly', '\u5468\u8bb0', '\u5468\u62a5', '\u4e8c\u5341\u56db\u8282\u6c14'];
+  var ARCHIVE_SYSTEM_LABELS = ['archives', 'archive', 'chronicle', 'chronicle-data',
+    'about', 'page', 'Pages', '\u9875\u9762', 'book', 'favorites', 'stock', 'link', 'gallery'];
+
+  function archiveIsWeekly(post) {
+    var names = (post.labels || []).map(function (l) { return l.name; });
+    for (var i = 0; i < names.length; i++) {
+      if (ARCHIVE_WEEKLY_LABELS.indexOf(names[i]) !== -1) return true;
+    }
+    return false;
   }
-  html[data-vt-dir="home"] ::view-transition-new(root) {
-    animation: luliyVtFadeIn 0.32s ease both;
+  function archiveIsSystem(post) {
+    var names = (post.labels || []).map(function (l) { return l.name; });
+    for (var i = 0; i < names.length; i++) {
+      if (ARCHIVE_SYSTEM_LABELS.indexOf(names[i]) !== -1) return true;
+    }
+    return false;
   }
-  /* article → next: slide left */
-  html[data-vt-dir="next"] ::view-transition-old(root) {
-    animation: luliyVtLeft 0.28s ease both;
+  function archiveGroupByYear(posts) {
+    var groups = {};
+    posts.forEach(function (p) {
+      var y = (p.created || '').slice(0, 4) || '\u672a\u77e5';   /* 未知 */
+      if (!groups[y]) groups[y] = [];
+      groups[y].push(p);
+    });
+    return groups;
   }
-  html[data-vt-dir="next"] ::view-transition-new(root) {
-    animation: luliyVtFromRight 0.32s cubic-bezier(.2,.7,.3,1) both;
+
+  function initArchivesPage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    /* ★ 幂等防护：已经初始化过就直接返回，避免重复渲染/重复绑事件 */
+    if (document.getElementById('luliy-archives')) return;
+    /* 标记 body：隐藏 Gmeek 原生翻页器等 */
+    document.body.classList.add('luliy-archives-takeover', 'luliy-hide-pagination');
+
+    pb.innerHTML = '<div id="luliy-archives" class="luliy-archives">' +
+      '<div class="luliy-arch-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-archives');
+
+    var PER_PAGE = 10;
+    var TAB_KEY = 'luliy-archive-tab';
+    var state = {
+      tab: (localStorage.getItem(TAB_KEY) === 'other') ? 'other' : 'weekly',
+      pageWeekly: 1,
+      pageOther: 1,
+      weekly: [],
+      other: []
+    };
+
+    fetchPosts().then(function (posts) {
+      if (!posts || !posts.length) {
+        root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+          '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+        return;
+      }
+      /* 按日期降序 */
+      posts.sort(function (a, b) {
+        return String(b.created).localeCompare(String(a.created));
+      });
+      posts.forEach(function (p) {
+        if (archiveIsWeekly(p)) state.weekly.push(p);
+        else if (!archiveIsSystem(p)) state.other.push(p);
+      });
+      renderArchivesShell();
+    }).catch(function () {
+      root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+    });
+
+    function renderArchivesShell() {
+      root2.innerHTML =
+        '<div class="luliy-arch-header">' +
+          '<h1 class="luliy-arch-title">Archives</h1>' +
+          '<div class="luliy-arch-tabbar">' +
+            '<button type="button" class="luliy-arch-tab" data-tab="weekly">Weekly</button>' +
+            '<span class="luliy-arch-tabsep"></span>' +
+            '<button type="button" class="luliy-arch-tab" data-tab="other">Other</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="luliy-arch-body"></div>';
+
+      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var t = btn.getAttribute('data-tab');
+          if (t === state.tab) return;
+          state.tab = t;
+          localStorage.setItem(TAB_KEY, t);
+          renderArchiveBody();
+        });
+      });
+      renderArchiveBody();
+    }
+
+    function renderArchiveBody() {
+      /* 高亮当前标签 */
+      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-tab') === state.tab);
+      });
+      var body = root2.querySelector('.luliy-arch-body');
+      var list = (state.tab === 'weekly') ? state.weekly : state.other;
+      var page = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
+      var totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+      if (page > totalPages) { page = totalPages; }
+
+      if (!list.length) {
+        body.innerHTML = '<div class="luliy-arch-empty">\u6682\u65e0\u6587\u7ae0</div>';   /* 暂无文章 */
+        return;
+      }
+
+      var start = (page - 1) * PER_PAGE;
+      var pageItems = list.slice(start, start + PER_PAGE);
+      var groups = archiveGroupByYear(pageItems);
+      var years = Object.keys(groups).sort(function (a, b) { return b.localeCompare(a); });
+
+      var html = '<div class="luliy-arch-list">';
+      years.forEach(function (y) {
+        html += '<div class="luliy-arch-year">' + esc(y) + '</div>';
+        groups[y].forEach(function (p) {
+          var href = buildPostLink(p.link);
+          var date = (p.created || '').slice(0, 10);
+          html += '<a class="luliy-arch-row" href="' + esc(href) + '">' +
+            '<span class="luliy-arch-date">' + esc(date) + '</span>' +
+            '<span class="luliy-arch-name">' + esc(p.title) + '</span>' +
+          '</a>';
+        });
+      });
+      html += '</div>';
+
+      /* 分页（超过一页才显示） */
+      if (totalPages > 1) {
+        html += '<div class="luliy-arch-pagination">' +
+          '<button type="button" class="luliy-arch-pgbtn" data-dir="prev"' +
+            (page <= 1 ? ' disabled' : '') + '>&lt;</button>' +
+          '<span class="luliy-arch-pginfo">Page ' + page + ' of ' + totalPages + '</span>' +
+          '<button type="button" class="luliy-arch-pgbtn" data-dir="next"' +
+            (page >= totalPages ? ' disabled' : '') + '>&gt;</button>' +
+        '</div>';
+      }
+      body.innerHTML = html;
+
+      body.querySelectorAll('.luliy-arch-pgbtn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (btn.disabled) return;
+          var dir = btn.getAttribute('data-dir');
+          var cur = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
+          cur += (dir === 'next' ? 1 : -1);
+          cur = Math.max(1, Math.min(totalPages, cur));
+          if (state.tab === 'weekly') state.pageWeekly = cur; else state.pageOther = cur;
+          renderArchiveBody();
+          /* 翻页后滚回列表顶部，体验更顺 */
+          try { root2.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        });
+      });
+    }
   }
-  /* article → prev: slide right */
-  html[data-vt-dir="prev"] ::view-transition-old(root) {
-    animation: luliyVtRight 0.28s ease both;
+
+  /* ============================================================
+     编年史 Chronicle —— 年份 + 分类（出游/书影游/海报墙）
+     ★ 优先读 GitHub API（chronicle-data 标签的 issue），失败则
+     回退到页面内置的 JSON。赛博朋克风格沿用全站 CSS 变量。
+     ============================================================ */
+  var CHRONICLE_REPO = (window.LULIY_CHRONICLE_REPO || 'luliyer6-ux/luliyer6-ux.github.io');
+
+  function chronicleExtractJson(body) {
+    if (!body) return null;
+    var m = body.match(/<!--\s*chronicle:data:start\s*-->([\s\S]*?)<!--\s*chronicle:data:end\s*-->/);
+    if (!m) return null;
+    try { return JSON.parse(m[1].trim()); } catch (e) { return null; }
   }
-  html[data-vt-dir="prev"] ::view-transition-new(root) {
-    animation: luliyVtFromLeft 0.32s cubic-bezier(.2,.7,.3,1) both;
+
+  function chronicleFetchIssueData() {
+    var url = 'https://api.github.com/repos/' + CHRONICLE_REPO +
+      '/issues?state=open&labels=chronicle-data&per_page=1';
+    return fetch(url, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (arr) {
+        if (!arr || !arr.length) return null;
+        return chronicleExtractJson(arr[0].body);
+      })
+      .catch(function () { return null; });
   }
-}
-@keyframes luliyVtOut     { to { opacity: 0; } }
-@keyframes luliyVtIn      { from { opacity: 0; } }
-@keyframes luliyVtFadeIn  { from { opacity: 0; } }
-@keyframes luliyVtSlideOut { to { opacity: 0; transform: translateY(-18px) scale(0.97); } }
-@keyframes luliyVtSlideIn  { from { opacity: 0; transform: translateY(22px); } }
-@keyframes luliyVtDown     { to { opacity: 0; transform: translateY(14px); } }
-@keyframes luliyVtLeft     { to { opacity: 0; transform: translateX(-24px); } }
-@keyframes luliyVtFromRight{ from { opacity: 0; transform: translateX(28px); } }
-@keyframes luliyVtRight    { to { opacity: 0; transform: translateX(24px); } }
-@keyframes luliyVtFromLeft { from { opacity: 0; transform: translateX(-28px); } }
 
-/* ── 28.16 Favorites progressive reveal ───────────────────── */
-#postBody.luliy-unlocking { filter: none; transition: filter 0.6s ease; }
-
-
-/* ── 28.17 Safe-area (notch / home-indicator) insets ──────── */
-@supports (padding: env(safe-area-inset-bottom)) {
-  #luliy-toolbar {
-    bottom: calc(22px + env(safe-area-inset-bottom)) !important;
-    right: calc(22px + env(safe-area-inset-right)) !important;
+  function chronicleGetFallback() {
+    var el = document.getElementById('luliy-chronicle-fallback');
+    if (!el) return null;
+    try { return JSON.parse(el.textContent.trim()); } catch (e) { return null; }
   }
-  #luliy-back-top { bottom: calc(112px + env(safe-area-inset-bottom)); }
-  #luliy-search-fab { bottom: calc(164px + env(safe-area-inset-bottom)); }
-  #luliy-music, #luliy-progress-bar { /* progress bar at top unaffected */ }
-  .luliy-resume { bottom: calc(28px + env(safe-area-inset-bottom)); }
-  #header {
-    padding-left: max(clamp(12px, calc((100vw - 1040px)/2 + 20px), 50%), env(safe-area-inset-left)) !important;
-    padding-right: max(clamp(12px, calc((100vw - 1040px)/2 + 20px), 50%), env(safe-area-inset-right)) !important;
+
+  function initChroniclePage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    /* ★ 幂等防护：已经初始化过就直接返回 */
+    if (document.getElementById('luliy-chronicle')) return;
+    document.body.classList.add('luliy-chronicle-takeover', 'luliy-hide-pagination');
+
+    /* ★ 移除「预计阅读」和「文末字数」元素（Chronicle 不是普通文章，
+       不需要显示这些信息；CSS 也有隐藏，这里双重保险）。 */
+    ['luliy-readmeta', 'luliy-post-footer-bar'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    });
+
+    /* 把可能存在的内置 fallback JSON 先抢救出来（pb.innerHTML 会被覆盖） */
+    var fallbackJson = chronicleGetFallback();
+
+    pb.innerHTML = '<div id="luliy-chronicle" class="luliy-chronicle">' +
+      '<div class="luliy-chron-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-chronicle');
+
+    var YEAR_KEY = 'luliy-chronicle-year';
+    var CAT_KEY = 'luliy-chronicle-category';
+
+    chronicleFetchIssueData().then(function (apiData) {
+      var data = apiData || fallbackJson;
+      if (!data || !data.years || !data.years.length) {
+        root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
+        return;
+      }
+      renderChronicle(data);
+    }).catch(function () {
+      /* 兜底：万一渲染过程本身抛错（比如数据结构异常），也优雅降级 */
+      var data = fallbackJson;
+      if (data && data.years && data.years.length) {
+        try { renderChronicle(data); return; } catch (e) {}
+      }
+      root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
+    });
+
+    function renderChronicle(data) {
+      var years = data.years;
+      var cats = data.categories || [];
+
+      var savedYear = localStorage.getItem(YEAR_KEY);
+      var savedCat = localStorage.getItem(CAT_KEY);
+      var curYear = (years.indexOf(savedYear) !== -1) ? savedYear : years[0];
+      var catKeys = cats.map(function (c) { return c.key; });
+      var curCat = (catKeys.indexOf(savedCat) !== -1) ? savedCat : (cats[0] && cats[0].key);
+
+      root2.innerHTML =
+        '<div class="luliy-chron-header">' +
+          '<h1 class="luliy-chron-title">Chronicle</h1>' +
+          '<div class="luliy-chron-years"></div>' +
+        '</div>' +
+        '<div class="luliy-chron-cats"></div>' +
+        '<div class="luliy-chron-body"></div>';
+
+      var yearsBox = root2.querySelector('.luliy-chron-years');
+      years.forEach(function (y) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'luliy-chron-year-tab';
+        b.textContent = y;
+        b.setAttribute('data-year', y);
+        b.addEventListener('click', function () {
+          if (y === curYear) return;
+          curYear = y;
+          localStorage.setItem(YEAR_KEY, y);
+          syncTabs(); renderBody();
+        });
+        yearsBox.appendChild(b);
+      });
+
+      var catsBox = root2.querySelector('.luliy-chron-cats');
+      cats.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'luliy-chron-cat-tab';
+        b.textContent = c.label;
+        b.setAttribute('data-cat', c.key);
+        b.addEventListener('click', function () {
+          if (c.key === curCat) return;
+          curCat = c.key;
+          localStorage.setItem(CAT_KEY, c.key);
+          syncTabs(); renderBody();
+        });
+        catsBox.appendChild(b);
+      });
+
+      function syncTabs() {
+        root2.querySelectorAll('.luliy-chron-year-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-year') === curYear);
+        });
+        root2.querySelectorAll('.luliy-chron-cat-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-cat') === curCat);
+        });
+      }
+
+      function renderBody() {
+        var body = root2.querySelector('.luliy-chron-body');
+        var yearData = (data.data && data.data[curYear]) || {};
+        var list = yearData[curCat] || [];
+        if (curCat === 'travel') body.innerHTML = renderTravel(list);
+        else if (curCat === 'media') body.innerHTML = renderMedia(list);
+        else if (curCat === 'posters') body.innerHTML = renderPosters(list);
+        else body.innerHTML = '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      }
+
+      syncTabs();
+      renderBody();
+    }
+
+    /* —— 出游：月份 | 城市 | 活动 三列 ——
+       ★ 同月份的多条记录合并月份格（rowspan），实现"Jan. 跨多行"效果。 */
+    function renderTravel(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
+        '<th>\u6708\u4efd</th><th>\u57ce\u5e02</th><th>\u6d3b\u52a8</th></tr></thead><tbody>';
+
+      function makeActs(row) {
+        return (row.items || []).map(function (it) {
+          if (it && it.url) {
+            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
+          }
+          return esc((it && it.title) || String(it || ''));
+        }).join('\u3001');
+      }
+
+      var i = 0;
+      while (i < list.length) {
+        var month = list[i].month || '';
+        /* 统计连续相同月份的条数，用于 rowspan */
+        var span = 1;
+        while (i + span < list.length && (list[i + span].month || '') === month) span++;
+
+        /* 第一行：带 rowspan 的月份格 */
+        h += '<tr>' +
+          '<td rowspan="' + span + '" class="luliy-chron-month-cell">' + esc(month) + '</td>' +
+          '<td data-label="\u57ce\u5e02">' + esc(list[i].city || '') + '</td>' +
+          '<td data-label="\u6d3b\u52a8">' + makeActs(list[i]) + '</td>' +
+        '</tr>';
+
+        /* 同月的后续行：不再重复月份格 */
+        for (var j = 1; j < span; j++) {
+          h += '<tr>' +
+            '<td data-label="\u57ce\u5e02">' + esc(list[i + j].city || '') + '</td>' +
+            '<td data-label="\u6d3b\u52a8">' + makeActs(list[i + j]) + '</td>' +
+          '</tr>';
+        }
+        i += span;
+      }
+      h += '</tbody></table></div></div>';
+      return h;
+    }
+
+    /* —— 书影游：月份 | 读书 | 观影 | 演出 | 游戏 五列 —— */
+    function renderMedia(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      function cell(arr) {
+        if (!arr || !arr.length) return '';
+        return arr.map(function (it) {
+          if (it && typeof it === 'object' && it.url) {
+            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
+          }
+          return esc(typeof it === 'object' ? (it.title || '') : String(it));
+        }).join(' / ');
+      }
+      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
+        '<th>\u6708\u4efd</th><th>\u8bfb\u4e66/\u6f2b\u753b</th><th>\u89c2\u5f71/\u5267\u96c6/\u756a\u5267</th>' +
+        '<th>\u6f14\u51fa/\u653e\u6620</th><th>\u6e38\u620f/\u5b9e\u51b5</th></tr></thead><tbody>';
+      list.forEach(function (row) {
+        h += '<tr><td class="luliy-chron-month-cell">' + esc(row.month || '') + '</td>' +
+          '<td data-label="\u8bfb\u4e66">' + cell(row.books) + '</td>' +
+          '<td data-label="\u89c2\u5f71">' + cell(row.watch) + '</td>' +
+          '<td data-label="\u6f14\u51fa">' + cell(row.shows) + '</td>' +
+          '<td data-label="\u6e38\u620f">' + cell(row.games) + '</td></tr>';
+      });
+      h += '</tbody></table></div></div>';
+      return h;
+    }
+
+    /* —— 海报墙：响应式网格 7/5/3 列 —— */
+    function renderPosters(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      var h = '<div class="luliy-chron-posters">';
+      list.forEach(function (p, i) {
+        /* ★ 点击海报触发灯箱，data-index 记录位置；有 url 的单独在灯箱里提供跳转按钮 */
+        h += '<button type="button" class="luliy-poster-item" data-index="' + i + '"' +
+          (p.url ? ' data-url="' + esc(buildPostLink(p.url)) + '"' : '') + '>' +
+          '<div class="luliy-poster-img" style="background-image:url(\'' + esc(p.image || '') + '\')"></div>' +
+          '<div class="luliy-poster-title">' + esc(p.title || '') + '</div>' +
+          '</button>';
+      });
+      h += '</div>';
+
+      /* 灯箱初始化（在 DOM 插入后由 body.click 事件委托触发） */
+      setTimeout(function () {
+        var body = document.querySelector('.luliy-chron-body');
+        if (!body || body._lightboxBound) return;
+        body._lightboxBound = true;
+
+        function openLightbox(idx) {
+          var lb = document.getElementById('luliy-lb');
+          if (!lb) {
+            lb = document.createElement('div'); lb.id = 'luliy-lb';
+            lb.innerHTML =
+              '<div class="luliy-lb-bg"></div>' +
+              '<button class="luliy-lb-prev" aria-label="\u4e0a\u4e00\u5f20">&#8249;</button>' +
+              '<button class="luliy-lb-next" aria-label="\u4e0b\u4e00\u5f20">&#8250;</button>' +
+              '<div class="luliy-lb-img-wrap"><img class="luliy-lb-img" alt=""><div class="luliy-lb-cap"></div>' +
+              '<a class="luliy-lb-link" target="_blank" rel="noopener">\u67e5\u770b\u6587\u7ae0 \u2192</a></div>' +
+              '<button class="luliy-lb-close" aria-label="\u5173\u95ed">&#10005;</button>';
+            document.body.appendChild(lb);
+
+            /* 背景/关闭按钮关闭 */
+            lb.querySelector('.luliy-lb-bg').addEventListener('click', closeLightbox);
+            lb.querySelector('.luliy-lb-close').addEventListener('click', closeLightbox);
+            lb.querySelector('.luliy-lb-prev').addEventListener('click', function () { navLightbox(-1); });
+            lb.querySelector('.luliy-lb-next').addEventListener('click', function () { navLightbox(1); });
+
+            /* 键盘 */
+            document.addEventListener('keydown', function (e) {
+              if (!lb.classList.contains('is-open')) return;
+              if (e.key === 'ArrowLeft'  || e.keyCode === 37) navLightbox(-1);
+              if (e.key === 'ArrowRight' || e.keyCode === 39) navLightbox(1);
+              if (e.key === 'Escape'     || e.keyCode === 27) closeLightbox();
+            });
+
+            /* 触摸滑动 */
+            var _tx = 0;
+            lb.addEventListener('touchstart', function (e) { _tx = e.touches[0].clientX; }, { passive: true });
+            lb.addEventListener('touchend', function (e) {
+              var diff = e.changedTouches[0].clientX - _tx;
+              if (Math.abs(diff) > 40) navLightbox(diff < 0 ? 1 : -1);
+            }, { passive: true });
+          }
+
+          lb._list = list; lb._idx = idx;
+          showLightboxItem(lb, idx);
+          lb.classList.add('is-open');
+          document.body.classList.add('luliy-lb-open');
+        }
+
+        function showLightboxItem(lb, idx) {
+          var p = lb._list[idx];
+          lb.querySelector('.luliy-lb-img').src = p.image || '';
+          lb.querySelector('.luliy-lb-cap').textContent = p.title || '';
+          var linkEl = lb.querySelector('.luliy-lb-link');
+          if (p.url) { linkEl.href = buildPostLink(p.url); linkEl.style.display = ''; }
+          else { linkEl.style.display = 'none'; }
+          /* 更新前后箭头可用状态 */
+          lb.querySelector('.luliy-lb-prev').disabled = idx <= 0;
+          lb.querySelector('.luliy-lb-next').disabled = idx >= lb._list.length - 1;
+          lb._idx = idx;
+        }
+
+        function navLightbox(dir) {
+          var lb = document.getElementById('luliy-lb');
+          if (!lb) return;
+          var next = lb._idx + dir;
+          if (next < 0 || next >= lb._list.length) return;
+          showLightboxItem(lb, next);
+        }
+
+        function closeLightbox() {
+          var lb = document.getElementById('luliy-lb');
+          if (lb) lb.classList.remove('is-open');
+          document.body.classList.remove('luliy-lb-open');
+        }
+
+        body.addEventListener('click', function (e) {
+          var btn = e.target.closest('.luliy-poster-item');
+          if (!btn) return;
+          var idx = parseInt(btn.getAttribute('data-index') || '0', 10);
+          openLightbox(idx);
+        });
+      }, 0);
+
+      return h;
+    }
   }
-}
 
-/* ── 28.18 External link favicon hover preview ────────────── */
-.luliy-linktip {
-  position: fixed; z-index: 99996; pointer-events: none;
-  display: flex; align-items: center; gap: 10px;
-  width: 240px; box-sizing: border-box;
-  padding: 9px 12px; border-radius: 12px;
-  background: rgba(255,255,255,0.97);
-  backdrop-filter: blur(18px) saturate(1.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.22));
-  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
-  opacity: 0; transform: translateY(6px) scale(0.96);
-  transition: opacity 0.18s, transform 0.18s;
-}
-.luliy-linktip.is-on { opacity: 1; transform: translateY(0) scale(1); }
-[data-color-mode="dark"] .luliy-linktip {
-  background: rgba(18,14,32,0.97);
-  border-color: var(--th-accent-soft, rgba(130,80,223,0.34));
-}
-.luliy-linktip img {
-  width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
-  background: rgba(130,80,223,0.08);
-}
-.luliy-linktip .lt-meta { min-width: 0; flex: 1; }
-.luliy-linktip .lt-host {
-  font-size: 13px; font-weight: 700; color: var(--th-accent, #8250df);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-family: 'Noto Sans SC', sans-serif;
-}
-[data-color-mode="dark"] .luliy-linktip .lt-host { color: var(--th-accent, #cba6f7); }
-.luliy-linktip .lt-path {
-  font-size: 11px; color: #999;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-family: 'LXGW WenKai Mono', monospace;
-}
-
-/* ══════════════════════════════════════════════════════════
-
-/* ══════════════════════════════════════════════════════════
-   03  响应式表格——窄屏卡片化（文章 Markdown 表格用）
-══════════════════════════════════════════════════════════ */
-   31  响应式表格——窄屏卡片化  ★新增
-   宽度 < 600px 时，每行变一张卡片，th 文字通过 data-label 注入 td 前
-   配合 display:table !important / width:100% !important 完整修复表格
-══════════════════════════════════════════════════════════ */
-@media (max-width: 599px) {
-  /* 整张表变块，不再横向溢出 */
-  #postBody table,
-  #postBody thead,
-  #postBody tbody,
-  #postBody tfoot,
-  #postBody tr {
-    display: block !important;
-    width: 100% !important;
+  function isChroniclePage() {
+    /* ★ 只用 URL 路径判断，绝不能再看「页面里有没有 fallback 元素」——
+       否则任何一篇文章只要正文里出现了 luliy-chronicle-fallback 这串字符
+       （比如把本功能的部署指南当文章发出来），就会被误判成 Chronicle 页、
+       整篇内容被接管替换掉。这是之前的严重 bug。
+       Gmeek 生成的单页文件名就是 chronicle.html，按路径认最稳妥。 */
+    return /(^|\/)chronicle(\.html)?$/i.test(location.pathname);
   }
-  /* 表头行整体隐藏（内容以 data-label 形式显示在每个 td 前） */
-  #postBody thead { display: none !important; }
 
-  /* 每个 td 变成卡片内的一行 label:value */
-  #postBody td {
-    display: flex !important;
-    align-items: flex-start;
-    padding: 8px 14px !important;
-    border-bottom: 1px solid rgba(130,80,223,0.10) !important;
-    gap: 10px;
+  /* ============================================================
+     书架 Bookshelf（singlePage: book）—— 赛博朋克风
+     自动读 postList.json 里带 Library 标签的文章，按第二个标签
+     归入「小说 / 成长 / 投资 / 现实 / 杂项」五大类，带「在读」标签
+     的书额外放进右侧在读书堆。点击书脊跳到对应文章。
+     ============================================================ */
+  var BOOK_LABEL = 'Library';
+  var BOOK_CATEGORIES = ['\u5c0f\u8bf4', '\u6210\u957f', '\u6295\u8d44', '\u73b0\u5b9e', '\u6742\u9879'];  /* 小说 成长 投资 现实 杂项 */
+  var BOOK_READING_LABEL = '\u5728\u8bfb';   /* 在读 */
+  /* ★ 手动补充的书（还没写文章、想先占位的）：
+     { title, href, category, reading } —— category 必须是上面五类之一 */
+  var BOOK_EXTRA = (window.LULIY_EXTRA_BOOKS && Array.isArray(window.LULIY_EXTRA_BOOKS))
+    ? window.LULIY_EXTRA_BOOKS : [];
+
+  var BOOK_PALETTE = ['#7A2E6B', '#2C4E6B', '#2E5C5A', '#5C2E6B', '#6B2E4A', '#3E2E6B'];
+  function bookHash(s) {
+    var h = 0; s = String(s);
+    for (var i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
+    return Math.abs(h);
   }
-  #postBody td:last-child { border-bottom: none !important; }
 
-  /* data-label 注入的标题前缀 */
-  #postBody td::before {
-    content: attr(data-label);
-    flex: 0 0 auto;
-    min-width: 5em;
-    font-weight: 700;
-    font-size: 12px;
-    color: var(--th-accent, #8250df);
-    opacity: 0.85;
-    padding-top: 1px;
-    white-space: nowrap;
+  function isBookPage() {
+    return /(^|\/)book(\.html)?$/i.test(location.pathname);
   }
-  /* 每行 tr 作为一张卡 */
-  #postBody tr {
-    border-radius: 10px !important;
-    margin-bottom: 10px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
-    overflow: hidden !important;
-    background: rgba(255,255,255,0.72) !important;
+
+  function initBookPage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    if (document.getElementById('luliy-bookshelf')) return;   /* 幂等 */
+    document.body.classList.add('luliy-book-takeover', 'luliy-hide-pagination');
+
+    pb.innerHTML = '<div id="luliy-bookshelf" class="luliy-bookshelf">' +
+      '<div class="luliy-book-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-bookshelf');
+
+    fetchPosts().then(function (posts) {
+      var books = [];
+      (posts || []).forEach(function (p) {
+        var names = (p.labels || []).map(function (l) { return l.name; });
+        if (names.indexOf(BOOK_LABEL) === -1) return;   /* 只要 Library 文章 */
+        /* 分类 = 第一个命中五大类的标签，否则归杂项 */
+        var cat = '\u6742\u9879';
+        for (var i = 0; i < names.length; i++) {
+          if (BOOK_CATEGORIES.indexOf(names[i]) !== -1) { cat = names[i]; break; }
+        }
+        books.push({
+          title: p.title, href: buildPostLink(p.link), created: (p.created || '').slice(0, 10),
+          category: cat, reading: names.indexOf(BOOK_READING_LABEL) !== -1
+        });
+      });
+      /* 合并手动补充的书 */
+      BOOK_EXTRA.forEach(function (b) {
+        books.push({
+          title: b.title || '\u672a\u547d\u540d', href: b.href || '#',
+          created: b.created || '', category: BOOK_CATEGORIES.indexOf(b.category) !== -1 ? b.category : '\u6742\u9879',
+          reading: !!b.reading
+        });
+      });
+      renderBookshelf(books);
+    }).catch(function () {
+      root2.innerHTML = '<div class="luliy-book-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+    });
+
+    function renderBookshelf(books) {
+      var readingBooks = books.filter(function (b) { return b.reading; });
+
+      var html = '<div class="luliy-book-header">' +
+        '<h1 class="luliy-book-title">\u6211\u7684\u4e66\u67b6</h1>' +   /* 我的书架 */
+        '<p class="luliy-book-sub">\u70b9\u51fb\u4e66\u810a\uff0c\u524d\u5f80\u5bf9\u5e94\u7684\u6587\u7ae0 \u00b7 \u5171 ' +
+          books.length + ' \u672c</p></div>';   /* 点击书脊，前往对应的文章 · 共 N 本 */
+
+      html += '<div class="luliy-bookcase">';
+      BOOK_CATEGORIES.forEach(function (cat, ci) {
+        var inCat = books.filter(function (b) { return b.category === cat; });
+        html += '<section class="luliy-shelf">';
+        html += '<div class="luliy-shelf-plaque">' + esc(cat) +
+          ' <span class="luliy-shelf-count">' + inCat.length + ' \u672c</span></div>';   /* N 本 */
+        html += '<div class="luliy-shelf-row">';
+        if (!inCat.length) {
+          html += '<div class="luliy-shelf-empty">\u6682\u65e0\u4e66\u7c4d</div>';   /* 暂无书籍 */
+        } else {
+          inCat.forEach(function (b) { html += buildSpine(b); });
+        }
+        /* 在读书堆放在第一个有在读书的分类那一层尾部 */
+        if (ci === 0 && readingBooks.length) {
+          html += buildReadingZone(readingBooks);
+        }
+        html += '</div><div class="luliy-shelf-board"></div></section>';
+      });
+      html += '</div>';
+
+      root2.innerHTML = html;
+    }
+
+    function buildSpine(b) {
+      var h = bookHash(b.title);
+      var w = 44 + (h % 20);          /* 44–64px */
+      var ht = 150 + (h % 36);        /* 150–186px */
+      var tilt = (h % 7) - 3;         /* -3..3deg */
+      var color = BOOK_PALETTE[h % BOOK_PALETTE.length];
+      var meta = b.created ? ('<span class="luliy-spine-note">' + esc(b.created) + '</span>') : '';
+      return '<a class="luliy-spine" href="' + esc(b.href) + '" ' +
+        'style="--tilt:' + tilt + 'deg;width:' + w + 'px;height:' + ht + 'px;' +
+        'background:linear-gradient(90deg,' + color + ',' + color + 'cc);" ' +
+        'aria-label="' + esc(b.title) + '">' +
+        '<span class="luliy-spine-title">' + esc(b.title) + '</span>' +
+        '<span class="luliy-spine-tip"><strong>' + esc(b.title) + '</strong>' + meta + '</span>' +
+        '</a>';
+    }
+
+    function buildReadingZone(readingBooks) {
+      var h = '<div class="luliy-reading-zone"><span class="luliy-reading-label">\u5728\u8bfb</span>' +   /* 在读 */
+        '<div class="luliy-reading-stack">';
+      readingBooks.slice(0, 3).forEach(function (b, i) {
+        var color = BOOK_PALETTE[bookHash(b.title) % BOOK_PALETTE.length];
+        h += '<a class="luliy-flat-book' + (i === 0 ? ' is-top' : '') + '" href="' + esc(b.href) + '" ' +
+          'style="bottom:' + (i * 12) + 'px;z-index:' + (10 - i) + ';background:' + color + ';" ' +
+          'aria-label="\u5728\u8bfb\uff1a' + esc(b.title) + '">' + esc(b.title) + '</a>';
+      });
+      h += '</div></div>';
+      return h;
+    }
   }
-  [data-color-mode="dark"] #postBody tr {
-    background: rgba(18,14,32,0.72) !important;
+
+
+
+  /* ---- 06  极简首页 —— 自定义大图 + 右上角文字导航 ---------
+     原版是在图片上画 4 个按百分比定位的"隐形热区"，依赖那张特定
+     设计图的布局，换图后位置全部对不上。现在改成最简单可靠的方式：
+     图片铺满当背景，右上角放一组可以直接看到、点击的文字链接。 */
+  function renderMinimalHome() {
+    var wrap = document.createElement('div');
+    wrap.id = 'luliy-min-home';
+
+    var links = [
+      { href: '/about.html',     label: 'About' },
+      { href: '/book.html',      label: 'Book' },
+      { href: '/archive.html',   label: 'Archives' },
+      { href: '/chronicle.html', label: 'Chronicle' }
+    ];
+    var navHtml = links.map(function (l) {
+      return '<a href="' + l.href + '">' + l.label + '</a>';
+    }).join('');
+
+    wrap.innerHTML =
+      '<div class="luliy-min-home-stage">' +
+        '<img class="luliy-min-home-img" src="' + esc(MINIMAL_HOME_IMG) + '" alt="" draggable="false">' +
+        '<nav class="luliy-min-home-nav">' + navHtml + '</nav>' +
+      '</div>';
+    document.body.appendChild(wrap);
   }
-  /* 圆角相关（原来由 corner-cell 实现，现在 tr 自己带圆角即可） */
-  #postBody thead tr:first-child th:first-child,
-  #postBody thead tr:first-child th:last-child,
-  #postBody tr:last-child td:first-child,
-  #postBody tr:last-child td:last-child { border-radius: 0 !important; }
-}
 
-/* ══════════════════════════════════════════════════════════
+  /* ---- 07  极简文章页 —— 侧边目录 TOC ----------------------- */
+  function renderMinimalArticle() {
+    document.body.classList.add('luliy-min-article');
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    var heads = pb.querySelectorAll('h1, h2, h3');
+    if (heads.length >= 2) {
+      var toc = document.createElement('nav');
+      toc.id = 'luliy-min-toc';
+      var html = '';
+      heads.forEach(function (h, i) {
+        if (!h.id) h.id = 'luliy-min-h-' + i;
+        var lvl = h.tagName === 'H1' ? 'h1' : (h.tagName === 'H2' ? 'h2' : 'h3');
+        var prefix = lvl === 'h1' ? '#' : '\u2022';
+        html += '<a class="luliy-min-toc-' + lvl + '" href="#' + h.id + '">' +
+          prefix + ' ' + esc(h.textContent) + '</a>';
+      });
+      toc.innerHTML = html;
+      document.body.appendChild(toc);
+    }
+  }
 
-/* ══════════════════════════════════════════════════════════
-   04  极简系统 Minimal System —— 黑白灰 + 衬线大标题
-══════════════════════════════════════════════════════════ */
-   极简系统 Minimal System
-   黑白灰 + 衬线大标题 + 账本式留白。配色/字体/留白/组件/布局
-   严格按规范。只在 body.luliy-minimal 下生效，绝不影响赛博系统。
-   ════════════════════════════════════════════════════════════ */
-body.luliy-minimal {
-  /* —— 配色 —— */
-  --min-bg: rgb(230, 225, 212);
-  --min-title: #1c1c1e;       /* 标题：近黑炭灰 */
-  --min-text: #3a3a3a;        /* 正文：深灰，不用纯黑 */
-  --min-muted: #8c8c8c;       /* 次要：中灰（日期/字数/未激活tab） */
-  --min-line: #3a3a3a;        /* 硬边框线：深灰近黑 */
-  --min-serif: 'Noto Serif SC', 'Songti SC', Georgia, 'Times New Roman', serif;
-  --min-sans: 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  /* ---- 08  全站文字导航（非首页顶部） ----------------------- */
+  function buildMinimalNav() {
+    if (document.getElementById('luliy-min-nav')) return;
+    var nav = document.createElement('nav');
+    nav.id = 'luliy-min-nav';
+    var links = [
+      { label: 'Home', href: '/' },
+      { label: 'Archives', href: '/archive.html' },
+      { label: 'Chronicle', href: '/chronicle.html' },
+      { label: 'Book', href: '/book.html' },
+      { label: 'About', href: '/about.html' }
+    ];
+    nav.innerHTML = links.map(function (l) {
+      return '<a href="' + l.href + '">' + l.label + '</a>';
+    }).join('<span class="luliy-min-nav-sep">/</span>');
+    document.body.insertBefore(nav, document.body.firstChild);
+  }
 
-  background: var(--min-bg) !important;
-  color: var(--min-text);
-  font-family: var(--min-sans);
-  zoom: 1 !important;
-}
-/* 极简系统下：彻底隐藏所有赛博系统的元素（保险，即使没初始化） */
-body.luliy-minimal #luliy-cyber-canvas,
-body.luliy-minimal #luliy-sakura-canvas,
-body.luliy-minimal #luliy-splash,
-body.luliy-minimal #luliy-brand,
-body.luliy-minimal #luliy-subtitle,
-body.luliy-minimal #luliy-issues-link,
-body.luliy-minimal #luliy-to-minimal,
-body.luliy-minimal #luliy-ham-btn,
-body.luliy-minimal #luliy-drawer,
-body.luliy-minimal #luliy-drawer-scrim,
-body.luliy-minimal #luliy-aplayer,
-body.luliy-minimal #luliy-ap-fab,
-body.luliy-minimal #luliy-ctrl-panel,
-body.luliy-minimal #luliy-ctrl-fab,
-body.luliy-minimal .luliy-cats,
-body.luliy-minimal #header,
-body.luliy-minimal #footer {
-  display: none !important;
-}
-body.luliy-minimal #content { background: transparent !important; }
+  /* ---- 09  主入口 -------------------------------------------- */
+  function safe(fn, name) {
+    try { fn(); }
+    catch (e) { try { console.warn('[luliy] init failed:', name || (fn && fn.name), e); } catch (e2) {} }
+  }
 
-/* —— 顶部导航：Home / Archives / Chronicle / About —— */
-#luliy-min-nav {
-  position: relative;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 28px 48px 0;
-  font-family: var(--min-sans);
-  font-size: 14px;
-  letter-spacing: 0.5px;
-  color: var(--min-muted);
-}
-#luliy-min-nav a {
-  color: var(--min-title);
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-#luliy-min-nav a:hover { opacity: 0.55; }
-.luliy-min-nav-sep { margin: 0 10px; color: var(--min-muted); }
+  /* config.json 里的 "script" / "indexScript" 字段会一直 setTimeout
+     轮询等待这两个全局函数出现，所以必须留空壳，否则会一直空转。
+     真正的初始化逻辑统一走下面的 ready() 入口。 */
+  root._luliyInitPost  = function () {};
+  root._luliyInitIndex = function () {};
 
-/* —— 系统切换按钮（极简 → 赛博） —— */
-#luliy-system-toggle {
-  position: fixed; top: 22px; right: 28px; z-index: 100;
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid var(--min-line);
-  background: transparent; color: var(--min-title);
-  font-size: 15px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s, color 0.15s;
-}
-#luliy-system-toggle:hover { background: var(--min-title); color: var(--min-bg); }
+  ready(function () {
+    document.body.classList.add('luliy-minimal');
 
-/* —— 赛博系统里「切到极简」的按钮（放沉思者图标旁） —— */
-#luliy-to-minimal {
-  position: fixed; top: 14px; z-index: 10002;
-  width: 30px; height: 44px;
-  background: transparent; border: none; cursor: pointer;
-  color: #fff; font-size: 18px;
-  display: inline-flex; align-items: center; justify-content: center;
-  opacity: 0.7;
-  filter: drop-shadow(0 0 6px rgba(110,199,255,0.6));
-  transition: opacity 0.2s, transform 0.2s;
-}
-#luliy-to-minimal:hover { opacity: 1; transform: scale(1.15); }
+    if (!isIndexPage()) safe(buildMinimalNav, 'minimalNav');
 
-/* ════════ 主页：楼梯图 + 隐形热区 ════════ */
-#luliy-min-home {
-  position: fixed; inset: 0;
-  background: var(--min-bg);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 50;
-}
-.luliy-min-home-stage {
-  position: relative;
-  width: 100%; max-width: 1400px;
-  margin: 0 auto;
-}
-.luliy-min-home-img {
-  display: block; width: 100%; height: auto;
-  user-select: none; -webkit-user-drag: none;
-}
-.luliy-min-home-nav {
-  position: absolute;
-  top: 28px; right: 32px;
-  display: flex; gap: 18px;
-  z-index: 2;
-}
-.luliy-min-home-nav a {
-  font-family: 'Noto Serif SC', Georgia, serif;
-  font-size: 14px;
-  letter-spacing: 0.02em;
-  color: var(--min-title);
-  text-decoration: none;
-  background: rgba(255,255,255,0.78);
-  padding: 6px 14px;
-  border-radius: 3px;
-  transition: opacity 0.15s, background 0.15s;
-}
-.luliy-min-home-nav a:hover { opacity: 0.7; background: rgba(255,255,255,0.95); }
-@media (max-width: 640px) {
-  .luliy-min-home-nav { top: 14px; right: 14px; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-  .luliy-min-home-nav a { font-size: 12px; padding: 5px 10px; }
-}
+    if (isIndexPage()) {
+      safe(renderMinimalHome, 'minimalHome');
+    } else if (isChroniclePage()) {
+      safe(initChroniclePage, 'chronicle');
+    } else if (isBookPage()) {
+      safe(initBookPage, 'book');
+    } else if (isArchivePage()) {
+      safe(initArchivesPage, 'archives');
+    } else {
+      safe(renderMinimalArticle, 'minimalArticle');
+      safe(applyPbWidth, 'pbWidth');
+      safe(initWidthControl, 'widthControl');
+    }
+  });
 
-/* ════════ 普通文章 / about：极简排版 ════════ */
-body.luliy-min-article #content {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 48px 120px;
-}
-body.luliy-min-article #postBody {
-  max-width: 680px;          /* 正文主列偏左、不居中 */
-  margin: 0;
-  margin-right: auto;
-  font-family: var(--min-sans);
-  font-size: 16px;
-  line-height: 1.9;
-  color: var(--min-text);
-}
-/* 文章标题：衬线、全站最大 */
-body.luliy-min-article #postBody h1 {
-  font-family: var(--min-serif);
-  font-weight: 700;
-  font-size: 34px;
-  color: var(--min-title);
-  letter-spacing: 1px;
-  margin: 18px 0 8px;
-  line-height: 1.3;
-}
-/* 二级小标题：无衬线加粗 + # 前缀 */
-body.luliy-min-article #postBody h2 {
-  font-family: var(--min-sans);
-  font-weight: 700;
-  font-size: 19px;
-  color: var(--min-title);
-  margin: 48px 0 14px;
-}
-body.luliy-min-article #postBody h2::before { content: '# '; color: var(--min-muted); }
-body.luliy-min-article #postBody h3 {
-  font-family: var(--min-sans);
-  font-weight: 600; font-size: 16px; color: var(--min-title);
-  margin: 32px 0 10px;
-}
-body.luliy-min-article #postBody p {
-  margin: 0 0 26px;          /* 段落间留白明显大于行内行距 */
-  color: var(--min-text);
-}
-body.luliy-min-article #postBody a { color: var(--min-title); text-decoration: underline; text-underline-offset: 3px; }
-body.luliy-min-article #postBody img { max-width: 100%; border-radius: 2px; }
-/* 文章 meta（日期/字数）：最小、浅灰、等宽数字感 */
-body.luliy-min-article #postBody .luliy-readmeta,
-body.luliy-min-article .luliy-readmeta {
-  font-family: var(--min-sans);
-  font-variant-numeric: tabular-nums;
-  font-size: 13px; color: var(--min-muted) !important;
-  margin-bottom: 40px;
-}
-
-/* —— 右侧悬浮目录（漂浮在留白区，不占主列） —— */
-#luliy-min-toc {
-  position: fixed;
-  top: 120px; right: max(40px, calc((100vw - 1100px) / 2 + 48px));
-  width: 220px; max-height: 70vh; overflow-y: auto;
-  font-family: var(--min-sans); font-size: 13px; line-height: 1.7;
-  z-index: 40;
-}
-#luliy-min-toc a { display: block; color: var(--min-muted); text-decoration: none; transition: color 0.15s; }
-#luliy-min-toc a:hover { color: var(--min-title); }
-#luliy-min-toc .luliy-min-toc-h1 { color: var(--min-text); font-weight: 600; margin-top: 10px; }
-#luliy-min-toc .luliy-min-toc-h2 { padding-left: 14px; }
-#luliy-min-toc .luliy-min-toc-h3 { padding-left: 28px; font-size: 12px; }
-@media (max-width: 1080px) {
-  #luliy-min-toc { display: none; }   /* 窄屏不显示边注目录 */
-  body.luliy-min-article #content { padding: 0 24px 80px; }
-}
-
-/* ════════ Archives / Chronicle / Book 的极简皮肤 ════════
-   复用现有结构，只覆盖颜色/字体/边框，做成黑白灰账本风。 */
-body.luliy-minimal .luliy-archives,
-body.luliy-minimal .luliy-chronicle,
-body.luliy-minimal .luliy-bookshelf {
-  max-width: 1100px; margin: 0 auto; padding: 8px 48px 80px;
-}
-/* 年份/分组大标题：衬线斜体数字感 */
-body.luliy-minimal .luliy-arch-title,
-body.luliy-minimal .luliy-chron-title,
-body.luliy-minimal .luliy-book-title,
-body.luliy-minimal .luliy-arch-year {
-  font-family: var(--min-serif) !important;
-  font-weight: 700 !important; font-style: italic;
-  color: var(--min-title) !important;
-  text-shadow: none !important;
-}
-body.luliy-minimal .luliy-arch-title,
-body.luliy-minimal .luliy-chron-title,
-body.luliy-minimal .luliy-book-title { font-size: 32px !important; font-style: normal; }
-body.luliy-minimal .luliy-arch-year {
-  font-size: 28px !important; margin: 56px 0 14px !important;   /* 年份间大留白 */
-}
-/* Tab：纯文字，激活态仅下划线 */
-body.luliy-minimal .luliy-arch-tab,
-body.luliy-minimal .luliy-chron-year-tab,
-body.luliy-minimal .luliy-chron-cat-tab {
-  background: none !important; color: var(--min-muted) !important;
-  text-shadow: none !important; font-family: var(--min-sans) !important;
-  border-radius: 0 !important;
-}
-body.luliy-minimal .luliy-arch-tab.is-active,
-body.luliy-minimal .luliy-chron-year-tab.is-active,
-body.luliy-minimal .luliy-chron-cat-tab.is-active {
-  color: var(--min-title) !important;
-}
-body.luliy-minimal .luliy-arch-tab.is-active::after,
-body.luliy-minimal .luliy-chron-year-tab.is-active::after,
-body.luliy-minimal .luliy-chron-cat-tab.is-active::after {
-  background: var(--min-title) !important; box-shadow: none !important;
-}
-body.luliy-minimal .luliy-arch-tabsep { background: var(--min-muted) !important; }
-/* 归档列表：无卡片无分割线，靠两栏对齐 + 行距 */
-body.luliy-minimal .luliy-arch-row { background: none !important; }
-body.luliy-minimal .luliy-arch-row:hover { background: rgba(28,28,30,0.04) !important; transform: none !important; }
-body.luliy-minimal .luliy-arch-date { color: var(--min-muted) !important; font-variant-numeric: tabular-nums; }
-body.luliy-minimal .luliy-arch-name { color: var(--min-title) !important; }
-body.luliy-minimal .luliy-arch-row:hover .luliy-arch-date,
-body.luliy-minimal .luliy-arch-row:hover .luliy-arch-name { color: var(--min-title) !important; }
-body.luliy-minimal .luliy-arch-header,
-body.luliy-minimal .luliy-chron-header { border-bottom: none !important; }
-/* 分页 */
-body.luliy-minimal .luliy-arch-pgbtn {
-  background: none !important; border: 1px solid var(--min-line) !important;
-  color: var(--min-title) !important; box-shadow: none !important;
-}
-body.luliy-minimal .luliy-arch-pgbtn:hover:not(:disabled) {
-  background: var(--min-title) !important; color: var(--min-bg) !important;
-}
-body.luliy-minimal .luliy-arch-pginfo { color: var(--min-muted) !important; font-variant-numeric: tabular-nums; }
-
-/* 编年史表格：全站唯一硬边框组件，1px 直角网格，无底色无斑马纹 */
-body.luliy-minimal .luliy-chron-table { background: transparent !important; }
-body.luliy-minimal .luliy-chron-table th,
-body.luliy-minimal .luliy-chron-table td {
-  border: 1px solid var(--min-line) !important;
-  color: var(--min-text) !important;
-  background: transparent !important;
-}
-body.luliy-minimal .luliy-chron-table th {
-  font-weight: 700 !important; color: var(--min-title) !important;
-  background: transparent !important;
-}
-body.luliy-minimal .luliy-chron-month-cell {
-  border-right: 1px solid var(--min-line) !important;
-  color: var(--min-title) !important; font-weight: 700 !important;
-}
-body.luliy-minimal .luliy-chron-table a { color: var(--min-title) !important; text-decoration: underline; }
-/* 海报墙：去霓虹，简单灰边框 */
-body.luliy-minimal .luliy-poster-item {
-  background: rgba(28,28,30,0.04) !important; border: 1px solid var(--min-line) !important;
-}
-body.luliy-minimal .luliy-poster-title { background: linear-gradient(to top, rgba(28,28,30,0.8), transparent) !important; }
-
-/* 书架：去木质/霓虹，做成极简层架 */
-body.luliy-minimal .luliy-bookcase {
-  background: transparent !important; border: none !important;
-  box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
-  gap: 40px !important;
-}
-body.luliy-minimal .luliy-shelf-plaque {
-  background: none !important; color: var(--min-title) !important;
-  box-shadow: none !important; font-family: var(--min-serif) !important;
-  font-style: italic; font-size: 18px !important; padding-left: 0 !important; margin-left: 0 !important;
-}
-body.luliy-minimal .luliy-shelf-count { color: var(--min-muted) !important; }
-body.luliy-minimal .luliy-shelf-board {
-  background: var(--min-line) !important; opacity: 1 !important; height: 1px !important; box-shadow: none !important;
-}
-body.luliy-minimal .luliy-spine {
-  background: rgba(28,28,30,0.06) !important;
-  color: var(--min-title) !important;
-  box-shadow: inset 0 0 0 1px var(--min-line) !important;
-}
-body.luliy-minimal .luliy-spine:hover {
-  box-shadow: inset 0 0 0 1px var(--min-line), 0 8px 16px rgba(0,0,0,0.12) !important;
-}
-body.luliy-minimal .luliy-spine-title { color: var(--min-title) !important; text-shadow: none !important; }
-body.luliy-minimal .luliy-spine-tip {
-  background: var(--min-bg) !important; border: 1px solid var(--min-line) !important; color: var(--min-text) !important;
-}
-body.luliy-minimal .luliy-spine-note { color: var(--min-muted) !important; }
-body.luliy-minimal .luliy-flat-book { color: var(--min-title) !important; background: rgba(28,28,30,0.08) !important; }
-body.luliy-minimal .luliy-reading-label { color: var(--min-muted) !important; }
-body.luliy-minimal .luliy-book-sub,
-body.luliy-minimal .luliy-shelf-empty { color: var(--min-muted) !important; }
-
-@media (max-width: 720px) {
-  #luliy-min-nav { padding: 20px 20px 0; }
-  body.luliy-minimal .luliy-archives,
-  body.luliy-minimal .luliy-chronicle,
-  body.luliy-minimal .luliy-bookshelf { padding: 8px 20px 60px; }
-}
-
-/* ── 极简系统：强制压过赛博系统的文章面板/标题装饰/文字色 ── */
-body.luliy-minimal #postBody,
-body.luliy-min-article #postBody {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
-}
-body.luliy-min-article #postBody h1,
-body.luliy-min-article #postBody h2,
-body.luliy-min-article #postBody h3 {
-  color: #1c1c1e !important;
-  border: none !important;
-  border-left: none !important;
-  padding-left: 0 !important;
-  background: none !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  text-shadow: none !important;
-}
-body.luliy-min-article #postBody h1 {
-  font-family: 'Noto Serif SC', Georgia, serif !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-}
-body.luliy-min-article #postBody p,
-body.luliy-min-article #postBody li {
-  color: #3a3a3a !important;
-  -webkit-text-fill-color: #3a3a3a !important;
-}
-/* 去掉赛博系统给 h2 加的竖条/色块装饰 */
-body.luliy-min-article #postBody h2::after,
-body.luliy-min-article #postBody h2::marker { content: none !important; }
-
-/* ════════════════════════════════════════════════════════════
-   极简系统 v2 总清洗 —— 彻底压掉所有泄漏的赛博样式
-   规则：背景全屏 RGB(230,225,212)、文字纯黑/灰、表格无底色、
-   md 装饰色全清、面板透明、目录在右。优先级用 html/body 双重限定。
-   ════════════════════════════════════════════════════════════ */
-
-/* —— 1. 背景全屏铺满（html + body + 所有容器都强制纯色） —— */
-html:has(body.luliy-minimal),
-html:has(body.luliy-minimal) body.luliy-minimal {
-  background: rgb(230,225,212) !important;
-  background-image: none !important;
-}
-body.luliy-minimal,
-body.luliy-minimal #content,
-body.luliy-minimal .markdown-body,
-body.luliy-minimal #postBody,
-body.luliy-minimal .SideNav,
-body.luliy-minimal main,
-body.luliy-minimal article {
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-/* body 本体保留底色（作为全屏背景） */
-body.luliy-minimal { background: rgb(230,225,212) !important; }
-
-/* —— 2. 所有文字强制黑/灰，清除一切发光、渐变、彩色 —— */
-body.luliy-minimal #postBody,
-body.luliy-minimal #postBody *,
-body.luliy-minimal .luliy-archives *,
-body.luliy-minimal .luliy-chronicle *,
-body.luliy-minimal .luliy-bookshelf * {
-  text-shadow: none !important;
-}
-/* md 正文里所有元素：统一深灰，标题近黑 */
-body.luliy-min-article #postBody,
-body.luliy-min-article #postBody p,
-body.luliy-min-article #postBody li,
-body.luliy-min-article #postBody span,
-body.luliy-min-article #postBody td,
-body.luliy-min-article #postBody div,
-body.luliy-min-article #postBody strong,
-body.luliy-min-article #postBody em,
-body.luliy-min-article #postBody blockquote {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  background: transparent !important;
-}
-body.luliy-min-article #postBody h1,
-body.luliy-min-article #postBody h2,
-body.luliy-min-article #postBody h3,
-body.luliy-min-article #postBody h4 {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-}
-/* md 链接：黑色带下划线 */
-body.luliy-min-article #postBody a {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  text-decoration: underline !important;
-}
-/* md 里的 blockquote / 代码块 / 高亮：去掉所有底色和彩边，变成极简 */
-body.luliy-min-article #postBody blockquote {
-  background: transparent !important;
-  border: none !important;
-  border-left: 2px solid #3a3a3a !important;
-  padding-left: 16px !important;
-  margin-left: 0 !important;
-}
-body.luliy-min-article #postBody pre,
-body.luliy-min-article #postBody code {
-  background: rgba(28,28,30,0.05) !important;
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-body.luliy-min-article #postBody pre * {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  text-shadow: none !important;
-  background: transparent !important;
-}
-
-/* —— 3. 编年史表格：全屏背景下无底色、纯黑细线网格、文字纯黑 —— */
-body.luliy-minimal .luliy-chron-table,
-body.luliy-minimal .luliy-chron-table thead,
-body.luliy-minimal .luliy-chron-table tbody,
-body.luliy-minimal .luliy-chron-table tr {
-  background: transparent !important;
-}
-body.luliy-minimal .luliy-chron-table th,
-body.luliy-minimal .luliy-chron-table td,
-body.luliy-minimal .luliy-chron-month-cell {
-  background: transparent !important;
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  border: 1px solid #3a3a3a !important;
-  text-shadow: none !important;
-}
-body.luliy-minimal .luliy-chron-table th { font-weight: 700 !important; }
-body.luliy-minimal .luliy-chron-table a {
-  color: #1c1c1e !important; -webkit-text-fill-color: #1c1c1e !important;
-  text-decoration: underline !important;
-}
-/* 表格外层那个圆角玻璃容器也去掉 */
-body.luliy-minimal .luliy-chron-tablewrap,
-body.luliy-minimal .luliy-chron-scroll-x {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-/* —— 4. 归档列表：文字纯黑/灰，无底色，激活行不要色块 —— */
-body.luliy-minimal .luliy-arch-row,
-body.luliy-minimal .luliy-arch-row * {
-  background: transparent !important;
-  text-shadow: none !important;
-}
-body.luliy-minimal .luliy-arch-name { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
-body.luliy-minimal .luliy-arch-date { color: #8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
-body.luliy-minimal .luliy-arch-row:hover { background: rgba(28,28,30,0.05) !important; }
-/* 标题 Chronicle/Archives：去掉粉色渐变和下划线发光，改纯黑衬线 */
-body.luliy-minimal .luliy-arch-title,
-body.luliy-minimal .luliy-chron-title,
-body.luliy-minimal .luliy-book-title {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  background: none !important;
-  text-shadow: none !important;
-  border-bottom: none !important;
-}
-/* 标题下面那条粉色装饰线删除 */
-body.luliy-minimal .luliy-arch-title::after,
-body.luliy-minimal .luliy-chron-title::after,
-body.luliy-minimal .luliy-book-title::after { display: none !important; }
-
-/* —— 5. Tab 文字（事件/书影音/海报墙、年份、Weekly|Other）：灰→黑，激活仅下划线 —— */
-body.luliy-minimal .luliy-arch-tab,
-body.luliy-minimal .luliy-chron-cat-tab,
-body.luliy-minimal .luliy-chron-year-tab {
-  color: #8c8c8c !important; -webkit-text-fill-color: #8c8c8c !important;
-  text-shadow: none !important; background: none !important;
-}
-body.luliy-minimal .luliy-arch-tab.is-active,
-body.luliy-minimal .luliy-chron-cat-tab.is-active,
-body.luliy-minimal .luliy-chron-year-tab.is-active {
-  color: #1c1c1e !important; -webkit-text-fill-color: #1c1c1e !important;
-}
-body.luliy-minimal .luliy-arch-tab.is-active::after,
-body.luliy-minimal .luliy-chron-cat-tab.is-active::after,
-body.luliy-minimal .luliy-chron-year-tab.is-active::after {
-  background: #1c1c1e !important; box-shadow: none !important;
-}
-
-/* —— 6. 目录固定在右侧（之前可能被覆盖），切换按钮左边留给主页导航 —— */
-#luliy-min-toc {
-  position: fixed !important;
-  top: 110px !important;
-  right: 40px !important;
-  left: auto !important;
-  width: 200px !important;
-  text-align: left;
-  z-index: 60 !important;
-}
-#luliy-min-toc a { color: #8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
-#luliy-min-toc a:hover,
-#luliy-min-toc .luliy-min-toc-h1 { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
-
-/* —— 7. 主页：背景全屏 + 图片居中 + 顶部文字导航（切换按钮左边） —— */
-#luliy-min-home {
-  position: fixed !important; inset: 0 !important;
-  background: rgb(230,225,212) !important;
-  display: flex !important; align-items: center !important; justify-content: center !important;
-  z-index: 50 !important;
-}
-#luliy-min-home-nav {
-  position: fixed; top: 24px; right: 76px; z-index: 120;
-  font-family: var(--min-sans); font-size: 14px; letter-spacing: 0.5px;
-  color: #8c8c8c;
-}
-#luliy-min-home-nav a { color: #1c1c1e; text-decoration: none; }
-#luliy-min-home-nav a:hover { opacity: 0.55; }
-#luliy-min-home-nav .luliy-min-nav-sep { margin: 0 8px; color: #8c8c8c; }
-
-/* —— 8. 切换按钮：极简风、放右上角 —— */
-#luliy-system-toggle {
-  background: transparent !important;
-  border: 1px solid #3a3a3a !important;
-  color: #1c1c1e !important;
-}
-#luliy-system-toggle:hover { background: #1c1c1e !important; color: rgb(230,225,212) !important; }
-
-@media (max-width: 1080px) {
-  #luliy-min-toc { display: none !important; }
-}
-@media (max-width: 720px) {
-  #luliy-min-home-nav { right: 64px; font-size: 12px; }
-  #luliy-min-home-nav .luliy-min-nav-sep { margin: 0 5px; }
-}
-
-/* —— v2 补丁：标题/表头颜色 + 表格外框，更强覆盖 —— */
-body.luliy-minimal .luliy-chron-title,
-body.luliy-minimal .luliy-arch-title,
-body.luliy-minimal .luliy-book-title {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  background: none !important; background-clip: border-box !important;
-  -webkit-background-clip: border-box !important;
-  font-family: 'Noto Serif SC', Georgia, serif !important;
-  font-style: normal !important;
-}
-/* 表头文字纯黑（去青色） */
-body.luliy-minimal .luliy-chron-table th,
-body.luliy-minimal .luliy-chron-table thead th,
-body.luliy-minimal .luliy-chron-table thead td {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-}
-/* 表格内容文字纯黑（去淡蓝） */
-body.luliy-minimal .luliy-chron-table tbody td,
-body.luliy-minimal .luliy-chron-table tbody th,
-body.luliy-minimal .luliy-chron-month-cell {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-}
-/* 表格最外层容器：去圆角去描边去阴影 */
-body.luliy-minimal .luliy-chron-tablewrap,
-body.luliy-minimal .luliy-chron-scroll-x,
-body.luliy-minimal .luliy-chronicle .luliy-chron-body {
-  border: none !important; border-radius: 0 !important;
-  box-shadow: none !important; background: transparent !important;
-  outline: none !important;
-}
-/* 表格本身直角无圆角 */
-body.luliy-minimal .luliy-chron-table { border-radius: 0 !important; overflow: visible !important; }
-
-/* ════════ v3 最终覆盖：用 [data-color-mode] 前缀提足优先级 ════════
-   赛博的泄漏规则多是 [data-color-mode="dark"] body:not([data-luliy-theme]) #xxx，
-   优先级很高。极简覆盖必须同等或更高，这里统一加 [data-color-mode] 前缀。 */
-
-/* 文章面板：彻底透明（压掉 :not([data-luliy-theme]) #postBody 的深色面板） */
-[data-color-mode] body.luliy-minimal #postBody,
-[data-color-mode] body.luliy-minimal .markdown-body,
-[data-color-mode] body.luliy-minimal #content {
-  background: transparent !important;
-  background-image: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-
-/* Chronicle/Archives/Book 标题：纯黑衬线（压掉粉色渐变） */
-[data-color-mode] body.luliy-minimal .luliy-chron-title,
-[data-color-mode] body.luliy-minimal .luliy-arch-title,
-[data-color-mode] body.luliy-minimal .luliy-book-title {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  background: none !important;
-  -webkit-background-clip: border-box !important;
-  background-clip: border-box !important;
-  font-family: 'Noto Serif SC', Georgia, serif !important;
-  text-shadow: none !important;
-}
-
-/* 表头 + 表格内容：纯黑（压掉青色/淡蓝） */
-[data-color-mode] body.luliy-minimal .luliy-chron-table th,
-[data-color-mode] body.luliy-minimal .luliy-chron-table td,
-[data-color-mode] body.luliy-minimal .luliy-chron-month-cell,
-[data-color-mode] body.luliy-minimal .luliy-chron-table tbody td,
-[data-color-mode] body.luliy-minimal .luliy-chron-table thead th {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  background: transparent !important;
-  border: 1px solid #3a3a3a !important;
-  text-shadow: none !important;
-}
-
-/* 归档列表文字 */
-[data-color-mode] body.luliy-minimal .luliy-arch-name { color:#1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
-[data-color-mode] body.luliy-minimal .luliy-arch-date { color:#8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
-
-/* Tab 文字 */
-[data-color-mode] body.luliy-minimal .luliy-arch-tab,
-[data-color-mode] body.luliy-minimal .luliy-chron-cat-tab,
-[data-color-mode] body.luliy-minimal .luliy-chron-year-tab { color:#8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
-[data-color-mode] body.luliy-minimal .luliy-arch-tab.is-active,
-[data-color-mode] body.luliy-minimal .luliy-chron-cat-tab.is-active,
-[data-color-mode] body.luliy-minimal .luliy-chron-year-tab.is-active { color:#1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
-
-/* ════════ v4 终极方案：极简模式下重定义所有主题色变量为黑/灰 ════════
-   赛博的标题/表头/链接大量用 var(--th-accent) var(--th-h1) 等，
-   与其逐个覆盖，不如直接把这些变量在极简模式下全设成黑灰，
-   所有引用它们的地方自动变成极简配色。这是最干净的根治。 */
-[data-color-mode] body.luliy-minimal,
-body.luliy-minimal {
-  --th-accent: #1c1c1e !important;
-  --th-accent-soft: rgba(28,28,30,0.08) !important;
-  --th-accent-hover: rgba(28,28,30,0.15) !important;
-  --th-h1: #1c1c1e !important;
-  --th-h2: #1c1c1e !important;
-  --th-h3: #1c1c1e !important;
-  --th-h4: #1c1c1e !important;
-  --th-strong: #1c1c1e !important;
-  --th-h1-border: none !important;
-  --th-h2-bl: none !important;
-  --th-h2-bg: transparent !important;
-  --luliy-glass-opacity: 0 !important;
-}
-
-/* ════════ v5 暴力覆盖：html 前缀拉满特异性，强制标题/表头黑色 ════════ */
-html body.luliy-minimal .luliy-chron-title,
-html body.luliy-minimal .luliy-arch-title,
-html body.luliy-minimal .luliy-book-title,
-html body.luliy-minimal .luliy-chron-table th,
-html body.luliy-minimal .luliy-chron-table thead th,
-html body.luliy-minimal .luliy-chron-table td,
-html body.luliy-minimal .luliy-chron-month-cell,
-html body.luliy-minimal .luliy-arch-year {
-  color: #1c1c1e !important;
-  -webkit-text-fill-color: #1c1c1e !important;
-  text-fill-color: #1c1c1e !important;
-  background: transparent !important;
-  background-image: none !important;
-  -webkit-background-clip: border-box !important;
-  background-clip: border-box !important;
-  text-shadow: none !important;
-}
-html body.luliy-minimal .luliy-chron-title,
-html body.luliy-minimal .luliy-arch-title,
-html body.luliy-minimal .luliy-book-title,
-html body.luliy-minimal .luliy-arch-year {
-  font-family: 'Noto Serif SC', Georgia, serif !important;
-}
-
-/* ════════════════════════════════════════════════════════════
-   高对比度收尾层 —— 提升所有主题日/夜模式下文章可读性
-   核心：提高文章面板不透明度（默认 0.5 → 0.82），让文字坐在
-   更实的底上；强化正文/标题/链接/代码/按钮对比度。
-   放在文件最末尾，确保优先级最高。
-   ════════════════════════════════════════════════════════════ */
-
-/* 1. 文章面板：默认不透明度大幅提高（除非用户手动调过滑块） */
-body[data-luliy-theme] #postBody,
-body:not([data-luliy-theme]) #postBody {
-  --luliy-article-opacity: 0.86;
-}
-[data-color-mode="dark"] body[data-luliy-theme] #postBody,
-[data-color-mode="dark"] body:not([data-luliy-theme]) #postBody {
-  --luliy-article-opacity: 0.88;
-}
-
-/* 2. 白天模式：正文深色、标题更黑，保证 7:1 以上对比 */
-[data-color-mode="light"] #postBody,
-[data-color-mode="light"] #postBody p,
-[data-color-mode="light"] #postBody li,
-[data-color-mode="light"] #postBody span,
-[data-color-mode="light"] #postBody td,
-[data-color-mode="light"] #postBody figcaption {
-  color: #1a1a1f !important;
-  -webkit-text-fill-color: #1a1a1f !important;
-}
-[data-color-mode="light"] #postBody h1,
-[data-color-mode="light"] #postBody h2,
-[data-color-mode="light"] #postBody h3,
-[data-color-mode="light"] #postBody h4 {
-  color: #0d0d12 !important;
-  -webkit-text-fill-color: #0d0d12 !important;
-}
-
-/* 3. 夜间模式：正文足够亮（避免灰蒙蒙），标题更白 */
-[data-color-mode="dark"] #postBody,
-[data-color-mode="dark"] #postBody p,
-[data-color-mode="dark"] #postBody li,
-[data-color-mode="dark"] #postBody span,
-[data-color-mode="dark"] #postBody td,
-[data-color-mode="dark"] #postBody figcaption {
-  color: #e8e6f0 !important;
-  -webkit-text-fill-color: #e8e6f0 !important;
-}
-[data-color-mode="dark"] #postBody h1,
-[data-color-mode="dark"] #postBody h2,
-[data-color-mode="dark"] #postBody h3,
-[data-color-mode="dark"] #postBody h4 {
-  color: #f5f3fb !important;
-  -webkit-text-fill-color: #f5f3fb !important;
-}
-
-/* 4. 链接：日/夜都用高对比强调色 + 下划线，确保可识别 */
-[data-color-mode="light"] #postBody a {
-  color: #5b21b6 !important; -webkit-text-fill-color: #5b21b6 !important;
-  text-decoration: underline !important; text-underline-offset: 2px !important;
-}
-[data-color-mode="dark"] #postBody a {
-  color: #b9a3ff !important; -webkit-text-fill-color: #b9a3ff !important;
-  text-decoration: underline !important; text-underline-offset: 2px !important;
-}
-
-/* 5. 行内代码：日/夜都有清晰底色和高对比文字 */
-[data-color-mode="light"] #postBody code {
-  background: rgba(28,28,34,0.07) !important; color: #9333ea !important;
-  -webkit-text-fill-color: #9333ea !important; padding: 2px 6px; border-radius: 4px;
-}
-[data-color-mode="dark"] #postBody code {
-  background: rgba(255,255,255,0.10) !important; color: #d6bcfa !important;
-  -webkit-text-fill-color: #d6bcfa !important; padding: 2px 6px; border-radius: 4px;
-}
-
-/* 6. 功能按钮（浮动面板/抽屉/FAB）高对比 */
-[data-color-mode="light"] #luliy-ham-btn span { background: #1a1a1f !important; }
-[data-color-mode="dark"] #luliy-ham-btn span { background: #f0eef8 !important; }
-[data-color-mode="light"] #luliy-issues-link,
-[data-color-mode="light"] #luliy-to-minimal,
-[data-color-mode="light"] #luliy-top-link { color: #2a2440 !important; }
-[data-color-mode="dark"] #luliy-issues-link,
-[data-color-mode="dark"] #luliy-to-minimal,
-[data-color-mode="dark"] #luliy-top-link { color: #e8e6f0 !important; }
-
-/* 7. 文末字数信息条：日/夜都清晰可读 */
-[data-color-mode="light"] #luliy-post-footer-bar { color: #555 !important; border-top-color: rgba(0,0,0,0.10) !important; }
-[data-color-mode="dark"] #luliy-post-footer-bar { color: #aaa !important; border-top-color: rgba(255,255,255,0.12) !important; }
-
-/* ── 顶部操作组：[Link] [简洁模式]（沉思者图标右边）── */
-#luliy-top-actions {
-  position: fixed; top: 14px; z-index: 10002;
-  display: inline-flex; align-items: center; gap: 14px;
-  height: 44px;
-}
-#luliy-top-link, #luliy-to-minimal {
-  background: transparent; border: none; cursor: pointer;
-  font-family: inherit; font-size: 13px; font-weight: 600;
-  letter-spacing: 0.5px; color: #fff; padding: 4px 2px;
-  opacity: 0.78; transition: opacity 0.2s, transform 0.2s;
-  text-decoration: none; white-space: nowrap;
-  filter: drop-shadow(0 0 6px rgba(110,199,255,0.5));
-}
-#luliy-top-link:hover, #luliy-to-minimal:hover { opacity: 1; transform: translateY(-1px); }
-#luliy-to-minimal {
-  border: 1px solid rgba(255,255,255,0.35); border-radius: 14px;
-  padding: 4px 12px;
-}
-[data-color-mode="light"] #luliy-to-minimal { border-color: rgba(0,0,0,0.25); }
-@media (max-width: 600px) {
-  #luliy-top-actions { gap: 8px; }
-  #luliy-top-link, #luliy-to-minimal { font-size: 11px; }
-  #luliy-to-minimal { padding: 3px 8px; }
-}
-/* ══════════════════════════════════════════════════════════
-   05  文章宽度控件 —— 固定在右下角的小按钮，点开是一条滑杆
-══════════════════════════════════════════════════════════ */
-#luliy-width-ctrl {
-  position: fixed;
-  right: 20px; bottom: 20px;
-  z-index: 80;
-  font-family: 'Noto Serif SC', Georgia, serif;
-}
-#luliy-width-btn {
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  border: 1px solid rgba(28,28,30,0.18);
-  background: rgba(255,255,255,0.88);
-  color: var(--min-title, #1c1c1e);
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
-  transition: background 0.15s, transform 0.15s;
-}
-#luliy-width-btn:hover { background: #fff; transform: scale(1.05); }
-#luliy-width-panel {
-  position: absolute;
-  right: 0; bottom: 48px;
-  width: 200px;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.96);
-  border: 1px solid rgba(28,28,30,0.12);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.14);
-  opacity: 0;
-  transform: translateY(6px);
-  pointer-events: none;
-  transition: opacity 0.18s, transform 0.18s;
-}
-#luliy-width-ctrl.is-open #luliy-width-panel {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-#luliy-width-panel label {
-  display: block;
-  font-size: 12px;
-  color: var(--min-muted, #8c8c8c);
-  margin-bottom: 8px;
-}
-#luliy-width-range {
-  width: 100%;
-  accent-color: var(--min-title, #1c1c1e);
-}
-@media (max-width: 640px) {
-  #luliy-width-ctrl { right: 14px; bottom: 14px; }
-}
+})(window);
