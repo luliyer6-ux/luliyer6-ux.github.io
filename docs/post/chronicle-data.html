@@ -233,7 +233,7 @@
     var blur=parseInt(localStorage.getItem('luliy-bgblur')||'0',10)||0;
     var pw=parseInt(localStorage.getItem('luliy-pbwidth')||'0',10)||0;
     var sans=localStorage.getItem('luliy-sans')||'0';
-    var defBg='https://raw.githubusercontent.com/luliy6/luliy6.github.io/refs/heads/main/static/img/bg.png';
+    var defBg='https://picsum.photos/seed/luliy-default-bg/1920/1080';
     var url=bg||defBg;
     /* inline critical vars + theme attr BEFORE first paint to kill FOUC */
     d.style.setProperty('--luliy-bg-url','url(\''+url+'\')');
