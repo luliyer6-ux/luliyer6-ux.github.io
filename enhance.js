@@ -38,27 +38,83 @@
   var LULIY_OPTS = {
     /* Homepage bottom gallery: 1 image = banner, 2+ = grid. */
     galleryImages: [
-      'https://free.picui.cn/free/2026/06/26/6a3e9742e60fe.png',
-      'https://free.picui.cn/free/2026/06/26/6a3e97394d005.png',
-      'https://free.picui.cn/free/2026/06/26/6a3e973669742.png',
-      'https://free.picui.cn/free/2026/06/26/6a3e9736185b3.png',
-      'https://free.picui.cn/free/2026/06/26/6a3e9733e7821.png',
-      'https://free.picui.cn/free/2026/06/26/6a3e973303cdc.png'
+      'https://picsum.photos/seed/luliy-gallery/1600/900'
     ],
     galleryText: '\u6211\u5c06\u65e0\u9650\u8fdb\u6b65',
 
-    /* Homepage full-screen Hero (scroll down to enter). */
+    /* ★ Site identity */
+    siteName: '\u0394\u03b9\u03ac\u039d\u03bf\u03c5\u03c2',   /* ΔιάΝους — shown top-left, in drawer, etc. */
+    /* 副标题，来自用户上传的赛博朋克粒子页面，只在首页 brand 下方显示 */
+    siteSubtitle: '\u0391\u03bc\u03c6\u03b9\u03c3\u03b2\u03ae\u03c4\u03b7\u03c3\u03b5. \u039a\u03b1\u03c4\u03b1\u03bd\u03cc\u03b7\u03c3\u03b5. \u0394\u03b7\u03bc\u03b9\u03bf\u03cd\u03c1\u03b3\u03b7\u03c3\u03b5.',
+
+    /* ★ Loading splash image (shown briefly while the site loads) */
+    /* ★ Loading splash：不再用图片，文字内容取自 siteName */
+    splashMaxMs: 1500,   /* 显示这么久后自动淡出 */
+
+    /* Homepage full-screen Hero (scroll down to enter). No text now —
+       just the welcome image + a scroll-down hint. */
     heroImage: 'https://picsum.photos/seed/luliy-hero/1920/1080',
-    heroTitle: 'Luliy',
-    heroSubtitle: '\u6211\u5c06\u65e0\u9650\u8fdb\u6b65',
-    heroHint: '\u4e0b\u6ed1\u8fdb\u5165 \u2193',
+    heroTitle: '',
+    heroSubtitle: '',
+    heroHint: '\u2193',
+    heroBadge: '',
+
+    /* ★ Homepage category cards — 6 张，2 行 3 列。
+       Each links to tag.html#<label> which shows only that category's posts.
+       label MUST match the GitHub issue label name exactly. */
+    categoryCards: [
+      {
+        label: 'Study',
+        title: 'STUDY',
+        kicker: '\u5b66\u4e60',          /* 学习 */
+        desc: '\u77e5\u8bc6\u3001\u7b14\u8bb0\u4e0e\u6280\u672f\u63a2\u7d22\u3002',  /* 知识、笔记与技术探索。 */
+        image: 'https://free.picui.cn/free/2026/06/26/6a3e9742e60fe.png'
+      },
+      {
+        label: 'Journal',
+        title: 'JOURNAL',
+        kicker: '\u65e5\u5fd7',          /* 日志 */
+        desc: '\u751f\u6d3b\u3001\u8bb0\u5f55\u4e0e\u70b9\u6ef4\u3002',          /* 生活、记录与点滴。 */
+        image: 'https://free.picui.cn/free/2026/06/26/6a3e97394d005.png'
+      },
+      {
+        label: 'Musings',
+        title: 'MUSINGS',
+        kicker: '\u968f\u7b14',          /* 随笔 */
+        desc: '\u601d\u8003\u3001\u611f\u609f\u4e0e\u5076\u5f97\u3002',            /* 思考、感悟与偶得。 */
+        image: 'https://free.picui.cn/free/2026/06/26/6a3e973669742.png'
+      },
+      {
+        label: 'Guidebook',
+        title: 'GUIDEBOOK',
+        kicker: '\u6307\u5357',          /* 指南 */
+        desc: '\u672c\u7ad9\u4f7f\u7528\u4e0e\u914d\u7f6e\u6307\u5357\u3002',      /* 本站使用与配置指南。 */
+        image: 'https://free.picui.cn/free/2026/06/26/6a3e9736185b3.png'
+      },
+      {
+        label: 'Library',
+        title: 'LIBRARY',
+        kicker: '\u85cf\u4e66',          /* 藏书 */
+        desc: '\u4e66\u7c4d\u4e0e\u8d44\u6599\u6536\u85cf\u3002',                /* 书籍与资料收藏。 */
+        image: 'https://free.picui.cn/free/2026/06/26/6a3e9733e7821.png'
+      },
+      {
+        label: 'AI',
+        title: 'AI',
+        kicker: '\u4eba\u5de5\u667a\u80fd',  /* 人工智能 */
+        desc: '\u6a21\u578b\u3001\u5de5\u5177\u4e0e\u5b9e\u8df5\u8bb0\u5f55\u3002',  /* 模型、工具与实践记录。 */
+        image: 'https://free.picui.cn/free/2026/06/26/6a3e973303cdc.png'
+      }
+    ],
+    /* "more" button under the cards → archive page */
+    categoryMoreHref: 'archive.html',
 
     /* APlayer mini player (top-left, all pages, autoplay, default folded) */
     aplayer: {
-      name:   'SoundHelix Song 1',
-      artist: 'SoundHelix',
-      url:    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      cover:  'https://picsum.photos/seed/luliy-cover/500/500'
+      name:   'echos',
+      artist: 'Luliy',
+      url:    'https://raw.githubusercontent.com/luliyer6-ux/luliyer6-ux.github.io/refs/heads/main/static/echos.mp3',
+      cover:  'https://free.picui.cn/free/2026/06/26/6a3e9742e60fe.png'
     },
 
     /* Favorites page lock — SHA-256 of the password (121383). */
@@ -135,7 +191,9 @@
   root._luliyToggleMode = _luliyToggleMode;
   root._luliyResolveMode = _luliyResolveMode;
   function isArchivePage() {
-    return location.pathname.includes('archive');
+    /* ★ 精确匹配 archive.html，不用宽松的 includes('archive')——
+       否则 URL 里凑巧含 archive 的普通文章会被误判成归档页。 */
+    return /(^|\/)archive(\.html)?$/i.test(location.pathname);
   }
   function fetchPosts() {
     function norm(data) {
@@ -222,12 +280,18 @@
 
     /* Track list (default + user-added) */
     function loadTracks() {
-      var base = [{ name: cfg.name||'dark', artist: cfg.artist||'Luliy', url: cfg.url, cover: cfg.cover||'' }];
+      /* ★ 默认曲库：在这里维护「出厂曲目」，用户可在播放器里再增删 */
+      var base = [
+        { name: cfg.name||'echos', artist: cfg.artist||'Luliy', url: cfg.url, cover: cfg.cover||'' }
+      ];
       try {
         var extra = JSON.parse(localStorage.getItem(ALIST) || '[]');
         if (Array.isArray(extra)) return base.concat(extra);
       } catch(e) {}
       return base;
+    }
+    function saveTracks(extraList) {
+      try { localStorage.setItem(ALIST, JSON.stringify(extraList)); } catch(e) {}
     }
 
     /* Wrapper that takes full position control */
@@ -292,6 +356,9 @@
       wrap.style.top  = y + 'px';
       setTimeout(function () { wrap.style.transition = ''; }, 300);
       savePos(x, y);
+      /* ★ 同步圆形按钮：收起后会出现在播放器最后停留的位置 */
+      var apFabEl = document.getElementById('luliy-ap-fab');
+      if (apFabEl) { apFabEl.style.left = x + 'px'; apFabEl.style.top = y + 'px'; }
     }
     wrap.addEventListener('mousedown', function(e) {
       if (e.target.closest('input,button,a,.aplayer-controller,.aplayer-list')) return;
@@ -372,16 +439,15 @@
           });
         } else { try { ap.pause(); } catch(e){} }
 
-        /* ── Mini control strip: add-music + hide-to-side ──── */
+        /* ── 工具栏：添曲 / 删曲 / 随机 ───────────────────────── */
         if (!wrap.querySelector('.luliy-ap-tools')) {
           var tools = document.createElement('div');
           tools.className = 'luliy-ap-tools';
 
-          /* Add-music button — prompts for a direct URL */
+          /* ① 添加音乐 */
           var addBtn = document.createElement('button');
           addBtn.type = 'button'; addBtn.className = 'luliy-ap-tool luliy-ap-add';
-          addBtn.textContent = '+';
-          addBtn.title = '添加音乐直链';
+          addBtn.textContent = '+'; addBtn.title = '添加音乐直链';
           addBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             var url = window.prompt('输入音乐直链 URL（mp3/m4a 等）：');
@@ -393,41 +459,179 @@
               if (!Array.isArray(list)) list = [];
               var track = { name: name, artist: 'Luliy', url: url, cover: cfg.cover || '' };
               list.push(track);
-              localStorage.setItem(ALIST, JSON.stringify(list));
-              ap.list.add(track);          /* live-add without reload */
+              saveTracks(list);
+              ap.list.add(track);
               ap.list.switch(ap.list.audios.length - 1);
               ap.play();
             } catch(err) { try { console.warn('[luliy] add track failed', err); } catch(e2){} }
           });
 
-          /* Hide-to-side button — collapses the player to a thin edge tab */
-          var hideBtn = document.createElement('button');
-          hideBtn.type = 'button'; hideBtn.className = 'luliy-ap-tool luliy-ap-hide';
-          hideBtn.textContent = '‹';
-          hideBtn.title = '收起到侧边';
-          var AHIDE = 'luliy-aplayer-hidden';
-          function applyHidden(hidden) {
-            wrap.classList.toggle('is-tucked', hidden);
-            hideBtn.textContent = hidden ? '›' : '‹';
-            hideBtn.title = hidden ? '展开播放器' : '收起到侧边';
-            try { localStorage.setItem(AHIDE, hidden ? '1' : '0'); } catch(e){}
-          }
-          hideBtn.addEventListener('click', function(e) {
+          /* ② 删除当前曲目（默认曲库前两首不可删） */
+          var BASE_COUNT = 2;
+          var delBtn = document.createElement('button');
+          delBtn.type = 'button'; delBtn.className = 'luliy-ap-tool luliy-ap-del';
+          delBtn.textContent = '−'; delBtn.title = '删除当前曲目';
+          delBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            applyHidden(!wrap.classList.contains('is-tucked'));
-          });
-          /* Restore saved hidden state */
-          try { if (localStorage.getItem(AHIDE) === '1') applyHidden(true); } catch(e){}
-          /* Tapping a tucked player re-expands it */
-          wrap.addEventListener('click', function(e) {
-            if (wrap.classList.contains('is-tucked') && !e.target.closest('.luliy-ap-tool')) {
-              applyHidden(false);
-            }
+            try {
+              var idx = ap.list.index;
+              if (idx < BASE_COUNT) { window.alert('默认曲目不可删除'); return; }
+              ap.list.remove(idx);
+              var list = JSON.parse(localStorage.getItem(ALIST) || '[]');
+              var extraIdx = idx - BASE_COUNT;
+              if (extraIdx >= 0 && extraIdx < list.length) {
+                list.splice(extraIdx, 1);
+                saveTracks(list);
+              }
+            } catch(err) {}
           });
 
+          /* ③ 随机/顺序切换 */
+          var shuffleBtn = document.createElement('button');
+          shuffleBtn.type = 'button'; shuffleBtn.className = 'luliy-ap-tool luliy-ap-shuffle';
+          shuffleBtn.title = '随机播放';
+          shuffleBtn.innerHTML = '&#x1F500;';   /* 🔀 */
+          var _shuffle = false;
+          shuffleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            _shuffle = !_shuffle;
+            shuffleBtn.style.opacity = _shuffle ? '1' : '0.45';
+            shuffleBtn.title = _shuffle ? '已开启随机' : '随机播放';
+            /* APlayer 没有直接的 shuffle API，用 setMode 模拟 */
+            try {
+              if (ap.mode !== undefined) ap.setMode(_shuffle ? 'random' : 'list');
+            } catch(err) {}
+          });
+          shuffleBtn.style.opacity = '0.45';
+
           tools.appendChild(addBtn);
-          tools.appendChild(hideBtn);
+          tools.appendChild(delBtn);
+          tools.appendChild(shuffleBtn);
           wrap.appendChild(tools);
+        }
+
+        /* ── 键盘快捷键（仅播放器展开时生效，避免和全局冲突）── */
+        document.addEventListener('keydown', function(e) {
+          if (!apOpen) return;           /* 播放器收起时不响应 */
+          if (e.target && e.target.tagName && ['INPUT','TEXTAREA','SELECT'].indexOf(e.target.tagName) !== -1) return;
+          try {
+            if (e.code === 'Space' || e.keyCode === 32) { e.preventDefault(); ap.toggle(); }
+            if (e.code === 'ArrowRight' || e.keyCode === 39) ap.skipForward();
+            if (e.code === 'ArrowLeft'  || e.keyCode === 37) ap.skipBack();
+          } catch(err) {}
+        });
+
+        /* ── ★ 圆形折叠按钮（参照目录 #luliy-toc-fab 的交互方式）：
+           默认收起成一个圆形按钮，点击展开成完整播放器（拖拽/歌词全都还在），
+           再点一次按钮、点击外部空白处或按 Esc 都能收起回圆形。
+           音频本身不受展开/收起影响，收起时依旧在后台播放。 */
+        if (!document.getElementById('luliy-ap-fab')) {
+          var apFab = document.createElement('button');
+          apFab.id = 'luliy-ap-fab';
+          apFab.type = 'button';
+          apFab.setAttribute('aria-label', '\u97f3\u4e50\u64ad\u653e\u5668');
+          apFab.textContent = '\u266A';   /* ♪ */
+          apFab.classList.add('is-visible');
+
+          /* ★ 圆形按钮也能拖动，并且和展开后的播放器位置双向同步：
+             拖按钮 → 下次点开播放器会出现在按钮当前位置；
+             拖播放器（原有逻辑）→ 收起后按钮也会出现在播放器最后停留的位置。
+             两者共用同一份位置存储（APOS），只是各自的默认初始值不同。 */
+          var fabPos = loadPos();
+          var fabDefX = window.innerWidth - 22 - 44;
+          var fabDefY = window.innerHeight - 268 - 44;
+          apFab.style.left = (fabPos ? fabPos.x : fabDefX) + 'px';
+          apFab.style.top  = (fabPos ? fabPos.y : fabDefY) + 'px';
+
+          var fabDragging = false, _fdx = 0, _fdy = 0;
+          function onFabDragStart(ex, ey) {
+            fabDragging = true;
+            var ox = parseInt(apFab.style.left) || 0;
+            var oy = parseInt(apFab.style.top)  || 0;
+            _fdx = ex - ox; _fdy = ey - oy;
+            apFab.classList.add('is-dragging');
+          }
+          function onFabDragMove(ex, ey) {
+            if (!fabDragging) return;
+            var nx = Math.max(0, Math.min(window.innerWidth  - apFab.offsetWidth,  ex - _fdx));
+            var ny = Math.max(0, Math.min(window.innerHeight - apFab.offsetHeight, ey - _fdy));
+            apFab.style.left = nx + 'px';
+            apFab.style.top  = ny + 'px';
+          }
+          function onFabDragEnd() {
+            if (!fabDragging) return;
+            fabDragging = false;
+            apFab.classList.remove('is-dragging');
+            var x = parseInt(apFab.style.left) || 0;
+            var y = parseInt(apFab.style.top)  || 0;
+            /* 同步给播放器：下次展开就出现在这里 */
+            wrap.style.left = x + 'px';
+            wrap.style.top  = y + 'px';
+            savePos(x, y);
+          }
+          var _fabMoved = false;
+          apFab.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            _fabMoved = false;
+            var p = zoomPos(e.clientX, e.clientY);
+            onFabDragStart(p.x, p.y);
+          });
+          document.addEventListener('mousemove', function (e) {
+            if (!fabDragging) return;
+            _fabMoved = true;
+            var p = zoomPos(e.clientX, e.clientY);
+            onFabDragMove(p.x, p.y);
+          });
+          document.addEventListener('mouseup', onFabDragEnd);
+          apFab.addEventListener('touchstart', function (e) {
+            _fabMoved = false;
+            var t = e.touches[0];
+            var p = zoomPos(t.clientX, t.clientY);
+            onFabDragStart(p.x, p.y);
+          }, { passive: true });
+          document.addEventListener('touchmove', function (e) {
+            if (!fabDragging) return;
+            _fabMoved = true;
+            var t = e.touches[0];
+            var p = zoomPos(t.clientX, t.clientY);
+            onFabDragMove(p.x, p.y);
+          }, { passive: true });
+          document.addEventListener('touchend', onFabDragEnd);
+
+          var APOPEN = 'luliy-aplayer-open';
+          var apOpen = false;
+          function setApOpen(v) {
+            apOpen = v;
+            wrap.classList.toggle('is-open', apOpen);
+            apFab.classList.toggle('is-active', apOpen);
+            /* ★ 修复播放器展开后和圆形按钮重叠的问题：两者共用同一个
+               坐标点（展开时"从按钮位置长出来"），player 展开后体积
+               比按钮大得多，按钮原地不隐藏的话会糊在展开后面板的
+               左上角。展开时把按钮隐藏，收起后再让它重新出现。 */
+            apFab.classList.toggle('is-hidden-while-open', apOpen);
+            try { localStorage.setItem(APOPEN, apOpen ? '1' : '0'); } catch (e) {}
+          }
+          apFab.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (_fabMoved) { _fabMoved = false; return; }   /* 刚拖动完不算点击，避免拖完误触展开 */
+            setApOpen(!apOpen);
+            playSfx('click');
+          });
+          document.addEventListener('click', function (e) {
+            if (!apOpen) return;
+            if (e.target === apFab || apFab.contains(e.target)) return;
+            if (wrap.contains(e.target)) return;
+            setApOpen(false);
+          });
+          document.addEventListener('keydown', function (e) {
+            if (apOpen && (e.key === 'Escape' || e.keyCode === 27)) { setApOpen(false); playSfx('click'); }
+          });
+          document.body.appendChild(apFab);
+
+          /* 默认收起；只有用户上次主动展开过才恢复展开状态 */
+          var wasOpen = false;
+          try { wasOpen = localStorage.getItem(APOPEN) === '1'; } catch (e) {}
+          setApOpen(wasOpen);
         }
 
       } catch(e) { console.warn('[luliy] APlayer failed', e); }
@@ -440,107 +644,106 @@
     document.head.appendChild(sc);
   }
 
-  function initHomeHero() {
-    /* Only on the homepage / index, not on article or single pages */
+  /* ---- 00 欢迎页（Hero）已删除 --------------------------
+     原因：会反复出现"第一次显示、之后又不出现"的不一致问题，
+     用户决定彻底去掉。主页现在打开即直接显示六张分类卡片。
+     加载动画（#luliy-splash，居中荧光 ΔιάΝους 文字）是另一个独立
+     功能，与欢迎页无关，予以保留。 */
+
+
+  /* ---- 00b  Homepage category cards (Rockstar-style, 3 across) ----
+     Three big cards (Study / Journal / Musings). Each links to
+     tag.html#<label>, which we restyle into a 3-column grid showing only
+     that category's posts. A "more →" button under them goes to archive. */
+  function initCategoryCards() {
+    /* Only on the homepage, only once, only if there's something to show */
     if (!isIndexPage()) return;
-    if (document.getElementById('luliy-hero')) return;
+    if (document.getElementById('luliy-cats')) return;
+    var items = LULIY_OPTS.categoryCards;
+    if (!items || !items.length) return;
 
-    /* First visit of this session only — afterwards homepage shows directly */
-    try {
-      if (sessionStorage.getItem('luliy-hero-shown') === '1') return;
-      sessionStorage.setItem('luliy-hero-shown', '1');
-    } catch (e) {}
+    /* ★ 标记首页 body：CSS 据此隐藏 Gmeek 原生的副标题与文章列表，
+       只留下面这六张分类卡片，并让它们在视口里垂直居中。 */
+    document.body.classList.add('luliy-home');
 
-    var hero = document.createElement('section');
-    hero.id = 'luliy-hero';
-    hero.style.backgroundImage = "linear-gradient(to bottom, rgba(10,6,22,0.10), rgba(10,6,22,0.45)), url('" + LULIY_OPTS.heroImage + "')";
+    var section = document.createElement('section');
+    section.id = 'luliy-cats-wrap';
 
-    var inner = document.createElement('div');
-    inner.id = 'luliy-hero-inner';
+    var grid = document.createElement('div');
+    grid.id = 'luliy-cats';
 
-    var title = document.createElement('h1');
-    title.id = 'luliy-hero-title';
-    title.textContent = LULIY_OPTS.heroTitle || 'Luliy';
+    items.forEach(function (it) {
+      var card = document.createElement('a');
+      card.className = 'luliy-cat-card';
+      /* tag.html uses #<label> to filter; encode in case of spaces */
+      card.href = 'tag.html#' + encodeURIComponent(it.label || '');
+      /* ★ 图片改用 CSS 变量传给 ::before 伪元素（见 enhance.css），
+         这样图片能在悬停时独立缩放/加滤镜，不会带着文字一起变形。
+         渐变遮罩也挪到了 ::after 里统一处理，这里不用再拼了。 */
+      card.style.setProperty('--cat-img', 'url("' + it.image + '")');
 
-    var sub = document.createElement('p');
-    sub.id = 'luliy-hero-intro-sub';
-    sub.textContent = LULIY_OPTS.heroSubtitle || '';
+      var kicker = document.createElement('span');
+      kicker.className = 'luliy-cat-kicker';
+      kicker.textContent = it.kicker || '';
 
-    inner.appendChild(title);
-    inner.appendChild(sub);
+      var title = document.createElement('h3');
+      title.className = 'luliy-cat-title';
+      title.textContent = it.title || it.label || '';
 
-    var hint = document.createElement('div');
-    hint.id = 'luliy-hero-hint';
-    hint.textContent = LULIY_OPTS.heroHint || '\u2193';
-    hint.setAttribute('role', 'button');
-    hint.setAttribute('tabindex', '0');
+      var desc = document.createElement('p');
+      desc.className = 'luliy-cat-desc';
+      desc.textContent = it.desc || '';
 
-    hero.appendChild(inner);
-    hero.appendChild(hint);
+      card.appendChild(kicker);
+      card.appendChild(title);
+      card.appendChild(desc);
+      grid.appendChild(card);
+    });
 
-    /* Insert hero as the very first thing in the page flow */
-    if (document.body.firstChild) document.body.insertBefore(hero, document.body.firstChild);
-    else document.body.appendChild(hero);
+    section.appendChild(grid);
 
-    /* Smooth-scroll to content when hint clicked / Enter pressed */
-    function enterSite() {
-      var target = document.getElementById('content') ||
-                   document.querySelector('.SideNav') ||
-                   document.getElementById('header');
-      var y = target ? (target.getBoundingClientRect().top + window.scrollY - 60) : window.innerHeight;
-      window.scrollTo({ top: Math.max(y, window.innerHeight * 0.92), behavior: 'smooth' });
+    /* "more →" button, bottom-right, → archive */
+    var moreRow = document.createElement('div');
+    moreRow.id = 'luliy-cats-more-row';
+    var more = document.createElement('a');
+    more.id = 'luliy-cats-more';
+    more.href = LULIY_OPTS.categoryMoreHref || 'archive.html';
+    more.innerHTML = 'more <span aria-hidden="true">\u2192</span>';
+    moreRow.appendChild(more);
+    section.appendChild(moreRow);
+
+    /* Insert right before #content (hero 已删除，不需要再判断它) */
+    var content = document.getElementById('content');
+    if (content && content.parentNode) {
+      content.parentNode.insertBefore(section, content);
+    } else {
+      document.body.appendChild(section);
     }
-    hint.addEventListener('click', enterSite);
-    hint.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enterSite(); }
-    });
-
-    /* Parallax + fade as user scrolls + hide/show navbar */
-    var _heroHeader = null, _heroHdrInit = false, _heroWasIn = null;
-    onScrollRAF(function () {
-      var st = window.scrollY || 0;
-      var vh = window.innerHeight;
-
-      /* ── Navbar: fully hidden while Hero fills the viewport ── */
-      if (!_heroHeader) _heroHeader = document.getElementById('header');
-      if (_heroHeader) {
-        if (!_heroHdrInit) {            /* set transition exactly once */
-          _heroHeader.style.transition = 'opacity 0.5s ease';
-          _heroHdrInit = true;
-        }
-        var inHero = st < vh * 0.85;
-        if (inHero !== _heroWasIn) {    /* write styles only on state change */
-          _heroHeader.style.opacity = inHero ? '0' : '';
-          _heroHeader.style.pointerEvents = inHero ? 'none' : '';
-          _heroWasIn = inHero;
-        }
-      }
-
-      if (st > vh) return;
-      var p = Math.min(1, st / vh);
-      inner.style.transform = 'translateY(' + (p * 60) + 'px)';
-      inner.style.opacity = String(1 - p * 1.4);
-      hint.style.opacity = String(1 - p * 2);
-    });
   }
 
   /* ---- 01  localStorage init ------------------------------ */
   function initLocalStorage() {
     var defs = {
       'luliy-sfx':       (('ontouchstart' in window) || window.innerWidth < 768) ? '0' : '1',
-      'luliy-sakura':    '1',
-      'luliy-particles': '1',
-      'luliy-sink':      'default',
-      'luliy-bg':        '',
+      /* ★ 手机端（触屏或窄屏）默认关闭所有不影响阅读的动态效果——
+         赛博粒子背景、樱花飘落，纯净阅读；桌面端保持开启。
+         用户依然可以在设置里手动重新打开，这里只是改默认值。 */
+      'luliy-sakura':    (('ontouchstart' in window) || window.innerWidth < 768) ? '0' : '1',
+      'luliy-cyber':     (('ontouchstart' in window) || window.innerWidth < 768) ? '0' : '1',
+      'luliy-cyber-speed': '1',      /* 0.2 ~ 3 */
+      'luliy-cyber-dir':   'converge', /* converge | diverge | free */
+      'luliy-cyber-style': 'classic',  /* classic | city */
+      'luliy-glass-blur':    '22',     /* px，0~50 */
+      'luliy-glass-opacity': '0.5',    /* 0~1 */
+      'luliy-glass-hue':     '250',    /* 0~360 */
+      'luliy-cat-w':        '1700',    /* 主页卡片宽度 px，900~2000，★默认再加宽 */
+      'luliy-cat-h':         '338',    /* 主页卡片高度 px，220~500 */
+      'luliy-article-opacity': '0.5',  /* 文章正文面板独立不透明度，0.1~0.95 */
       'luliy-fontsize':  '18',
       'luliy-sans':      '0',
       'luliy-cardview':  'grid',   /* grid | list */
-      'luliy-trail':     '0',      /* mouse trail off by default */
-      'luliy-firefly':   '0',      /* fireflies off by default */
-      'luliy-focus':     '0',      /* focus reading mode */
       'luliy-reduce':    '0',      /* reduce motion override */
-      'luliy-bgblur':    '0',      /* background blur px */
-      'luliy-pbwidth':   '0'       /* postBody width delta px (0 = default) */
+      'luliy-pbwidth':   '400'     /* postBody width delta px (default = 最大) */
     };
     Object.keys(defs).forEach(function (k) {
       if (localStorage.getItem(k) === null) localStorage.setItem(k, defs[k]);
@@ -667,7 +870,8 @@
 
   /* ---- 06  Static background (particles removed) ---------- */
   /* 清理：原 initParticles() 是个从未被任何地方调用的空函数，已删除。
-     静态背景完全由 CSS 负责，动态粒子由 initThemeParticles() 处理。 */
+     动态主题粒子/流星模块（initThemeParticles）也已整体删除，
+     全站背景统一为纯色 #00020c，仅保留樱花花瓣与点击火花两个特效。 */
 
   /* ---- 07  Web Audio SFX ---------------------------------- */
   var _actx = null;
@@ -722,86 +926,574 @@
     }, true);
   }
 
-  /* ---- 08  Click burst — 彩色圆点向外炸开 + 扩散圆环 -----------
-     替换原 click sparks。参考用户上传的两张图：
-       图1(开始)=圆点又大又聚在中心；图2(结束)=圆点变小、向四周扩散消失。
-     效果：点击空白处 → 一簇高饱和彩色圆点从点击点向外飞散，边飞边缩小淡出；
-           同时一圈圆环放大约 12 倍扩散淡出；外加几颗四角星点缀(呼应图2)。
-     参数：炸开距离 60~160px；圆环放大倍数 12。
-     实现用 WAAPI(element.animate)，transform/opacity 走合成器，流畅且省 CPU。 */
-  function initClickSparks() {
-    /* 取自参考图的配色：品红/红/绿/青/黄/珊瑚/蓝/紫 */
-    var COLORS = ['#ff1b8d', '#ff1744', '#00e676', '#1de9b6',
-                  '#ffd740', '#ffab91', '#2979ff', '#7c4dff'];
-    var DOT_COUNT  = 20;            /* 圆点数量 */
-    var DIST_MIN   = 60, DIST_MAX = 160;   /* 炸开距离范围(px) */
-    var RING_SCALE = 12;            /* 圆环放大倍数 */
-    var STAR_COUNT = 4;             /* 四角星数量 */
+  /* ---- 08 旧的点击火花效果已删除 -----------------------------
+     原 initClickSparks()（彩色圆点炸开+扩散环）被新的赛博朋克粒子
+     系统（initCyberParticles，见下方）取代——点击爆炸/扩散环/故障文字
+     这三个效果现在内建在那个 canvas 动画系统里。 */
+
+  /* ════════════════════════════════════════════════════════
+     08b  Cyberpunk particles — 全站背景粒子系统
+     改编自用户上传的独立 HTML（赛博朋克粒子页）。原版逻辑保留：
+     背景粒子向标题汇聚 + 连线 + 鼠标拖尾 + 点击爆炸/扩散环/故障文字
+     + 极光色块 + 城市剪影。这里做的改动：
+       · 汇聚目标从"屏幕顶部居中的独立标题"改成本站左上角 #luliy-brand
+         的实际位置——不再新建一个标题，避免出现两个博客名字；
+       · 加入开关 / 速度 / 方向三个设置项（存 localStorage，设置面板里调）；
+       · 尊重"减弱动态效果"，开启时直接不渲染；
+       · 与樱花花瓣（initSakura）各自独立、互不影响，z-index 更低，
+         确保樱花飘在它前面、正文飘在更前面，层次不乱。
+  ════════════════════════════════════════════════════════ */
+  var _cyberRAF = null;
+  var _cyberCanvas = null;
+
+  function getCyberSpeed() {
+    var v = parseFloat(localStorage.getItem('luliy-cyber-speed'));
+    return (isNaN(v) || v <= 0) ? 1 : Math.min(3, Math.max(0.2, v));
+  }
+  function getCyberDir() {
+    var v = localStorage.getItem('luliy-cyber-dir');
+    return (v === 'diverge' || v === 'free') ? v : 'converge';   /* converge | diverge | free */
+  }
+  function getCyberStyle() {
+    var v = localStorage.getItem('luliy-cyber-style');
+    return (v === 'city') ? 'city' : 'classic';   /* classic | city（新版多层视差城市，引力物理） */
+  }
+
+  function stopCyberParticles() {
+    if (_cyberRAF) { cancelAnimationFrame(_cyberRAF); _cyberRAF = null; }
+    if (_cyberCanvas && _cyberCanvas.parentNode) _cyberCanvas.parentNode.removeChild(_cyberCanvas);
+    _cyberCanvas = null;
+    if (initCyberParticles._cleanup) { initCyberParticles._cleanup(); initCyberParticles._cleanup = null; }
+  }
+
+  function initCyberParticles() {
+    if (localStorage.getItem('luliy-cyber') === '0') return;
+    if (prefersReduce && prefersReduce()) return;
+    if (document.getElementById('luliy-cyber-canvas')) return;
+
+    var canvas = document.createElement('canvas');
+    canvas.id = 'luliy-cyber-canvas';
+    /* ★ z-index 从 -1 提到 9990：让点击爆炸 / 鼠标拖尾显示在文章面板之上
+       （之前在最底层被面板盖住看不到）。仍 pointer-events:none 不挡点击，
+       且低于导航(10002)/抽屉，不会盖住交互控件。背景粒子很稀疏半透明，
+       飘在文字上方视觉影响很小。 */
+    canvas.setAttribute('style',
+      'position:fixed;left:0;top:0;pointer-events:none;z-index:9990;');
+    document.body.appendChild(canvas);
+    _cyberCanvas = canvas;
+    var ctx = canvas.getContext('2d');
+
+    var W = canvas.width  = window.innerWidth;
+    var H = canvas.height = window.innerHeight;
+
     function rand(a, b) { return a + Math.random() * (b - a); }
-    function pick()     { return COLORS[(Math.random() * COLORS.length) | 0]; }
+    function pick(arr)  { return arr[(Math.random() * arr.length) | 0]; }
+    var NEON = ['#ff6ec7', '#6ec7ff', '#b48cff', '#ff9eda', '#7fdbff', '#c77dff'];
 
-    function burst(x, y) {
-      var els = [];
-      /* 统一创建一个定位在点击点、居中对齐的元素 */
-      function make(extra) {
-        var el = document.createElement('div');
-        el.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;' +
-          'pointer-events:none;z-index:99999;border-radius:50%;will-change:transform,opacity;' + extra;
-        document.body.appendChild(el); els.push(el);
-        return el;
+    /* ── 汇聚目标点：本站左上角 ΔιάΝους（#luliy-brand），不再是独立标题 ── */
+    var target = { x: 70, y: 36 };
+    function updateTarget() {
+      var el = document.getElementById('luliy-brand');
+      if (el) {
+        var r = el.getBoundingClientRect();
+        target.x = r.left + r.width / 2;
+        target.y = r.top + r.height / 2;
       }
+    }
+    updateTarget();
 
-      /* 扩散圆环：从小圆放大 RING_SCALE 倍并淡出 */
-      var rs = 18;
-      var ring = make('width:' + rs + 'px;height:' + rs + 'px;margin:' + (-rs / 2) + 'px 0 0 ' + (-rs / 2) +
-        'px;background:transparent;border:2px solid rgba(255,27,141,0.55);');
-      ring.animate(
-        [{ transform: 'scale(1)', opacity: 0.9 }, { transform: 'scale(' + RING_SCALE + ')', opacity: 0 }],
-        { duration: 640, easing: 'cubic-bezier(.15,.6,.3,1)', fill: 'forwards' }
-      );
-
-      /* 彩色圆点：起始大而聚(scale 1)，向外飞 DIST 距离并缩小淡出 */
-      for (var i = 0; i < DOT_COUNT; i++) {
-        var sz = rand(10, 22);     /* 起始直径较大，呼应图1 */
-        var dot = make('width:' + sz + 'px;height:' + sz + 'px;margin:' + (-sz / 2) + 'px 0 0 ' + (-sz / 2) +
-          'px;background:' + pick() + ';');
-        var ang = rand(0, Math.PI * 2), dist = rand(DIST_MIN, DIST_MAX);
-        dot.animate(
-          [{ transform: 'translate(0,0) scale(1)', opacity: 1 },
-           { transform: 'translate(' + (Math.cos(ang) * dist) + 'px,' + (Math.sin(ang) * dist) + 'px) scale(0.15)', opacity: 0 }],
-          { duration: rand(620, 900), easing: 'cubic-bezier(.12,.7,.25,1)', fill: 'forwards' }
-        );
+    /* ── 背景粒子：朝目标汇聚 / 发散 / 自由漂浮，方向由设置决定 ── */
+    function BgParticle() { this.reset(); }
+    BgParticle.prototype.reset = function () {
+      var edge = Math.floor(rand(0, 4));
+      if (edge === 0) { this.x = rand(0, W); this.y = -20; }
+      else if (edge === 1) { this.x = W + 20; this.y = rand(0, H); }
+      else if (edge === 2) { this.x = rand(0, W); this.y = H + 20; }
+      else { this.x = -20; this.y = rand(0, H); }
+      this.r = rand(0.6, 2.2);
+      this.speed = rand(0.015, 0.045);
+      this.color = pick(NEON);
+      this.alpha = rand(0.2, 0.9);
+      this.pulse = rand(0, Math.PI * 2);
+      this.swirl = rand(0.015, 0.04) * (Math.random() < 0.5 ? 1 : -1);
+      /* 自由漂浮模式下给个随机恒定方向 */
+      this.fx = rand(-0.3, 0.3); this.fy = rand(-0.3, 0.3);
+    };
+    BgParticle.prototype.update = function (speedMul, dir) {
+      if (dir === 'free') {
+        this.x += this.fx * speedMul; this.y += this.fy * speedMul;
+        if (this.x < -30 || this.x > W + 30 || this.y < -30 || this.y > H + 30) this.reset();
+        this.pulse += 0.02;
+        return;
       }
+      var dx = target.x - this.x, dy = target.y - this.y;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+      if (dir === 'converge' && dist < 14) { this.reset(); return; }
+      var sign = (dir === 'diverge') ? -1 : 1;
+      var pull = this.speed * speedMul * Math.min(dist, 260) * sign;
+      var vx = (dx / dist) * pull, vy = (dy / dist) * pull;
+      var perpX = -dy / dist, perpY = dx / dist;
+      var swirlStrength = this.swirl * speedMul * Math.min(dist, 200) * 0.05;
+      vx += perpX * swirlStrength; vy += perpY * swirlStrength;
+      this.x += vx; this.y += vy;
+      if (dir === 'diverge' && (this.x < -40 || this.x > W + 40 || this.y < -40 || this.y > H + 40)) this.reset();
+      this.pulse += 0.02;
+    };
+    BgParticle.prototype.draw = function () {
+      var a = this.alpha * (0.6 + 0.4 * Math.sin(this.pulse));
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = a;
+      ctx.shadowBlur = 8; ctx.shadowColor = this.color;
+      ctx.fill();
+      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    };
 
-      /* 四角星点缀：在中等距离闪现后旋转消失 */
-      for (var s = 0; s < STAR_COUNT; s++) {
-        var ssz = rand(9, 16), sa = rand(0, Math.PI * 2), soff = rand(24, 92);
-        var sx = Math.cos(sa) * soff, sy = Math.sin(sa) * soff;
-        var star = make('width:' + ssz + 'px;height:' + ssz + 'px;margin:' + (-ssz / 2) + 'px 0 0 ' + (-ssz / 2) +
-          'px;background:' + pick() + ';border-radius:0;' +
-          'clip-path:polygon(50% 0%,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0% 50%,39% 39%);');
-        star.animate(
-          [{ transform: 'translate(' + (sx * 0.3) + 'px,' + (sy * 0.3) + 'px) scale(0) rotate(0deg)', opacity: 0 },
-           { transform: 'translate(' + (sx * 0.7) + 'px,' + (sy * 0.7) + 'px) scale(1) rotate(45deg)', opacity: 1, offset: 0.4 },
-           { transform: 'translate(' + sx + 'px,' + sy + 'px) scale(0.2) rotate(90deg)', opacity: 0 }],
-          { duration: rand(720, 1000), easing: 'ease-out', fill: 'forwards' }
-        );
-      }
+    /* ── 「城市」风格粒子：真实引力物理（取自用户上传的新版页面）。
+       和经典风格的区别：不是简单地朝目标点平移，而是用 G/dist 的
+       引力加速度 + 切向角动量（绕转）模拟轨道运动，越靠近核心转得
+       越快，进入"捕获半径"就被吞噬重生——更接近黑洞吸积盘的观感。
+       方向设置（汇聚/发散/自由）对这套物理不自然，城市风格固定走
+       原生的引力汇聚效果，不受方向设置影响。 */
+    function CityBgParticle() { this.reset(); }
+    CityBgParticle.prototype.reset = function () {
+      var edge = Math.floor(rand(0, 4));
+      if (edge === 0) { this.x = rand(0, W); this.y = -20; }
+      else if (edge === 1) { this.x = W + 20; this.y = rand(0, H); }
+      else if (edge === 2) { this.x = rand(0, W); this.y = H + 20; }
+      else { this.x = -20; this.y = rand(0, H); }
+      this.r = rand(0.6, 2.2) * 0.2;
+      this.color = pick(NEON);
+      this.alpha = rand(0.2, 0.9);
+      this.pulse = rand(0, Math.PI * 2);
+      this.swirl = rand(0.015, 0.04) * (Math.random() < 0.5 ? 1 : -1);
+      this.vx = rand(-0.2, 0.2);
+      this.vy = rand(-0.2, 0.2);
+    };
+    CityBgParticle.prototype.update = function (speedMul) {
+      var dx = target.x - this.x, dy = target.y - this.y;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+      var CAPTURE_RADIUS = 46;
+      if (dist < CAPTURE_RADIUS) { this.reset(); return; }
+      var G = 150 * speedMul;
+      var accel = G / dist;
+      this.vx += (dx / dist) * accel * 0.016;
+      this.vy += (dy / dist) * accel * 0.016;
+      var perpX = -dy / dist, perpY = dx / dist;
+      this.vx += perpX * this.swirl * speedMul;
+      this.vy += perpY * this.swirl * speedMul;
+      this.vx *= 0.95; this.vy *= 0.95;
+      this.x += this.vx; this.y += this.vy;
+      this.pulse += 0.02;
+    };
+    CityBgParticle.prototype.draw = function () {
+      var a = this.alpha * (0.6 + 0.4 * Math.sin(this.pulse));
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = a;
+      ctx.shadowBlur = 1.6; ctx.shadowColor = this.color;
+      ctx.fill();
+      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    };
 
-      /* 动画结束后统一清理 DOM */
-      setTimeout(function () { for (var k = 0; k < els.length; k++) els[k].remove(); }, 1050);
+    var cyberStyle = getCyberStyle();
+    var bgParticles = [];
+    var BG_COUNT = (cyberStyle === 'city')
+      ? Math.min(350, Math.floor((W * H) / 5000))   /* 城市风格粒子更小更密 */
+      : Math.min(70, Math.floor((W * H) / 25000));
+    for (var i = 0; i < BG_COUNT; i++) {
+      bgParticles.push(cyberStyle === 'city' ? new CityBgParticle() : new BgParticle());
     }
 
-    document.addEventListener('click', function (e) {
-      if (prefersReduce && prefersReduce()) return;   /* 尊重「减少动态效果」 */
-      /* 仅在空白区域触发：跳过链接/按钮/表单等可交互元素，避免干扰操作 */
+    /* ── 连接线 ── */
+    var CONNECT_DIST = (cyberStyle === 'city') ? 20 : 100;   /* 100 * 0.2 = 20，城市风格粒子尺度缩小 */
+    function drawConnections() {
+      ctx.lineWidth = 0.4; ctx.strokeStyle = '#6ec7ff';
+      for (var i = 0; i < bgParticles.length; i++) {
+        var p1 = bgParticles[i];
+        for (var j = i + 1; j < Math.min(i + 8, bgParticles.length); j++) {
+          var p2 = bgParticles[j];
+          var dx = p1.x - p2.x, dy = p1.y - p2.y;
+          var distSq = dx * dx + dy * dy;
+          if (distSq < CONNECT_DIST * CONNECT_DIST) {
+            var dist = Math.sqrt(distSq);
+            ctx.globalAlpha = (1 - dist / CONNECT_DIST) * 0.15;
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    /* ── 鼠标拖尾 ── */
+    var mouse = { x: W / 2, y: H / 2, active: false };
+    var trailParticles = [];
+    function TrailParticle(x, y) {
+      this.x = x; this.y = y; this.r = rand(1, 3); this.color = pick(NEON);
+      this.life = 1; this.vx = rand(-0.5, 0.5); this.vy = rand(-0.5, 0.5);
+    }
+    TrailParticle.prototype.update = function () { this.x += this.vx; this.y += this.vy; this.life -= 0.02; };
+    TrailParticle.prototype.draw = function () {
+      var r = Math.max(this.r * this.life, 0); if (r <= 0) return;
+      ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color; ctx.globalAlpha = Math.max(this.life, 0);
+      ctx.shadowBlur = 10; ctx.shadowColor = this.color;
+      ctx.fill(); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    };
+    function onMouseMove(e) {
+      /* ★ zoom 校正：页面 html{zoom:1.1}，clientX/Y 要除以 zoom 才是 canvas 实际坐标，
+         否则越往右偏差越大（右边拖尾和鼠标有距离）。 */
+      var p = zoomPos(e.clientX, e.clientY);
+      mouse.x = p.x; mouse.y = p.y; mouse.active = true;
+      if (Math.random() > 0.5 && trailParticles.length < 80) trailParticles.push(new TrailParticle(mouse.x, mouse.y));
+    }
+    function onTouchMove(e) {
+      var t = e.touches[0]; if (!t) return;
+      var p = zoomPos(t.clientX, t.clientY);
+      mouse.x = p.x; mouse.y = p.y; mouse.active = true;
+      trailParticles.push(new TrailParticle(mouse.x, mouse.y));
+    }
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+
+    /* ── 点击：爆炸粒子 + 扩散环 + 故障文字 ── */
+    var explosions = [], rings = [], glitchTexts = [];
+    var GLYPHS = '0123456789ABCDEF$#%&*';
+    function ExplosionParticle(x, y, color) {
+      this.x = x; this.y = y;
+      var angle = rand(0, Math.PI * 2), speed = rand(2, 9);
+      this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed;
+      this.r = rand(1, 3.5); this.color = color; this.life = 1; this.decay = rand(0.012, 0.03);
+    }
+    ExplosionParticle.prototype.update = function () {
+      this.x += this.vx; this.y += this.vy; this.vx *= 0.96; this.vy *= 0.96; this.life -= this.decay;
+    };
+    ExplosionParticle.prototype.draw = function () {
+      var r = Math.max(this.r * this.life, 0); if (r <= 0) return;
+      ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color; ctx.globalAlpha = Math.max(this.life, 0);
+      ctx.shadowBlur = 15; ctx.shadowColor = this.color;
+      ctx.fill(); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    };
+    function Ring(x, y, color) {
+      this.x = x; this.y = y; this.r = 2; this.maxR = rand(60, 120); this.color = color; this.life = 1;
+    }
+    Ring.prototype.update = function () { this.r += 3.2; this.life = 1 - this.r / this.maxR; };
+    Ring.prototype.draw = function () {
+      if (this.life <= 0) return;
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.strokeStyle = this.color; ctx.lineWidth = 2; ctx.globalAlpha = Math.max(this.life, 0);
+      ctx.shadowBlur = 12; ctx.shadowColor = this.color;
+      ctx.stroke(); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    };
+    function spawnGlitchText(x, y) {
+      var text = Math.random() < 0.5
+        ? ((LULIY_OPTS && LULIY_OPTS.siteName) || '\u0394\u03b9\u03ac\u039d\u03bf\u03c5\u03c2')
+        : Array.from({ length: 5 }, function () { return GLYPHS[(Math.random() * GLYPHS.length) | 0]; }).join('');
+      glitchTexts.push({ x: x, y: y - 10, text: text, life: 1, color: pick(NEON) });
+    }
+    function drawGlitchTexts() {
+      ctx.font = '12px monospace';
+      for (var i = glitchTexts.length - 1; i >= 0; i--) {
+        var g = glitchTexts[i];
+        ctx.globalAlpha = Math.max(g.life, 0); ctx.fillStyle = g.color;
+        ctx.shadowBlur = 6; ctx.shadowColor = g.color;
+        ctx.fillText(g.text, g.x + rand(-2, 2), g.y);
+        ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+        g.y -= 0.6; g.life -= 0.02;
+        if (g.life <= 0) glitchTexts.splice(i, 1);
+      }
+    }
+    function spawnClickEffect(x, y) {
+      var color = pick(NEON);
+      var spawnCount = explosions.length > 300 ? 10 : 35;
+      for (var i = 0; i < spawnCount; i++) explosions.push(new ExplosionParticle(x, y, pick(NEON)));
+      rings.push(new Ring(x, y, color));
+      rings.push(new Ring(x, y, pick(NEON)));
+      spawnGlitchText(x, y);
+    }
+    function onMouseDown(e) {
+      /* 点在链接/按钮等可交互元素上时不触发，避免干扰正常操作 */
       var t = e.target;
       if (t && t.closest && t.closest('a,button,input,textarea,select,label,summary,[role="button"],[contenteditable]')) return;
-      /* ★ zoom 坐标校正：html{zoom:1.1} 下 clientX/Y 需除以缩放因子才能精确跟手 */
       var p = zoomPos(e.clientX, e.clientY);
-      burst(p.x, p.y);
-    });
+      spawnClickEffect(p.x, p.y);
+    }
+    function onTouchStart(e) {
+      var t = e.touches[0]; if (!t) return;
+      var p = zoomPos(t.clientX, t.clientY);
+      spawnClickEffect(p.x, p.y);
+    }
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+
+    /* ── 极光色块 ── */
+    var auroraTime = 0;
+    var BLOBS = [
+      { color: 'rgba(110,199,255,0.10)', xRatio: 0.25, yRatio: 0.18, rRatio: 0.42, speed: 1.0 },
+      { color: 'rgba(255,110,199,0.09)', xRatio: 0.75, yRatio: 0.28, rRatio: 0.38, speed: 1.3 },
+      { color: 'rgba(180,140,255,0.08)', xRatio: 0.50, yRatio: 0.12, rRatio: 0.50, speed: 0.7 },
+      { color: 'rgba(124,219,255,0.07)', xRatio: 0.85, yRatio: 0.55, rRatio: 0.34, speed: 1.6 }
+    ];
+    function drawAurora(speedMul) {
+      auroraTime += 0.0035 * speedMul;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      BLOBS.forEach(function (b, i) {
+        var ox = Math.sin(auroraTime * b.speed + i) * W * 0.06;
+        var oy = Math.cos(auroraTime * b.speed * 0.8 + i) * H * 0.04;
+        var cx = W * b.xRatio + ox, cy = H * b.yRatio + oy;
+        var r = Math.max(W, H) * b.rRatio;
+        var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        grad.addColorStop(0, b.color); grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    /* ── 城市天际线剪影 ── */
+    var cityBuildings = [];
+    function rebuildCity() {
+      var buildings = [], x = 0;
+      while (x < W + 60) {
+        var bw = rand(28, 70), bh = rand(H * 0.12, H * 0.42);
+        buildings.push({ x: x, w: bw, h: bh, win: Math.random() < 0.5 });
+        x += bw + rand(2, 10);
+      }
+      cityBuildings = buildings;
+    }
+    rebuildCity();
+    function drawCityLayer(offsetX, offsetY, color, alpha) {
+      ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color;
+      ctx.beginPath(); ctx.moveTo(offsetX, H + offsetY);
+      cityBuildings.forEach(function (b) {
+        ctx.lineTo(b.x + offsetX, H - b.h + offsetY);
+        ctx.lineTo(b.x + b.w + offsetX, H - b.h + offsetY);
+      });
+      ctx.lineTo(W + offsetX, H + offsetY); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    var cityGlitchTime = 0;
+    function drawCityGhost(speedMul) {
+      cityGlitchTime += 0.02 * speedMul;
+      var jitter = Math.sin(cityGlitchTime * 3) * 1.2;
+      drawCityLayer(-4 + jitter, 0, 'rgba(110,199,255,0.22)', 1);
+      drawCityLayer(4 - jitter, 0, 'rgba(255,110,199,0.20)', 1);
+      drawCityLayer(0, 0, 'rgba(10,8,24,0.85)', 1);
+      ctx.save(); ctx.fillStyle = 'rgba(180,200,255,0.5)';
+      cityBuildings.forEach(function (b) {
+        if (!b.win) return;
+        var flicker = 0.3 + 0.7 * Math.abs(Math.sin(cityGlitchTime + b.x));
+        ctx.globalAlpha = flicker * 0.4;
+        ctx.fillRect(b.x + b.w * 0.3, H - b.h + 14, 2, 2);
+        ctx.fillRect(b.x + b.w * 0.6, H - b.h + 26, 2, 2);
+      });
+      ctx.restore();
+    }
+
+    /* ── 「城市」风格：多层视差天际线（远/中/近三层）+ 鼠标视差 +
+       建筑窗户微光 + 霓虹招牌闪烁。取自用户上传的新版页面。 ── */
+    var cityLayers = [];
+    function makeBuildingLayer(opts) {
+      var buildings = [], x = -40;
+      while (x < W + 60) {
+        var bw = rand(opts.minW, opts.maxW);
+        var bh = rand(H * opts.minH, H * opts.maxH);
+        var hasSpire = Math.random() < opts.spireChance;
+        var hasNeonSign = Math.random() < opts.neonChance;
+        var neonColor = pick(opts.neonColors);
+        var windowRows = Math.max(2, Math.floor(bh / 22));
+        var windowCols = Math.max(1, Math.floor(bw / 14));
+        buildings.push({
+          x: x, w: bw, h: bh, hasSpire: hasSpire, hasNeonSign: hasNeonSign,
+          neonColor: neonColor, neonY: rand(0.2, 0.7), neonW: bw * rand(0.4, 0.85),
+          windowRows: windowRows, windowCols: windowCols, seed: Math.random() * 100
+        });
+        x += bw + rand(opts.gapMin, opts.gapMax);
+      }
+      return buildings;
+    }
+    function rebuildCityLayers() {
+      /* ★ 重新设计：原版用 yOffset 把整层建筑往下平移，数值算下来会把
+         矮楼直接推到画布外面（translate 之后 top 坐标超过 H），只是
+         恰好被原版"每帧叠加半透明黑"的拖尾 bug 顺带"补"出一点残影，
+         才勉强看到一丝痕迹——而那个拖尾 bug 正是我们之前专门修掉的
+         "屏幕变黑"问题的根源，不能再加回来。
+         这里改成：不做整层下移，建筑高度直接按屏幕高度的合理比例
+         生成、自然"长在"画布底部（H 为基准线），三层靠"建筑高度本身
+         的差异 + 描边纵深感"区分远中近，确保不管哪一层都在可见区域
+         内。整体尺度也显著放大，呈现真正成片的多层建筑群，
+         而不是原版那种几乎看不见的细线。 */
+      cityLayers = [
+        { buildings: makeBuildingLayer({
+            minW: 26, maxW: 52, minH: 0.10, maxH: 0.19,
+            spireChance: 0.15, neonChance: 0.25, gapMin: 3, gapMax: 14,
+            neonColors: ['#3a4a8c', '#4a6a9c'] }),
+          baseColor: '20,24,48', alpha: 0.55, yOffset: 0, parallax: 6 },
+        { buildings: makeBuildingLayer({
+            minW: 38, maxW: 78, minH: 0.16, maxH: 0.30,
+            spireChance: 0.3, neonChance: 0.45, gapMin: 4, gapMax: 18,
+            neonColors: ['#ff6ec7', '#6ec7ff', '#b48cff'] }),
+          baseColor: '14,16,34', alpha: 0.80, yOffset: 0, parallax: 16 },
+        { buildings: makeBuildingLayer({
+            minW: 56, maxW: 130, minH: 0.22, maxH: 0.40,
+            spireChance: 0.45, neonChance: 0.7, gapMin: 5, gapMax: 24,
+            neonColors: ['#ff6ec7', '#7fdbff', '#c77dff', '#ff9eda'] }),
+          baseColor: '6,6,16', alpha: 0.95, yOffset: 0, parallax: 32 }
+      ];
+    }
+    function drawBuildingLayerSilhouette(layer, offsetX, colorOverride, alphaOverride) {
+      var buildings = layer.buildings;
+      ctx.save();
+      ctx.globalAlpha = (alphaOverride !== undefined) ? alphaOverride : layer.alpha;
+      ctx.fillStyle = colorOverride || ('rgba(' + layer.baseColor + ',1)');
+      ctx.beginPath();
+      ctx.moveTo(offsetX, H);
+      buildings.forEach(function (b) {
+        var top = H - b.h;
+        ctx.lineTo(b.x + offsetX, top);
+        if (b.hasSpire) {
+          var spireX = b.x + offsetX + b.w * 0.5;
+          ctx.lineTo(spireX - 2, top - rand(10, 28));
+          ctx.lineTo(spireX + 2, top);
+        }
+        ctx.lineTo(b.x + b.w + offsetX, top);
+      });
+      ctx.lineTo(W + offsetX, H);
+      ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    function drawBuildingWindowsAndNeon(layer, offsetX, t) {
+      var buildings = layer.buildings;
+      ctx.save();
+      buildings.forEach(function (b) {
+        var top = H - b.h;
+        for (var r = 0; r < b.windowRows; r++) {
+          for (var c = 0; c < b.windowCols; c++) {
+            var flickerSeed = b.seed + r * 3.1 + c * 1.7;
+            var on = (Math.sin(flickerSeed * 12.9898) * 43758.5453) % 1;
+            if (Math.abs(on) > 0.45) continue;
+            var flicker = 0.4 + 0.6 * Math.abs(Math.sin(t * 0.6 + flickerSeed));
+            ctx.globalAlpha = flicker * 0.5 * layer.alpha;
+            ctx.fillStyle = 'rgba(190,210,255,0.9)';
+            var wx = b.x + offsetX + 6 + c * 13, wy = top + 10 + r * 20;
+            if (wx < b.x + offsetX + b.w - 4) ctx.fillRect(wx, wy, 3, 5);
+          }
+        }
+        if (b.hasNeonSign) {
+          var ny = top + b.h * b.neonY;
+          var nflicker = 0.6 + 0.4 * Math.sin(t * 1.5 + b.seed);
+          ctx.globalAlpha = nflicker * layer.alpha;
+          ctx.shadowBlur = 10; ctx.shadowColor = b.neonColor;
+          ctx.fillStyle = b.neonColor;
+          ctx.fillRect(b.x + offsetX + (b.w - b.neonW) / 2, ny, b.neonW, 3);
+          ctx.shadowBlur = 0;
+        }
+      });
+      ctx.restore();
+    }
+    var cityGlitchTimeV2 = 0;
+    function drawCityGhostV2(speedMul) {
+      cityGlitchTimeV2 += 0.02 * speedMul;
+      var t = cityGlitchTimeV2;
+      var glitchSpike = Math.random() < 0.02 ? rand(4, 10) : 0;
+      var jitter = Math.sin(t * 3) * 1.0 + glitchSpike;
+      cityLayers.forEach(function (layer, i) {
+        ctx.save();
+        var parallaxX = ((mouse.x / W) - 0.5) * (layer.parallax || 0);
+        var parallaxY = ((mouse.y / H) - 0.5) * (layer.parallax || 0) * 0.3;
+        ctx.translate(parallaxX, layer.yOffset + parallaxY);
+        drawBuildingLayerSilhouette(layer, -3 + jitter * (i + 1) * 0.4, 'rgba(110,199,255,0.18)');
+        drawBuildingLayerSilhouette(layer, 3 - jitter * (i + 1) * 0.4, 'rgba(255,110,199,0.16)');
+        drawBuildingLayerSilhouette(layer, 0);
+        if (i > 0) drawBuildingWindowsAndNeon(layer, 0, t);
+        ctx.restore();
+      });
+      var fog = ctx.createLinearGradient(0, H * 0.75, 0, H);
+      fog.addColorStop(0, 'rgba(20,16,40,0)');
+      fog.addColorStop(1, 'rgba(20,16,40,0.55)');
+      ctx.fillStyle = fog;
+      ctx.fillRect(0, H * 0.75, W, H * 0.25);
+    }
+    if (cyberStyle === 'city') rebuildCityLayers();
+
+    /* ── 主循环 ── */
+    function tick() {
+      if (!document.getElementById('luliy-cyber-canvas')) { _cyberRAF = null; return; }
+      var speedMul = getCyberSpeed(), dir = getCyberDir();
+
+      /* ★ 修复"屏幕中间变黑"的根因：原来这里是每帧叠一层
+         rgba(15,12,35,0.22) 的半透明深色（想做拖尾效果），但极光/
+         城市剪影只覆盖屏幕边角，中间没人"重新点亮"的区域会在
+         不到 0.2 秒内被反复叠加到几乎纯黑。改成真正的 clearRect，
+         画布永远透明，背后统一露出页面本身的深蓝紫纯色背景，
+         不会再有局部发黑。粒子/拖尾/爆炸各自已经有独立的淡出
+         （life -= ...），效果不受影响。 */
+      ctx.clearRect(0, 0, W, H);
+
+      drawAurora(speedMul);
+      if (cyberStyle === 'city') drawCityGhostV2(speedMul);
+      else drawCityGhost(speedMul);
+
+      drawConnections();
+      if (cyberStyle === 'city') {
+        for (var i = 0; i < bgParticles.length; i++) { bgParticles[i].update(speedMul); bgParticles[i].draw(); }
+      } else {
+        for (var i = 0; i < bgParticles.length; i++) { bgParticles[i].update(speedMul, dir); bgParticles[i].draw(); }
+      }
+
+      /* ★ 鼠标跟随的炫光光晕已删除（用户反馈太晃眼）。
+         鼠标拖尾粒子（下面）和点击爆炸特效都还保留。 */
+
+      for (var i = trailParticles.length - 1; i >= 0; i--) {
+        var t = trailParticles[i]; t.update(); t.draw();
+        if (t.life <= 0) trailParticles.splice(i, 1);
+      }
+      for (var i = explosions.length - 1; i >= 0; i--) {
+        var ex = explosions[i]; ex.update(); ex.draw();
+        if (ex.life <= 0) explosions.splice(i, 1);
+      }
+      for (var i = rings.length - 1; i >= 0; i--) {
+        var r = rings[i]; r.update(); r.draw();
+        if (r.life <= 0) rings.splice(i, 1);
+      }
+      drawGlitchTexts();
+
+      _cyberRAF = requestAnimationFrame(tick);
+    }
+    _cyberRAF = requestAnimationFrame(tick);
+
+    /* ── resize（加防抖，避免拖动改变窗口大小时频繁重建城市/粒子卡顿）── */
+    var _resizeTimer = null;
+    function onResize() {
+      /* 画布尺寸本身跟手实时更新，不卡顿；只有"重建建筑/粒子分布"
+         这种较重的计算延后到停止拖动 150ms 后再做一次 */
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      if (_resizeTimer) clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(function () {
+        updateTarget();
+        if (cyberStyle === 'city') rebuildCityLayers();
+        else rebuildCity();
+      }, 150);
+    }
+    window.addEventListener('resize', onResize, { passive: true });
+    /* 标题位置可能因布局变化（比如展开抽屉、切换深浅模式）而移动，定时校正一下 */
+    var targetTimer = setInterval(updateTarget, 1500);
+
+    initCyberParticles._cleanup = function () {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('resize', onResize);
+      clearInterval(targetTimer);
+      if (_resizeTimer) clearTimeout(_resizeTimer);
+    };
   }
+  root._luliyInitCyberParticles = initCyberParticles;
+  root._luliyStopCyberParticles = stopCyberParticles;
+
 
   /* ---- 09  Navbar — rebuilt: avatar+name centred, time top-left, icons spread */
   /* 黑洞特效已删除（副标题改为导航切换按钮）。_bhActive 保留为常量，
@@ -873,7 +1565,7 @@
       avatarLink.href = '/about'; avatarLink.id = 'luliy-nav-avatar-link';
       avatarLink.setAttribute('aria-label', '\u5173\u4e8e');
       var avatarImg = document.createElement('img');
-      avatarImg.src = 'https://i.pravatar.cc/300?img=12';
+      avatarImg.src = 'https://avatars.githubusercontent.com/u/177055996?u=cb497e1edb10d059b285288c93ff32dab53af1c3&v=4&size=64';
       avatarImg.id = 'luliy-nav-avatar'; avatarImg.alt = 'Luliy';
       avatarLink.appendChild(avatarImg);
 
@@ -936,6 +1628,10 @@
         var lbl = a.getAttribute('title') || (a.textContent || '').trim();
         if (lbl) {
           c.setAttribute('aria-label', lbl);
+          /* ★ 补 title：纯图标模式（窄屏文字隐藏）下，鼠标悬停仍能看到
+             原生 tooltip 提示文字是什么，不靠 aria-label（那个只对屏
+             幕阅读器生效，鼠标悬停不会显示）。 */
+          c.setAttribute('title', lbl);
           var span = document.createElement('span');
           span.className = 'luliy-hero-cap-txt';
           span.textContent = lbl;
@@ -944,27 +1640,9 @@
         capsule.appendChild(c);
       });
 
-      /* ★ More 下拉：放不下的链接收进这里（GitHub 式自动溢出检测，见 reflowCapsule） */
-      var moreWrap = document.createElement('div');
-      moreWrap.id = 'luliy-hero-more';
-      moreWrap.style.display = 'none';
-      var moreBtn = document.createElement('button');
-      moreBtn.type = 'button';
-      moreBtn.id = 'luliy-hero-more-btn';
-      moreBtn.innerHTML = 'More <span class="lhm-arrow">\u25be</span>';
-      moreBtn.setAttribute('aria-label', '\u66f4\u591a\u5bfc\u822a');
-      var moreMenu = document.createElement('div');
-      moreMenu.id = 'luliy-hero-more-menu';
-      moreBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        moreWrap.classList.toggle('is-open');
-      });
-      document.addEventListener('click', function (e) {
-        if (!moreWrap.contains(e.target)) moreWrap.classList.remove('is-open');
-      });
-      moreWrap.appendChild(moreBtn);
-      moreWrap.appendChild(moreMenu);
-      capsule.appendChild(moreWrap);
+      /* 链接溢出处理改为纯 CSS 响应式降级（窄屏只显示图标，见 CSS
+         section 38），不再用 JS 检测溢出/挪到下拉菜单，没有"测量
+         时机不对"这类问题。 */
       var rightZone = document.createElement('div');
       rightZone.id = 'luliy-hero-right';
       /* the #luliy-toolbar pill is relocated here after it's built */
@@ -998,61 +1676,6 @@
       shell.appendChild(rightZone);
       header.insertBefore(shell, header.firstChild);
 
-      /* ★ 自动溢出检测：一行放不下的胶囊链接收进 More 下拉（参考 GitHub）。
-         做法：测每个链接的右边缘，超出 capsule 可用宽度的移进 moreMenu。
-         capsule 宽度变化(窗口缩放/字体)时重算。 */
-      function reflowCapsule() {
-        if (!capsule.isConnected) return;
-        /* 先全部移回 capsule（moreBtn 之前），复位后再测 */
-        var menuLinks = Array.prototype.slice.call(moreMenu.children);
-        menuLinks.forEach(function (el) { capsule.insertBefore(el, moreWrap); });
-        moreWrap.style.display = 'none';
-        moreWrap.classList.remove('is-open');
-
-        /* ★ 只取 capsule 的「直接子」链接（排除 moreMenu 内的，避免重复计数 bug） */
-        function directLinks() {
-          return Array.prototype.filter.call(capsule.children, function (el) {
-            return el.classList && el.classList.contains('luliy-hero-cap-link');
-          });
-        }
-        var links = directLinks();
-        var seps  = Array.prototype.filter.call(capsule.children, function (el) {
-          return el.classList && el.classList.contains('luliy-hero-cap-sep');
-        });
-        seps.forEach(function (s) { s.style.display = ''; });
-        if (!links.length) return;
-
-        var capRect = capsule.getBoundingClientRect();
-        var avail = capRect.width - 84;   /* 预留 More 按钮宽度 */
-        var last = links[links.length - 1];
-        if (last.getBoundingClientRect().right - capRect.left <= capRect.width) {
-          return;   /* 没溢出，无需 More */
-        }
-        var overflowed = [];
-        for (var i = links.length - 1; i >= 0; i--) {
-          var r = links[i].getBoundingClientRect();
-          if (r.right - capRect.left > avail) {
-            overflowed.unshift(links[i]);
-          } else break;
-        }
-        if (!overflowed.length) overflowed.unshift(links[links.length - 1]);
-        overflowed.forEach(function (el) {
-          var prev = el.previousElementSibling;
-          if (prev && prev.classList.contains('luliy-hero-cap-sep')) prev.style.display = 'none';
-          moreMenu.appendChild(el);
-        });
-        if (moreMenu.children.length) moreWrap.style.display = '';
-      }
-      root._luliyReflowCapsule = reflowCapsule;
-      /* 初次 + 字体/图片加载后重算 */
-      requestAnimationFrame(reflowCapsule);
-      setTimeout(reflowCapsule, 300);
-      setTimeout(reflowCapsule, 1000);
-      var _rfT = null;
-      window.addEventListener('resize', function () {
-        clearTimeout(_rfT); _rfT = setTimeout(reflowCapsule, 120);
-      }, { passive: true });
-
       /* Self-heal: capsule empty but links exist → rebuild from title-right */
       if (capsule.querySelectorAll('.luliy-hero-cap-link').length === 0) {
         var late = header.querySelector('.title-right, [class*="title-right"]');
@@ -1071,7 +1694,10 @@
             c.classList.add('luliy-hero-cap-link'); c.removeAttribute('id');
             c.style.display = ''; c.style.visibility = '';
             var lbl = a.getAttribute('title') || (a.textContent || '').trim();
-            if (lbl) { var s = document.createElement('span'); s.className = 'luliy-hero-cap-txt'; s.textContent = lbl; c.appendChild(s); }
+            if (lbl) {
+              c.setAttribute('title', lbl);   /* 纯图标模式下悬停可见提示 */
+              var s = document.createElement('span'); s.className = 'luliy-hero-cap-txt'; s.textContent = lbl; c.appendChild(s);
+            }
             capsule.appendChild(c);
           });
         }
@@ -1149,10 +1775,15 @@
         if (tryBuild() || ++tries > 30) {
           clearInterval(iv);
           initHeroScrollFade();
+          /* ★ bug修复：hero 构建成功（_luliyNavLinks 已就位）后，立即显式
+             触发一次抽屉快捷链接填充，不再单纯依赖抽屉自己的轮询去“偶遇”
+             这个时机——两边各自重试容易在时序上错过，直接调用最可靠。 */
+          if (root._luliyFillDrawerQuick) root._luliyFillDrawerQuick();
         }
       }, 200);
     } else {
       initHeroScrollFade();
+      if (root._luliyFillDrawerQuick) root._luliyFillDrawerQuick();
     }
     /* In case the pill / nav links are ready after the hero, retry a few times */
     var pn = 0;
@@ -1167,26 +1798,6 @@
   }
 
   /* ---- 10  Hero banner (homepage, scroll-fold) ------------ */
-  function initHeroBanner() {
-    if (document.getElementById('luliy-hero-banner')) return;
-    var content = document.getElementById('content') || document.querySelector('.main');
-    if (!content) return;
-    var banner = document.createElement('div');
-    banner.id = 'luliy-hero-banner';
-    banner.textContent = 'Remember, this is your world.';
-    content.parentNode.insertBefore(banner, content);
-
-    var bannerH = 0;
-    function getBannerH() { bannerH = banner.offsetHeight || 56; }
-    getBannerH();
-    window.addEventListener('resize', getBannerH, { passive: true });
-    onScrollRAF(function () {
-      var st = window.scrollY || window.pageYOffset || 0;
-      var progress = Math.min(1, st / (bannerH + 32));
-      banner.style.transform = 'translateY(-' + (progress * (bannerH + 32)) + 'px)';
-      banner.style.opacity = String(1 - progress);
-    }, { passive: true });
-  }
 
   /* ---- 11  Tag page search toolbar ----------------------- */
   function initTagEnhance() {
@@ -1257,29 +1868,8 @@
   }
 
 
-  /* ---- Background picker helper -------------------------------- */
-  function showBgPicker() {
-    var cur = localStorage.getItem('luliy-bg') || '';
-    var url = window.prompt(
-      '\u8bf7\u7c98\u8d34\u80cc\u666f\u56fe\u7247\u94fe\u63a5\uff08\u7559\u7a7a\u5219\u6062\u590d\u9ed8\u8ba4\u80cc\u666f\uff09\uff1a',
-      cur
-    );
-    if (url === null) return; // cancelled
-    url = url.trim();
-    if (url === '') {
-      localStorage.removeItem('luliy-bg');
-      document.body.style.setProperty(
-        'background-image',
-        'url("https://picsum.photos/seed/luliy-bg/1920/1080")',
-        'important'
-      );
-    } else {
-      localStorage.setItem('luliy-bg', url);
-      document.body.style.setProperty('background-image', 'url("' + url + '")', 'important');
-    }
-    if (root._luliyApplyBgBlur) root._luliyApplyBgBlur();
-    playSfx('click');
-  }
+  /* ---- Background picker — 已移除（全站改用纯色 #00020c，无背景图功能） */
+  function showBgPicker() { /* no-op: background-image feature removed */ }
 
   /* ---- Reading preferences (font size + font style) -------- */
   function applyReadingPrefs() {
@@ -1295,46 +1885,94 @@
   }
   root._luliyApplyReadingPrefs = applyReadingPrefs;
 
-  /* ---- Background blur + reading-panel width (CSS variables) -- */
-  function _currentBgUrl() {
-    var custom = localStorage.getItem('luliy-bg');
-    if (custom) return custom;
-    return 'https://picsum.photos/seed/luliy-bg/1920/1080';
-  }
-  function applyBgBlur() {
-    var px = parseInt(localStorage.getItem('luliy-bgblur') || '0', 10) || 0;
-    px = Math.min(20, Math.max(0, px));
-    document.documentElement.style.setProperty('--luliy-bg-blur', px + 'px');
-    document.documentElement.style.setProperty('--luliy-bg-url', 'url("' + _currentBgUrl() + '")');
-    document.body.classList.toggle('luliy-bg-blurred', px > 0);
-  }
+  /* ---- Reading-panel width (CSS variable) --------------------
+     背景图/模糊功能已删除。仅保留阅读宽度控制，默认拉到最大(400)。 */
+  function applyBgBlur() { /* no-op: background blur feature removed */ }
   function applyPbWidth() {
-    var d = parseInt(localStorage.getItem('luliy-pbwidth') || '0', 10) || 0;
+    /* 默认最大宽度 400；用户若手动调过则用其值 */
+    var raw = localStorage.getItem('luliy-pbwidth');
+    var d = (raw === null) ? 400 : (parseInt(raw, 10) || 0);
     d = Math.min(400, Math.max(0, d));   /* 0..400px extra width, each side */
     document.documentElement.style.setProperty('--luliy-pb-extra', d + 'px');
   }
   root._luliyApplyBgBlur = applyBgBlur;
   root._luliyApplyPbWidth = applyPbWidth;
 
+  /* ---- 液态玻璃三个可调参数：模糊 / 透明度 / 色调 -------------
+     写入 CSS 变量 --luliy-glass-blur / -opacity / -hue，
+     .luliy-card、文章面板、标签云容器都读这三个变量。 */
+  function applyGlassVars() {
+    var blur = parseFloat(localStorage.getItem('luliy-glass-blur'));
+    if (isNaN(blur)) blur = 22;
+    blur = Math.min(50, Math.max(0, blur));
+
+    var op = parseFloat(localStorage.getItem('luliy-glass-opacity'));
+    if (isNaN(op)) op = 0.5;
+    op = Math.min(0.95, Math.max(0.1, op));
+
+    var hue = parseFloat(localStorage.getItem('luliy-glass-hue'));
+    if (isNaN(hue)) hue = 250;
+    hue = ((hue % 360) + 360) % 360;
+
+    var artOp = parseFloat(localStorage.getItem('luliy-article-opacity'));
+    if (isNaN(artOp)) artOp = 0.5;
+    artOp = Math.min(0.95, Math.max(0.1, artOp));
+
+    var root2 = document.documentElement.style;
+    root2.setProperty('--luliy-glass-blur', blur + 'px');
+    root2.setProperty('--luliy-glass-opacity', String(op));
+    root2.setProperty('--luliy-glass-hue', String(hue));
+    root2.setProperty('--luliy-article-opacity', String(artOp));
+  }
+  root._luliyApplyGlassVars = applyGlassVars;
+
+  /* ---- 主页卡片宽 / 高（可调节） -------------------------- */
+  function applyCatSize() {
+    var w = parseFloat(localStorage.getItem('luliy-cat-w'));
+    if (isNaN(w)) w = 1700;
+    w = Math.min(2000, Math.max(900, w));
+
+    var h = parseFloat(localStorage.getItem('luliy-cat-h'));
+    if (isNaN(h)) h = 338;
+    h = Math.min(500, Math.max(220, h));
+
+    var root2 = document.documentElement.style;
+    root2.setProperty('--luliy-cat-w', w + 'px');
+    root2.setProperty('--luliy-cat-h', h + 'px');
+  }
+  root._luliyApplyCatSize = applyCatSize;
+
   /* ---- 13  Floating toolbar + unified sink (6 themes) ----- */
 
   /* ── 6 Sinks / Themes ───────────────────────────────────── */
+  /* ★ 恢复多主题手动选择系统：赛博朋克为新增的默认主题，
+     原有 6 套主题全部加回来，用户可在抽屉「主题」分区里手动选择。
+     不再跟随深浅模式自动切换——选哪个主题由用户决定，
+     但每个主题内部仍各自适配白天/夜间两种配色（见上面 --th-* 变量）。 */
   var SINKS = [
+    {
+      id: 'cyberpunk',
+      label: '\u8d5b\u535a\u670b\u514b\uff08\u9ed8\u8ba4\uff09',
+      dot:   '#ff2bd6',
+      theme: 'cyberpunk',
+      cardPalette: ['#00e5ff', '#ff2bd6', '#7b2fbe', '#6ec7ff'],
+      desc:  '\u9713\u8679\u90fd\u5e02\uff0c\u6545\u969c\u7f8e\u5b66'
+    },
     {
       id: 'default',
       label: '\u9ed8\u8ba4',
       dot:   '#8250df',
       theme: 'default',
       cardPalette: ['#8250df', '#0969da', '#ff6b9d', '#f0b429'],
-      desc:  '\u7ecf\u5178\u7d2b\u8c03\uff0c\u5c40\u6f14\u6e05\u6b63'
+      desc:  '\u7ecf\u5178\u7d2b\u8c03\uff0c\u6e29\u548c\u6613\u8bfb'
     },
     {
       id: 'sakura',
       label: '\u6a31\u82b1\u5c11\u5973',
-      dot:   '#f9a8c9',
+      dot:   '#e05c8a',
       theme: 'sakura',
       cardPalette: ['#e05c8a', '#f9a8c9', '#c94070', '#ffb7c5'],
-      desc:  '\u7c89\u5ae9\u6a31\u82b1\uff0c\u5c11\u5973\u5fc3\u601d'
+      desc:  '\u6a31\u82b1\u7c89\u8c03\uff0c\u67d4\u8f6f\u7518\u7f8e'
     },
     {
       id: 'your-name',
@@ -1354,41 +1992,32 @@
     },
     {
       id: 'sunset',
-      label: '\u65e5\u843d\u9ec4\u660f',                 /* 日落黄昏 */
-      dot:   '#e8a838',
+      label: '\u65e5\u843d\u9ec4\u660f',
+      dot:   '#d9930d',
       theme: 'sunset',
       cardPalette: ['#f0b429', '#ffd98a', '#e8821e', '#d9930d'],
-      desc:  '\u91d1\u8272\u4f59\u6656\uff0c\u6696\u9ec4\u9ec4\u660f'  /* 金色余晖，暖黄黄昏 */
+      desc:  '\u66ed\u8272\u516c\u8def\uff0c\u6696\u91d1\u6982\u660f'
     },
     {
       id: 'mono',
-      label: '\u6781\u7b80\u9ed1\u767d',                 /* 极简黑白 */
+      label: '\u6781\u7b80\u9ed1\u767d',
       dot:   '#222222',
       theme: 'mono',
       cardPalette: ['#222222', '#555555', '#888888', '#bbbbbb'],
-      desc:  '\u53bb\u8272\u7559\u767d\uff0c\u4e13\u6ce8\u9605\u8bfb'  /* 去色留白，专注阅读 */
+      desc:  '\u9ed1\u767d\u7070\uff0c\u7eaf\u51c0\u514b\u5236'
     }
   ];
 
   function applySink(id) {
     var s = null;
-    SINKS.forEach(function (x) { if (x.id === id) s = x; });
-    if (!s) s = SINKS[0];
+    for (var i = 0; i < SINKS.length; i++) { if (SINKS[i].id === id) { s = SINKS[i]; break; } }
+    if (!s) s = SINKS[0];   /* 找不到就回退到默认（赛博朋克） */
     localStorage.setItem('luliy-sink', s.id);
-    document.body.setAttribute('data-luliy-theme', s.theme || 'default');
+    document.body.setAttribute('data-luliy-theme', s.theme);
     document.documentElement.style.setProperty('--card-c1', s.cardPalette[0]);
     document.documentElement.style.setProperty('--card-c2', s.cardPalette[1]);
     document.documentElement.style.setProperty('--card-c3', s.cardPalette[2]);
     document.documentElement.style.setProperty('--card-c4', s.cardPalette[3]);
-    document.querySelectorAll('.luliy-sink-opt').forEach(function (b) {
-      b.classList.toggle('is-active', b.getAttribute('data-sink') === s.id);
-    });
-    /* 同步抽屉里的主题高亮 */
-    document.querySelectorAll('.luliy-drawer-theme-cell').forEach(function (b) {
-      b.classList.toggle('is-active', b.getAttribute('data-sink') === s.id);
-    });
-    /* Restart themed particles with new theme colours */
-    if (root._luliyInitThemeParticles) root._luliyInitThemeParticles();
   }
   /* 暴露给抽屉系统复用 */
   root._luliyApplySink = applySink;
@@ -1404,11 +2033,16 @@
   ════════════════════════════════════════════════════════ */
   var NAV_MODE_KEY = 'luliy-nav-mode';   /* 'hero' | 'drawer' */
 
-  /* 当前生效的导航模式：用户存过则用存的；否则按宽度给默认值 */
+  /* 当前生效的导航模式。
+     ★ 大改后：全站锁定「抽屉导航」，不再提供顶部 hero 导航。
+     （切换逻辑代码保留，但 getNavMode 恒定返回 'drawer'，
+     这样顶部导航那一套永远不会显示，又不破坏原有结构。
+     若日后想恢复双模式，把下面这行删掉、解开注释即可。） */
   function getNavMode() {
-    var saved = localStorage.getItem(NAV_MODE_KEY);
+    return 'drawer';
+    /* var saved = localStorage.getItem(NAV_MODE_KEY);
     if (saved === 'hero' || saved === 'drawer') return saved;
-    return (window.innerWidth <= 768) ? 'drawer' : 'hero';
+    return (window.innerWidth <= 768) ? 'drawer' : 'hero'; */
   }
 
   /* 应用导航模式：切换 body class，由 CSS 控制 hero / ☰ 的显隐 */
@@ -1439,10 +2073,12 @@
     /* —— 顶部信息区 —— */
     var head = document.createElement('div');
     head.id = 'luliy-drawer-head';
-    var avatarSrc = 'https://i.pravatar.cc/300?img=12';
+    var avatarSrc = 'https://avatars.githubusercontent.com/u/177055996?u=cb497e1edb10d059b285288c93ff32dab53af1c3&v=4&size=64';
+    var _brandName = (LULIY_OPTS && LULIY_OPTS.siteName) || '\u0394\u03b9\u03ac\u039d\u03bf\u03c5\u03c2';
     head.innerHTML =
+      '<button type="button" id="luliy-drawer-close" aria-label="\u5173\u95ed\u83dc\u5355">\u2715</button>' +
       '<a class="ldh-avatar" href="/about" aria-label="\u5173\u4e8e"><img src="' + avatarSrc + '" alt="avatar"></a>' +
-      '<a class="ldh-name" href="/">Luliy</a>' +
+      '<a class="ldh-name" href="/">' + esc(_brandName) + '</a>' +
       '<div class="ldh-accent"></div>' +
       '<div class="ldh-time"><span class="ldh-clock">' +
         '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.4"/><path d="M8 4.4V8l2.6 1.6" stroke-linecap="round"/></svg>' +
@@ -1543,7 +2179,7 @@
       Array.prototype.forEach.call(scope.querySelectorAll('a[href]'), function (a) {
         var id = a.id || '';
         if (id === 'luliy-nav-avatar-link' || id === 'luliy-nav-blogname') return;
-        if (a.closest('#luliy-hero-capsule, #luliy-drawer, #luliy-hero-more-menu')) return;
+        if (a.closest('#luliy-hero-capsule, #luliy-drawer')) return;
         if (a.classList && (a.classList.contains('luliy-hero-cap-link') || a.classList.contains('circle'))) return;
         var href = a.getAttribute('href') || '';
         if (!href || href.charAt(0) === '#') return;
@@ -1561,24 +2197,56 @@
               : (u.pathname.replace(/^\//, '').replace(/\.html?$/, '').replace(/\/$/, '') || '\u94fe\u63a5');
           } catch (e) { label = '\u94fe\u63a5'; }
         }
-        var svg = a.querySelector('svg');
+        /* ★ 用链接内 <path> 的 id 反查 Gmeek 已填好的 d 属性，
+           自己构建纯净的 SVG 图标（不含 Gmeek 加的箭头装饰）。
+           如果 path 数据为空（Gmeek 还没填），icon 留空，
+           fillQuick 会有 retry 机制，稍后再重试一次。 */
+        var pathEl = a.querySelector('path[id]');
+        var iconSvg = '';
+        if (pathEl) {
+          var pd = pathEl.getAttribute('d') || '';
+          if (pd) {
+            iconSvg = '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">' +
+              '<path fill-rule="evenodd" d="' + pd.replace(/"/g, '&quot;') + '"></path></svg>';
+          }
+        }
         out.push({ href: a.href || href, target: a.getAttribute('target') || (external ? '_blank' : ''),
-                   label: label, icon: svg ? svg.outerHTML : '', external: external });
+                   label: label, icon: iconSvg, external: external });
       });
       return out;
     }
 
     function fillQuick() {
       var items = readNavAnchors();
-      /* 兜底：.title-right 还没渲染时用缓存救场 */
+      /* 兜底①：.title-right 还没渲染（或读取失败）时用 _luliyNavLinks 缓存救场 */
       if (!items.length && root._luliyNavLinks && root._luliyNavLinks.length) {
         items = root._luliyNavLinks.filter(function (m) {
           var h = (m.href || m.absHref || '');
           return h && !/\/about(\.html)?$|^about(\.html)?$/i.test(h) && !/rss|feed|atom/i.test(h);
         }).map(function (m) {
           return { href: m.absHref || m.href, target: m.target || '', label: m.label || '\u94fe\u63a5',
-                   icon: (m.html && /<svg/i.test(m.html)) ? m.html : '', external: m.target === '_blank' };
+                   icon: '', external: m.target === '_blank' };
         });
+      }
+      /* ★ 兜底②（bug修复）：上面两条都失败时，直接读 hero capsule 里
+         已克隆好的链接——capsule 在抽屉模式下只是 display:none，元素
+         本身始终在 DOM 里，且其内容已被证明渲染正确（截图里桌面 hero
+         能正常显示这些链接），是最可靠的最后一层数据源。 */
+      if (!items.length) {
+        var capLinks = document.querySelectorAll('#luliy-hero-capsule .luliy-hero-cap-link');
+        if (capLinks.length) {
+          items = Array.prototype.map.call(capLinks, function (a) {
+            var svg = a.querySelector('svg');
+            var txt = a.querySelector('.luliy-hero-cap-txt');
+            return {
+              href: a.href || a.getAttribute('href') || '',
+              target: a.getAttribute('target') || '',
+              label: (txt ? txt.textContent : a.textContent || '').trim() || a.getAttribute('aria-label') || '\u94fe\u63a5',
+              icon: '',   /* ★ 不带箭头等 SVG 图标 */
+              external: a.getAttribute('target') === '_blank'
+            };
+          }).filter(function (it) { return it.href; });
+        }
       }
       if (!items.length) return false;
       quickWrap.innerHTML = '';
@@ -1603,13 +2271,13 @@
     }
     root._luliyFillDrawerQuick = fillQuick;
 
-    /* —— 分区②：主题（6 个）—— */
+    /* —— 分区②：主题（7 个，含新增「赛博朋克」默认主题）—— */
     var secTheme = mkSection('\u4e3b\u9898', false);   /* 主题 */
     drawer.appendChild(secTheme);
     var sinks = root._luliySINKS || [];
     var grid = document.createElement('div');
     grid.className = 'lds-theme-grid';
-    var curSink = localStorage.getItem('luliy-sink') || 'default';
+    var curSink = localStorage.getItem('luliy-sink') || 'cyberpunk';
     sinks.forEach(function (s) {
       var cell = document.createElement('button');
       cell.type = 'button';
@@ -1687,6 +2355,12 @@
     }
     ham.addEventListener('click', toggleDrawer);
     backdrop.addEventListener('click', closeDrawer);
+    var closeBtn = head.querySelector('#luliy-drawer-close');
+    if (closeBtn) closeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      closeDrawer();
+      playSfx('click');
+    });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer();
     });
@@ -1700,6 +2374,105 @@
     document.body.appendChild(backdrop);
     document.body.appendChild(drawer);
     document.body.appendChild(ham);
+
+    /* ★ 左上角博客名 ΔιάΝους，固定在汉堡按钮右侧，全站可见。
+       ★ 样式套用自用户上传的新版粒子页面：「恒星核心」发光效果——
+       白色核心 + 多层粉/紫/青光晕模拟星光，结尾字符带十字星芒。
+       位置依然在左边（原文件里是居中的，这里只取它的视觉样式，
+       不取它的定位）。 */
+    if (!document.getElementById('luliy-brand')) {
+      var brand = document.createElement('a');
+      brand.id = 'luliy-brand';
+      brand.href = '/';
+      var _brandText = (LULIY_OPTS && LULIY_OPTS.siteName) || '\u0394\u03b9\u03ac\u039d\u03bf\u03c5\u03c2';
+      var _bodyChars = _brandText.slice(0, -1);
+      var _lastChar = _brandText.slice(-1);
+      brand.appendChild(document.createTextNode(_bodyChars));
+      var _flare = document.createElement('span');
+      _flare.className = 'flare-anchor';
+      _flare.textContent = _lastChar;
+      brand.appendChild(_flare);
+      brand.setAttribute('aria-label', _brandText + ' \u2014 \u8fd4\u56de\u4e3b\u9875');
+      document.body.appendChild(brand);
+    }
+    /* ★ 博客名右边的小图标：Q 版「沉思者」雕塑侧身剪影，
+       点击跳转到 GitHub issues（也就是后台写文章的地方）。
+       背景透明，发光样式和左边的博客名保持一致。 */
+    if (!document.getElementById('luliy-issues-link')) {
+      var thinkerLink = document.createElement('a');
+      thinkerLink.id = 'luliy-issues-link';
+      thinkerLink.href = 'https://github.com/luliyer6-ux/luliyer6-ux.github.io/issues';
+      thinkerLink.target = '_blank';
+      thinkerLink.rel = 'noopener noreferrer';
+      thinkerLink.setAttribute('aria-label', '\u524d\u5f80 GitHub Issues');
+      thinkerLink.title = '\u524d\u5f80 GitHub Issues';
+      thinkerLink.innerHTML =
+        '<svg viewBox="0 0 60 60" width="22" height="22" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="12" y="52" width="36" height="6" rx="1"/>' +
+        '<path d="M30 52 L30 44 Q30 38 34 35 L38 35 Q38 41 36 44 L36 52 Z" opacity="0.55"/>' +
+        '<path d="M16 52 L16 42 Q16 38 20 37 L25 39 Q24 43 22 44 L22 52 Z"/>' +
+        '<path d="M19 38 Q18 33 22 31 L33 31 Q35 33 34 36 L23 38 Q21 39 19 38 Z"/>' +
+        '<path d="M24 32 Q21 26 22 19 Q23 13 29 11 L34 12 Q36 16 35 21 L33 31 Q28 33 24 32 Z"/>' +
+        '<path d="M24 16 Q19 18 18 24 Q17 28 20 30 L23 30 Q21 27 22 23 Q23 19 27 17 Z"/>' +
+        '<path d="M18 25 Q15 21 16 16 Q17 12 22 11 L25 14 Q21 15 20 19 Q19 22 21 25 Z"/>' +
+        '<ellipse cx="28" cy="9" rx="6.5" ry="7"/>' +
+        '<path d="M33 8 Q35.5 9 34.5 11.5 Q33 12 32 10.5 Z"/>' +
+        '</svg>';
+      document.body.appendChild(thinkerLink);
+      /* 动态测量博客名实际宽度，把图标精确定位在它右边——
+         不写死间距，名字长短变化（比如以后改成别的站名）也不会错位。 */
+      function positionThinkerIcon() {
+        var b = document.getElementById('luliy-brand');
+        if (!b || !thinkerLink) return;
+        var r = b.getBoundingClientRect();
+        thinkerLink.style.left = (r.right + 10) + 'px';
+      }
+      positionThinkerIcon();
+      window.addEventListener('resize', positionThinkerIcon, { passive: true });
+      /* 字体加载完成后宽度可能变化，再校正一次 */
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(positionThinkerIcon).catch(function () {});
+      }
+
+      /* ★ 切换到极简系统的按钮：放在沉思者图标右边 */
+      if (!document.getElementById('luliy-to-minimal')) {
+        var toMin = document.createElement('button');
+        toMin.id = 'luliy-to-minimal';
+        toMin.type = 'button';
+        toMin.title = '\u5207\u6362\u5230\u7b80\u6d01\u7cfb\u7edf';   /* 切换到简洁系统 */
+        toMin.textContent = '\u25C7';   /* ◇ 空心菱形，区别于极简里的实心 ◈ */
+        toMin.addEventListener('click', function () {
+          if (root._luliySetSystem) root._luliySetSystem('minimal');
+        });
+        document.body.appendChild(toMin);
+        function positionToMin() {
+          var t = document.getElementById('luliy-issues-link');
+          if (!t) return;
+          var r = t.getBoundingClientRect();
+          toMin.style.left = (r.right + 8) + 'px';
+        }
+        positionToMin();
+        window.addEventListener('resize', positionToMin, { passive: true });
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(positionToMin).catch(function () {});
+        }
+      }
+    }
+    /* ★ 副标题：只在首页显示（文章页等其它页面顶部已经比较拥挤，
+       不重复放）。位置紧贴在 ΔιάΝους 正下方。 */
+    if (isIndexPage() && LULIY_OPTS.siteSubtitle && !document.getElementById('luliy-subtitle')) {
+      var subEl = document.createElement('div');
+      subEl.id = 'luliy-subtitle';
+      /* ★ 三个词分别链接到 Chronicle / Book / Favorites 页面，
+         点哪个词就跳对应页面，样式继承副标题的整体发光风格。 */
+      var _words = LULIY_OPTS.siteSubtitle.split(/\s+/);
+      var _links = ['/chronicle.html', '/book.html', '/favorites.html'];
+      subEl.innerHTML = _words.map(function (w, i) {
+        var href = _links[i] || '#';
+        return '<a href="' + esc(href) + '" class="luliy-subtitle-link">' + esc(w) + '</a>';
+      }).join(' ');
+      document.body.appendChild(subEl);
+    }
 
     /* ── 双导航模式切换实现 ── */
     root._luliyToggleNavMode = function () {
@@ -1898,6 +2671,7 @@
     previewWrap.className = 'luliy-ctrl-theme-preview';
 
     var THEME_PALETTES = {
+      'cyberpunk': { day: ['rgba(20,10,40,0.85)',    '#ff2bd6', '#f0e6ff'],  night: ['rgba(10,8,24,0.90)',   '#00e5ff', '#f0e6ff'] },
       'default':   { day: ['rgba(255,255,255,0.90)', '#8250df', '#1e1032'],  night: ['rgba(14,10,28,0.90)', '#cba6f7', '#cdd6f4'] },
       'sakura':    { day: ['rgba(255,238,245,0.92)', '#e05c8a', '#7a1040'],  night: ['rgba(42,10,28,0.88)',  '#f9a8c9', '#ffc5d0'] },
       'your-name': { day: ['rgba(230,244,255,0.92)', '#1a59a4', '#0d2b6b'],  night: ['rgba(4,14,52,0.90)',   '#93c5fd', '#c0e4ff'] },
@@ -1978,7 +2752,7 @@
     } catch (e) {}
 
     function syncThemeRows() {
-      var cur = localStorage.getItem('luliy-sink') || 'default';
+      var cur = localStorage.getItem('luliy-sink') || 'cyberpunk';
       panel.querySelectorAll('[data-sink]').forEach(function (r) {
         var active = r.getAttribute('data-sink') === cur;
         r.classList.toggle('is-active', active);
@@ -2015,42 +2789,194 @@
     });
     panel.appendChild(sakuraRow);
 
-    /* Floating particles toggle */
-    var particlesOn  = localStorage.getItem('luliy-particles') !== '0';
-    var particlesRow = mkRow('\u2728', '\u6f02\u6d6e\u7c92\u5b50', particlesOn ? '\u5f00\u542f' : '\u5173\u95ed');  /* ✨ 漂浮粒子 */
-    particlesRow.addEventListener('click', function (e) {
+    /* Cyberpunk particles — 总开关 */
+    var cyberOn  = localStorage.getItem('luliy-cyber') !== '0';
+    var cyberRow = mkRow('\u2728', '\u8d5b\u535a\u7c92\u5b50', cyberOn ? '\u5f00\u542f' : '\u5173\u95ed');
+    cyberRow.addEventListener('click', function (e) {
       e.stopPropagation();
-      var on = localStorage.getItem('luliy-particles') !== '0';
-      localStorage.setItem('luliy-particles', on ? '0' : '1');
-      particlesRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
-      if (root._luliyInitThemeParticles) root._luliyInitThemeParticles();
+      var on = localStorage.getItem('luliy-cyber') !== '0';
+      localStorage.setItem('luliy-cyber', on ? '0' : '1');
+      cyberRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
+      if (on) { if (root._luliyStopCyberParticles) root._luliyStopCyberParticles(); }
+      else { if (root._luliyInitCyberParticles) root._luliyInitCyberParticles(); }
       playSfx('click');
     });
-    panel.appendChild(particlesRow);
+    panel.appendChild(cyberRow);
 
-    /* BG */
-    panel.appendChild(mkSep());
-    var bgRow = mkRow('\uD83D\uDDBC', '\u80cc\u666f\u56fe\u7247', '\u66F4\u6362');
-    bgRow.addEventListener('click', function (e) {
-      e.stopPropagation();
-      panel.classList.remove('is-open');
-      ctrlBtn.classList.remove('is-open');
-      setTimeout(showBgPicker, 80);
+    /* Cyberpunk particles — 速度 */
+    var cyberSpeedSlider = mkSlider({
+      emoji: '\u26a1', label: '\u7c92\u5b50\u901f\u5ea6',
+      min: 0.2, max: 3, step: 0.2,
+      value: parseFloat(localStorage.getItem('luliy-cyber-speed')) || 1,
+      format: function (v) { return v.toFixed(1) + 'x'; },
+      onInput: function (v) { localStorage.setItem('luliy-cyber-speed', String(v)); }
     });
-    panel.appendChild(bgRow);
+    panel.appendChild(cyberSpeedSlider);
 
-    /* Background blur — slider 0..20px */
-    var blurSlider = mkSlider({
-      emoji: '\uD83C\uDF2B\uFE0F', label: '\u80cc\u666f\u6a21\u7cca',   /* 🌫️ 背景模糊 */
-      min: 0, max: 20, step: 1,
-      value: parseInt(localStorage.getItem('luliy-bgblur') || '0', 10) || 0,
+    /* Cyberpunk particles — 方向（汇聚 / 发散 / 自由漂浮，循环切换） */
+    var _dirLabels = { converge: '\u6c47\u805a\u6807\u9898', diverge: '\u53d1\u6563\u6269\u6563', free: '\u81ea\u7531\u98d8\u6d6e' };
+    function curDir() {
+      var v = localStorage.getItem('luliy-cyber-dir');
+      return (v === 'diverge' || v === 'free') ? v : 'converge';
+    }
+    var cyberDirRow = mkRow('\uD83E\uDDED', '\u7c92\u5b50\u65b9\u5411', _dirLabels[curDir()]);
+    cyberDirRow.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var order = ['converge', 'diverge', 'free'];
+      var next = order[(order.indexOf(curDir()) + 1) % order.length];
+      localStorage.setItem('luliy-cyber-dir', next);
+      cyberDirRow._bdg.textContent = _dirLabels[next];
+      playSfx('click');
+    });
+    panel.appendChild(cyberDirRow);
+
+    /* 粒子风格：经典（汇聚标题，单层城市剪影）/ 城市（引力物理 +
+       多层视差天际线 + 鼠标视差 + 霓虹招牌，取自用户新上传的版本）。
+       两套风格内部结构差异较大，切换时直接停止重启整个粒子系统，
+       不做"实时融合"，更稳妥也更简单。 */
+    var _styleLabels = { classic: '\u7ecf\u5178', city: '\u57ce\u5e02\uff08\u65b0\uff09' };
+    function curCyberStyle() {
+      return localStorage.getItem('luliy-cyber-style') === 'city' ? 'city' : 'classic';
+    }
+    var cyberStyleRow = mkRow('\uD83C\uDFD9\uFE0F', '\u7c92\u5b50\u98ce\u683c', _styleLabels[curCyberStyle()]);
+    cyberStyleRow.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var next = curCyberStyle() === 'city' ? 'classic' : 'city';
+      localStorage.setItem('luliy-cyber-style', next);
+      cyberStyleRow._bdg.textContent = _styleLabels[next];
+      if (root._luliyStopCyberParticles) root._luliyStopCyberParticles();
+      if (root._luliyInitCyberParticles) root._luliyInitCyberParticles();
+      playSfx('click');
+    });
+    panel.appendChild(cyberStyleRow);
+
+    /* ── 液态玻璃三个可调参数 ───────────────────────────── */
+    panel.appendChild(mkSep());
+    panel.appendChild(mkSec('\uD83E\uDE9E \u6db2\u6001\u73bb\u7483'));   /* 🪞 液态玻璃 */
+
+    var glassBlurSlider = mkSlider({
+      emoji: '\uD83C\uDF2B\uFE0F', label: '\u6a21\u7cca\u7a0b\u5ea6',   /* 🌫️ 模糊程度 */
+      min: 0, max: 50, step: 2,
+      value: parseFloat(localStorage.getItem('luliy-glass-blur')) || 22,
       format: function (v) { return v + 'px'; },
       onInput: function (v) {
-        localStorage.setItem('luliy-bgblur', String(v));
-        if (root._luliyApplyBgBlur) root._luliyApplyBgBlur();
+        localStorage.setItem('luliy-glass-blur', String(v));
+        applyGlassVars();
       }
     });
-    panel.appendChild(blurSlider);
+    panel.appendChild(glassBlurSlider);
+
+    var glassOpacitySlider = mkSlider({
+      emoji: '\uD83D\uDD73\uFE0F', label: '\u900f\u660e\u5ea6',   /* 🕳️ 透明度（这里指不透明度，数值越大越实） */
+      min: 0.1, max: 0.95, step: 0.05,
+      value: parseFloat(localStorage.getItem('luliy-glass-opacity')) || 0.5,
+      format: function (v) { return Math.round(v * 100) + '%'; },
+      onInput: function (v) {
+        localStorage.setItem('luliy-glass-opacity', String(v));
+        applyGlassVars();
+      }
+    });
+    panel.appendChild(glassOpacitySlider);
+
+    var glassHueSlider = mkSlider({
+      emoji: '\uD83C\uDFA8', label: '\u8272\u8c03',   /* 🎨 色调 */
+      min: 0, max: 360, step: 10,
+      value: parseFloat(localStorage.getItem('luliy-glass-hue')) || 250,
+      format: function (v) { return v + '\u00b0'; },
+      onInput: function (v) {
+        localStorage.setItem('luliy-glass-hue', String(v));
+        applyGlassVars();
+      }
+    });
+    panel.appendChild(glassHueSlider);
+
+    var articleOpacitySlider = mkSlider({
+      emoji: '\uD83D\uDCC4', label: '\u6587\u7ae0\u9762\u677f\u900f\u660e\u5ea6',   /* 📄 文章面板透明度（独立于上面的玻璃透明度，单独控制阅读面板） */
+      min: 0.1, max: 0.95, step: 0.05,
+      value: parseFloat(localStorage.getItem('luliy-article-opacity')) || 0.5,
+      format: function (v) { return Math.round(v * 100) + '%'; },
+      onInput: function (v) {
+        localStorage.setItem('luliy-article-opacity', String(v));
+        applyGlassVars();
+      }
+    });
+    panel.appendChild(articleOpacitySlider);
+
+    /* ── 主页卡片尺寸（宽 / 高可调） ───────────────────── */
+    panel.appendChild(mkSep());
+    panel.appendChild(mkSec('\uD83D\uDCD0 \u5361\u7247\u5c3a\u5bf8'));   /* 📐 卡片尺寸 */
+
+    var catWSlider = mkSlider({
+      emoji: '\u2194\uFE0F', label: '\u5361\u7247\u5bbd\u5ea6',   /* ↔️ 卡片宽度 */
+      min: 900, max: 2000, step: 50,
+      value: parseFloat(localStorage.getItem('luliy-cat-w')) || 1700,
+      format: function (v) { return v + 'px'; },
+      onInput: function (v) {
+        localStorage.setItem('luliy-cat-w', String(v));
+        applyCatSize();
+      }
+    });
+    panel.appendChild(catWSlider);
+
+    var catHSlider = mkSlider({
+      emoji: '\u2195\uFE0F', label: '\u5361\u7247\u9ad8\u5ea6',   /* ↕️ 卡片高度 */
+      min: 220, max: 500, step: 10,
+      value: parseFloat(localStorage.getItem('luliy-cat-h')) || 338,
+      format: function (v) { return v + 'px'; },
+      onInput: function (v) {
+        localStorage.setItem('luliy-cat-h', String(v));
+        applyCatSize();
+      }
+    });
+    panel.appendChild(catHSlider);
+
+    /* ── 恢复默认值：一键重置上面这一串外观设置（粒子速度/方向、
+       玻璃模糊/透明度/色调、文章面板透明度、卡片宽/高），
+       省得调乱了找不回来。 */
+    var APPEARANCE_DEFAULTS = {
+      'luliy-cyber-speed':    '1',
+      'luliy-cyber-dir':      'converge',
+      'luliy-cyber-style':    'classic',
+      'luliy-glass-blur':     '22',
+      'luliy-glass-opacity':  '0.5',
+      'luliy-glass-hue':      '250',
+      'luliy-article-opacity':'0.5',
+      'luliy-cat-w':          '1700',
+      'luliy-cat-h':          '338'
+    };
+    var resetRow = mkRow('\u21BA', '\u6062\u590d\u9ed8\u8ba4\u503c', '');
+    resetRow._bdg.style.opacity = '0';
+    resetRow.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var styleChanged = curCyberStyle() !== 'classic';
+      Object.keys(APPEARANCE_DEFAULTS).forEach(function (k) {
+        localStorage.setItem(k, APPEARANCE_DEFAULTS[k]);
+      });
+      /* 同步滑块的视觉显示：改 value 再派发 input 事件，
+         会自动触发各自的 onInput（写 localStorage + 实时生效），
+         不用逐个手写重复逻辑。 */
+      [cyberSpeedSlider, glassBlurSlider, glassOpacitySlider,
+       glassHueSlider, articleOpacitySlider, catWSlider, catHSlider].forEach(function (s) {
+        s._range.value = APPEARANCE_DEFAULTS[
+          s === cyberSpeedSlider ? 'luliy-cyber-speed' :
+          s === glassBlurSlider ? 'luliy-glass-blur' :
+          s === glassOpacitySlider ? 'luliy-glass-opacity' :
+          s === glassHueSlider ? 'luliy-glass-hue' :
+          s === articleOpacitySlider ? 'luliy-article-opacity' :
+          s === catWSlider ? 'luliy-cat-w' : 'luliy-cat-h'
+        ];
+        s._range.dispatchEvent(new Event('input', { bubbles: false }));
+      });
+      cyberDirRow._bdg.textContent = _dirLabels['converge'];
+      cyberStyleRow._bdg.textContent = _styleLabels['classic'];
+      if (styleChanged) {
+        /* 风格变了（城市→经典），需要整套重启才能生效 */
+        if (root._luliyStopCyberParticles) root._luliyStopCyberParticles();
+        if (root._luliyInitCyberParticles) root._luliyInitCyberParticles();
+      }
+      playSfx('click');
+    });
+    panel.appendChild(resetRow);
 
     /* ── Reading settings (article pages only) ───────────── */
     if (document.getElementById('postBody')) {
@@ -2140,58 +3066,31 @@
     });
     panel.appendChild(cardViewRow);
 
-    /* Mouse trail toggle */
-    var trailRow = mkRow('\u2728', '\u9f20\u6807\u62d6\u5c3e',
-      localStorage.getItem('luliy-trail') === '1' ? '\u5f00\u542f' : '\u5173\u95ed');
-    trailRow.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var on = localStorage.getItem('luliy-trail') === '1';
-      localStorage.setItem('luliy-trail', on ? '0' : '1');
-      trailRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
-      if (!on) initMouseTrail(); else stopMouseTrail();
-      playSfx('click');
-    });
-    panel.appendChild(trailRow);
-
-    /* Fireflies toggle (dark mode) */
-    var fireflyRow = mkRow('\uD83E\uDD9F', '\u8424\u706b\u866b',
-      localStorage.getItem('luliy-firefly') === '1' ? '\u5f00\u542f' : '\u5173\u95ed');
-    fireflyRow.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var on = localStorage.getItem('luliy-firefly') === '1';
-      localStorage.setItem('luliy-firefly', on ? '0' : '1');
-      fireflyRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
-      if (!on) initFireflies(); else stopFireflies();
-      playSfx('click');
-    });
-    panel.appendChild(fireflyRow);
-
     /* Reduce-motion override */
     var reduceRow = mkRow('\uD83C\uDF00', '\u51cf\u5f31\u52a8\u6548',
       localStorage.getItem('luliy-reduce') === '1' ? '\u5f00\u542f' : '\u5173\u95ed');
     reduceRow.addEventListener('click', function (e) {
       e.stopPropagation();
       var on = localStorage.getItem('luliy-reduce') === '1';
-      localStorage.setItem('luliy-reduce', on ? '0' : '1');
-      reduceRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
+      var turningOn = !on;
+      localStorage.setItem('luliy-reduce', turningOn ? '1' : '0');
+      reduceRow._bdg.textContent = turningOn ? '\u5f00\u542f' : '\u5173\u95ed';
       applyReduceMotion();
+      /* ★ 不只是切 CSS class（那只能停掉 CSS 动画），
+         不影响阅读的装饰性效果（背景粒子、樱花）要真的整套停掉/重启，
+         不能让它们在后台继续跑。各自的 init 函数内部仍会检查
+         luliy-cyber / luliy-sakura 这两个独立开关，不会覆盖用户
+         本来就关掉的选择。 */
+      if (turningOn) {
+        if (root._luliyStopCyberParticles) root._luliyStopCyberParticles();
+        if (root._luliyStopSakura) root._luliyStopSakura();
+      } else {
+        if (root._luliyInitCyberParticles) root._luliyInitCyberParticles();
+        if (root._luliyInitSakura) root._luliyInitSakura();
+      }
       playSfx('click');
     });
     panel.appendChild(reduceRow);
-
-    /* Focus reading mode (article pages only) */
-    if (document.getElementById('postBody')) {
-      var focusRow = mkRow('\uD83D\uDCD6', '\u4e13\u6ce8\u9605\u8bfb',
-        document.body.classList.contains('luliy-focus-mode') ? '\u5f00\u542f' : '\u5173\u95ed');
-      focusRow.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var on = toggleFocusMode();
-        focusRow._bdg.textContent = on ? '\u5f00\u542f' : '\u5173\u95ed';
-      });
-      focusRow._badge = focusRow._bdg;
-      root._luliyFocusRow = focusRow;
-      panel.appendChild(focusRow);
-    }
 
     /* Toggle open / close */
     ctrlBtn.addEventListener('click', function (e) {
@@ -2212,7 +3111,7 @@
     ctrlWrap.appendChild(panel);
     bar.appendChild(ctrlWrap);
     document.body.appendChild(bar);
-    applySink(localStorage.getItem('luliy-sink') || 'default');
+    applySink(localStorage.getItem('luliy-sink') || 'cyberpunk');
   }
 
   /* ---- 14  Home card rebuild ------------------------------ */
@@ -2227,11 +3126,673 @@
     return lnk;
   }
 
+  /* ============================================================
+     归档页 Archives —— 双标签页（Weekly / Other）+ 按年分组 + 分页
+     ★ 替换原来的「时间线视图」归档页。复用现成的 fetchPosts() /
+     esc() / buildPostLink()，赛博朋克风格沿用全站 CSS 变量。
+     ============================================================ */
+  var ARCHIVE_WEEKLY_LABELS = ['Weekly', 'weekly', '\u5468\u8bb0', '\u5468\u62a5', '\u4e8c\u5341\u56db\u8282\u6c14'];
+  var ARCHIVE_SYSTEM_LABELS = ['archives', 'archive', 'chronicle', 'chronicle-data',
+    'about', 'page', 'Pages', '\u9875\u9762', 'book', 'favorites', 'stock', 'link', 'gallery'];
+
+  function archiveIsWeekly(post) {
+    var names = (post.labels || []).map(function (l) { return l.name; });
+    for (var i = 0; i < names.length; i++) {
+      if (ARCHIVE_WEEKLY_LABELS.indexOf(names[i]) !== -1) return true;
+    }
+    return false;
+  }
+  function archiveIsSystem(post) {
+    var names = (post.labels || []).map(function (l) { return l.name; });
+    for (var i = 0; i < names.length; i++) {
+      if (ARCHIVE_SYSTEM_LABELS.indexOf(names[i]) !== -1) return true;
+    }
+    return false;
+  }
+  function archiveGroupByYear(posts) {
+    var groups = {};
+    posts.forEach(function (p) {
+      var y = (p.created || '').slice(0, 4) || '\u672a\u77e5';   /* 未知 */
+      if (!groups[y]) groups[y] = [];
+      groups[y].push(p);
+    });
+    return groups;
+  }
+
+  function initArchivesPage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    /* ★ 幂等防护：已经初始化过就直接返回，避免重复渲染/重复绑事件 */
+    if (document.getElementById('luliy-archives')) return;
+    /* 标记 body：隐藏 Gmeek 原生翻页器等 */
+    document.body.classList.add('luliy-archives-takeover', 'luliy-hide-pagination');
+
+    pb.innerHTML = '<div id="luliy-archives" class="luliy-archives">' +
+      '<div class="luliy-arch-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-archives');
+
+    var PER_PAGE = 10;
+    var TAB_KEY = 'luliy-archive-tab';
+    var state = {
+      tab: (localStorage.getItem(TAB_KEY) === 'other') ? 'other' : 'weekly',
+      pageWeekly: 1,
+      pageOther: 1,
+      weekly: [],
+      other: []
+    };
+
+    fetchPosts().then(function (posts) {
+      if (!posts || !posts.length) {
+        root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+          '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+        return;
+      }
+      /* 按日期降序 */
+      posts.sort(function (a, b) {
+        return String(b.created).localeCompare(String(a.created));
+      });
+      posts.forEach(function (p) {
+        if (archiveIsWeekly(p)) state.weekly.push(p);
+        else if (!archiveIsSystem(p)) state.other.push(p);
+      });
+      renderArchivesShell();
+    }).catch(function () {
+      root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+    });
+
+    function renderArchivesShell() {
+      root2.innerHTML =
+        '<div class="luliy-arch-header">' +
+          '<h1 class="luliy-arch-title">Archives</h1>' +
+          '<div class="luliy-arch-tabbar">' +
+            '<button type="button" class="luliy-arch-tab" data-tab="weekly">Weekly</button>' +
+            '<span class="luliy-arch-tabsep"></span>' +
+            '<button type="button" class="luliy-arch-tab" data-tab="other">Other</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="luliy-arch-body"></div>';
+
+      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var t = btn.getAttribute('data-tab');
+          if (t === state.tab) return;
+          state.tab = t;
+          localStorage.setItem(TAB_KEY, t);
+          renderArchiveBody();
+        });
+      });
+      renderArchiveBody();
+    }
+
+    function renderArchiveBody() {
+      /* 高亮当前标签 */
+      root2.querySelectorAll('.luliy-arch-tab').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-tab') === state.tab);
+      });
+      var body = root2.querySelector('.luliy-arch-body');
+      var list = (state.tab === 'weekly') ? state.weekly : state.other;
+      var page = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
+      var totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+      if (page > totalPages) { page = totalPages; }
+
+      if (!list.length) {
+        body.innerHTML = '<div class="luliy-arch-empty">\u6682\u65e0\u6587\u7ae0</div>';   /* 暂无文章 */
+        return;
+      }
+
+      var start = (page - 1) * PER_PAGE;
+      var pageItems = list.slice(start, start + PER_PAGE);
+      var groups = archiveGroupByYear(pageItems);
+      var years = Object.keys(groups).sort(function (a, b) { return b.localeCompare(a); });
+
+      var html = '<div class="luliy-arch-list">';
+      years.forEach(function (y) {
+        html += '<div class="luliy-arch-year">' + esc(y) + '</div>';
+        groups[y].forEach(function (p) {
+          var href = buildPostLink(p.link);
+          var date = (p.created || '').slice(0, 10);
+          html += '<a class="luliy-arch-row" href="' + esc(href) + '">' +
+            '<span class="luliy-arch-date">' + esc(date) + '</span>' +
+            '<span class="luliy-arch-name">' + esc(p.title) + '</span>' +
+          '</a>';
+        });
+      });
+      html += '</div>';
+
+      /* 分页（超过一页才显示） */
+      if (totalPages > 1) {
+        html += '<div class="luliy-arch-pagination">' +
+          '<button type="button" class="luliy-arch-pgbtn" data-dir="prev"' +
+            (page <= 1 ? ' disabled' : '') + '>&lt;</button>' +
+          '<span class="luliy-arch-pginfo">Page ' + page + ' of ' + totalPages + '</span>' +
+          '<button type="button" class="luliy-arch-pgbtn" data-dir="next"' +
+            (page >= totalPages ? ' disabled' : '') + '>&gt;</button>' +
+        '</div>';
+      }
+      body.innerHTML = html;
+
+      body.querySelectorAll('.luliy-arch-pgbtn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (btn.disabled) return;
+          var dir = btn.getAttribute('data-dir');
+          var cur = (state.tab === 'weekly') ? state.pageWeekly : state.pageOther;
+          cur += (dir === 'next' ? 1 : -1);
+          cur = Math.max(1, Math.min(totalPages, cur));
+          if (state.tab === 'weekly') state.pageWeekly = cur; else state.pageOther = cur;
+          renderArchiveBody();
+          /* 翻页后滚回列表顶部，体验更顺 */
+          try { root2.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        });
+      });
+    }
+  }
+
+  /* ============================================================
+     编年史 Chronicle —— 年份 + 分类（出游/书影游/海报墙）
+     ★ 优先读 GitHub API（chronicle-data 标签的 issue），失败则
+     回退到页面内置的 JSON。赛博朋克风格沿用全站 CSS 变量。
+     ============================================================ */
+  var CHRONICLE_REPO = (window.LULIY_CHRONICLE_REPO || 'luliyer6-ux/luliyer6-ux.github.io');
+
+  function chronicleExtractJson(body) {
+    if (!body) return null;
+    var m = body.match(/<!--\s*chronicle:data:start\s*-->([\s\S]*?)<!--\s*chronicle:data:end\s*-->/);
+    if (!m) return null;
+    try { return JSON.parse(m[1].trim()); } catch (e) { return null; }
+  }
+
+  function chronicleFetchIssueData() {
+    var url = 'https://api.github.com/repos/' + CHRONICLE_REPO +
+      '/issues?state=open&labels=chronicle-data&per_page=1';
+    return fetch(url, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (arr) {
+        if (!arr || !arr.length) return null;
+        return chronicleExtractJson(arr[0].body);
+      })
+      .catch(function () { return null; });
+  }
+
+  function chronicleGetFallback() {
+    var el = document.getElementById('luliy-chronicle-fallback');
+    if (!el) return null;
+    try { return JSON.parse(el.textContent.trim()); } catch (e) { return null; }
+  }
+
+  function initChroniclePage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    /* ★ 幂等防护：已经初始化过就直接返回 */
+    if (document.getElementById('luliy-chronicle')) return;
+    document.body.classList.add('luliy-chronicle-takeover', 'luliy-hide-pagination');
+
+    /* ★ 移除「预计阅读」和「文末字数」元素（Chronicle 不是普通文章，
+       不需要显示这些信息；CSS 也有隐藏，这里双重保险）。 */
+    ['luliy-readmeta', 'luliy-post-footer-bar'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    });
+
+    /* 把可能存在的内置 fallback JSON 先抢救出来（pb.innerHTML 会被覆盖） */
+    var fallbackJson = chronicleGetFallback();
+
+    pb.innerHTML = '<div id="luliy-chronicle" class="luliy-chronicle">' +
+      '<div class="luliy-chron-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-chronicle');
+
+    var YEAR_KEY = 'luliy-chronicle-year';
+    var CAT_KEY = 'luliy-chronicle-category';
+
+    chronicleFetchIssueData().then(function (apiData) {
+      var data = apiData || fallbackJson;
+      if (!data || !data.years || !data.years.length) {
+        root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
+        return;
+      }
+      renderChronicle(data);
+    }).catch(function () {
+      /* 兜底：万一渲染过程本身抛错（比如数据结构异常），也优雅降级 */
+      var data = fallbackJson;
+      if (data && data.years && data.years.length) {
+        try { renderChronicle(data); return; } catch (e) {}
+      }
+      root2.innerHTML = '<div class="luliy-chron-error">\u65e0\u6cd5\u8bfb\u53d6\u7f16\u5e74\u53f2\u6570\u636e\u3002</div>';
+    });
+
+    function renderChronicle(data) {
+      var years = data.years;
+      var cats = data.categories || [];
+
+      var savedYear = localStorage.getItem(YEAR_KEY);
+      var savedCat = localStorage.getItem(CAT_KEY);
+      var curYear = (years.indexOf(savedYear) !== -1) ? savedYear : years[0];
+      var catKeys = cats.map(function (c) { return c.key; });
+      var curCat = (catKeys.indexOf(savedCat) !== -1) ? savedCat : (cats[0] && cats[0].key);
+
+      root2.innerHTML =
+        '<div class="luliy-chron-header">' +
+          '<h1 class="luliy-chron-title">Chronicle</h1>' +
+          '<div class="luliy-chron-years"></div>' +
+        '</div>' +
+        '<div class="luliy-chron-cats"></div>' +
+        '<div class="luliy-chron-body"></div>';
+
+      var yearsBox = root2.querySelector('.luliy-chron-years');
+      years.forEach(function (y) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'luliy-chron-year-tab';
+        b.textContent = y;
+        b.setAttribute('data-year', y);
+        b.addEventListener('click', function () {
+          if (y === curYear) return;
+          curYear = y;
+          localStorage.setItem(YEAR_KEY, y);
+          syncTabs(); renderBody();
+        });
+        yearsBox.appendChild(b);
+      });
+
+      var catsBox = root2.querySelector('.luliy-chron-cats');
+      cats.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'luliy-chron-cat-tab';
+        b.textContent = c.label;
+        b.setAttribute('data-cat', c.key);
+        b.addEventListener('click', function () {
+          if (c.key === curCat) return;
+          curCat = c.key;
+          localStorage.setItem(CAT_KEY, c.key);
+          syncTabs(); renderBody();
+        });
+        catsBox.appendChild(b);
+      });
+
+      function syncTabs() {
+        root2.querySelectorAll('.luliy-chron-year-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-year') === curYear);
+        });
+        root2.querySelectorAll('.luliy-chron-cat-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-cat') === curCat);
+        });
+      }
+
+      function renderBody() {
+        var body = root2.querySelector('.luliy-chron-body');
+        var yearData = (data.data && data.data[curYear]) || {};
+        var list = yearData[curCat] || [];
+        if (curCat === 'travel') body.innerHTML = renderTravel(list);
+        else if (curCat === 'media') body.innerHTML = renderMedia(list);
+        else if (curCat === 'posters') body.innerHTML = renderPosters(list);
+        else body.innerHTML = '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      }
+
+      syncTabs();
+      renderBody();
+    }
+
+    /* —— 出游：月份 | 城市 | 活动 三列 ——
+       ★ 同月份的多条记录合并月份格（rowspan），实现"Jan. 跨多行"效果。 */
+    function renderTravel(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
+        '<th>\u6708\u4efd</th><th>\u57ce\u5e02</th><th>\u6d3b\u52a8</th></tr></thead><tbody>';
+
+      function makeActs(row) {
+        return (row.items || []).map(function (it) {
+          if (it && it.url) {
+            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
+          }
+          return esc((it && it.title) || String(it || ''));
+        }).join('\u3001');
+      }
+
+      var i = 0;
+      while (i < list.length) {
+        var month = list[i].month || '';
+        /* 统计连续相同月份的条数，用于 rowspan */
+        var span = 1;
+        while (i + span < list.length && (list[i + span].month || '') === month) span++;
+
+        /* 第一行：带 rowspan 的月份格 */
+        h += '<tr>' +
+          '<td rowspan="' + span + '" class="luliy-chron-month-cell">' + esc(month) + '</td>' +
+          '<td data-label="\u57ce\u5e02">' + esc(list[i].city || '') + '</td>' +
+          '<td data-label="\u6d3b\u52a8">' + makeActs(list[i]) + '</td>' +
+        '</tr>';
+
+        /* 同月的后续行：不再重复月份格 */
+        for (var j = 1; j < span; j++) {
+          h += '<tr>' +
+            '<td data-label="\u57ce\u5e02">' + esc(list[i + j].city || '') + '</td>' +
+            '<td data-label="\u6d3b\u52a8">' + makeActs(list[i + j]) + '</td>' +
+          '</tr>';
+        }
+        i += span;
+      }
+      h += '</tbody></table></div></div>';
+      return h;
+    }
+
+    /* —— 书影游：月份 | 读书 | 观影 | 演出 | 游戏 五列 —— */
+    function renderMedia(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      function cell(arr) {
+        if (!arr || !arr.length) return '';
+        return arr.map(function (it) {
+          if (it && typeof it === 'object' && it.url) {
+            return '<a href="' + esc(buildPostLink(it.url)) + '">' + esc(it.title || '') + '</a>';
+          }
+          return esc(typeof it === 'object' ? (it.title || '') : String(it));
+        }).join(' / ');
+      }
+      var h = '<div class="luliy-chron-scroll-x"><div class="luliy-chron-tablewrap"><table class="luliy-chron-table"><thead><tr>' +
+        '<th>\u6708\u4efd</th><th>\u8bfb\u4e66/\u6f2b\u753b</th><th>\u89c2\u5f71/\u5267\u96c6/\u756a\u5267</th>' +
+        '<th>\u6f14\u51fa/\u653e\u6620</th><th>\u6e38\u620f/\u5b9e\u51b5</th></tr></thead><tbody>';
+      list.forEach(function (row) {
+        h += '<tr><td class="luliy-chron-month-cell">' + esc(row.month || '') + '</td>' +
+          '<td data-label="\u8bfb\u4e66">' + cell(row.books) + '</td>' +
+          '<td data-label="\u89c2\u5f71">' + cell(row.watch) + '</td>' +
+          '<td data-label="\u6f14\u51fa">' + cell(row.shows) + '</td>' +
+          '<td data-label="\u6e38\u620f">' + cell(row.games) + '</td></tr>';
+      });
+      h += '</tbody></table></div></div>';
+      return h;
+    }
+
+    /* —— 海报墙：响应式网格 7/5/3 列 —— */
+    function renderPosters(list) {
+      if (!list || !list.length) return '<div class="luliy-chron-empty">\u6682\u65e0\u5185\u5bb9</div>';
+      var h = '<div class="luliy-chron-posters">';
+      list.forEach(function (p, i) {
+        /* ★ 点击海报触发灯箱，data-index 记录位置；有 url 的单独在灯箱里提供跳转按钮 */
+        h += '<button type="button" class="luliy-poster-item" data-index="' + i + '"' +
+          (p.url ? ' data-url="' + esc(buildPostLink(p.url)) + '"' : '') + '>' +
+          '<div class="luliy-poster-img" style="background-image:url(\'' + esc(p.image || '') + '\')"></div>' +
+          '<div class="luliy-poster-title">' + esc(p.title || '') + '</div>' +
+          '</button>';
+      });
+      h += '</div>';
+
+      /* 灯箱初始化（在 DOM 插入后由 body.click 事件委托触发） */
+      setTimeout(function () {
+        var body = document.querySelector('.luliy-chron-body');
+        if (!body || body._lightboxBound) return;
+        body._lightboxBound = true;
+
+        function openLightbox(idx) {
+          var lb = document.getElementById('luliy-lb');
+          if (!lb) {
+            lb = document.createElement('div'); lb.id = 'luliy-lb';
+            lb.innerHTML =
+              '<div class="luliy-lb-bg"></div>' +
+              '<button class="luliy-lb-prev" aria-label="\u4e0a\u4e00\u5f20">&#8249;</button>' +
+              '<button class="luliy-lb-next" aria-label="\u4e0b\u4e00\u5f20">&#8250;</button>' +
+              '<div class="luliy-lb-img-wrap"><img class="luliy-lb-img" alt=""><div class="luliy-lb-cap"></div>' +
+              '<a class="luliy-lb-link" target="_blank" rel="noopener">\u67e5\u770b\u6587\u7ae0 \u2192</a></div>' +
+              '<button class="luliy-lb-close" aria-label="\u5173\u95ed">&#10005;</button>';
+            document.body.appendChild(lb);
+
+            /* 背景/关闭按钮关闭 */
+            lb.querySelector('.luliy-lb-bg').addEventListener('click', closeLightbox);
+            lb.querySelector('.luliy-lb-close').addEventListener('click', closeLightbox);
+            lb.querySelector('.luliy-lb-prev').addEventListener('click', function () { navLightbox(-1); });
+            lb.querySelector('.luliy-lb-next').addEventListener('click', function () { navLightbox(1); });
+
+            /* 键盘 */
+            document.addEventListener('keydown', function (e) {
+              if (!lb.classList.contains('is-open')) return;
+              if (e.key === 'ArrowLeft'  || e.keyCode === 37) navLightbox(-1);
+              if (e.key === 'ArrowRight' || e.keyCode === 39) navLightbox(1);
+              if (e.key === 'Escape'     || e.keyCode === 27) closeLightbox();
+            });
+
+            /* 触摸滑动 */
+            var _tx = 0;
+            lb.addEventListener('touchstart', function (e) { _tx = e.touches[0].clientX; }, { passive: true });
+            lb.addEventListener('touchend', function (e) {
+              var diff = e.changedTouches[0].clientX - _tx;
+              if (Math.abs(diff) > 40) navLightbox(diff < 0 ? 1 : -1);
+            }, { passive: true });
+          }
+
+          lb._list = list; lb._idx = idx;
+          showLightboxItem(lb, idx);
+          lb.classList.add('is-open');
+          document.body.classList.add('luliy-lb-open');
+        }
+
+        function showLightboxItem(lb, idx) {
+          var p = lb._list[idx];
+          lb.querySelector('.luliy-lb-img').src = p.image || '';
+          lb.querySelector('.luliy-lb-cap').textContent = p.title || '';
+          var linkEl = lb.querySelector('.luliy-lb-link');
+          if (p.url) { linkEl.href = buildPostLink(p.url); linkEl.style.display = ''; }
+          else { linkEl.style.display = 'none'; }
+          /* 更新前后箭头可用状态 */
+          lb.querySelector('.luliy-lb-prev').disabled = idx <= 0;
+          lb.querySelector('.luliy-lb-next').disabled = idx >= lb._list.length - 1;
+          lb._idx = idx;
+        }
+
+        function navLightbox(dir) {
+          var lb = document.getElementById('luliy-lb');
+          if (!lb) return;
+          var next = lb._idx + dir;
+          if (next < 0 || next >= lb._list.length) return;
+          showLightboxItem(lb, next);
+        }
+
+        function closeLightbox() {
+          var lb = document.getElementById('luliy-lb');
+          if (lb) lb.classList.remove('is-open');
+          document.body.classList.remove('luliy-lb-open');
+        }
+
+        body.addEventListener('click', function (e) {
+          var btn = e.target.closest('.luliy-poster-item');
+          if (!btn) return;
+          var idx = parseInt(btn.getAttribute('data-index') || '0', 10);
+          openLightbox(idx);
+        });
+      }, 0);
+
+      return h;
+    }
+  }
+
+  function isChroniclePage() {
+    /* ★ 只用 URL 路径判断，绝不能再看「页面里有没有 fallback 元素」——
+       否则任何一篇文章只要正文里出现了 luliy-chronicle-fallback 这串字符
+       （比如把本功能的部署指南当文章发出来），就会被误判成 Chronicle 页、
+       整篇内容被接管替换掉。这是之前的严重 bug。
+       Gmeek 生成的单页文件名就是 chronicle.html，按路径认最稳妥。 */
+    return /(^|\/)chronicle(\.html)?$/i.test(location.pathname);
+  }
+
+  /* ============================================================
+     书架 Bookshelf（singlePage: book）—— 赛博朋克风
+     自动读 postList.json 里带 Library 标签的文章，按第二个标签
+     归入「小说 / 成长 / 投资 / 现实 / 杂项」五大类，带「在读」标签
+     的书额外放进右侧在读书堆。点击书脊跳到对应文章。
+     ============================================================ */
+  var BOOK_LABEL = 'Library';
+  var BOOK_CATEGORIES = ['\u5c0f\u8bf4', '\u6210\u957f', '\u6295\u8d44', '\u73b0\u5b9e', '\u6742\u9879'];  /* 小说 成长 投资 现实 杂项 */
+  var BOOK_READING_LABEL = '\u5728\u8bfb';   /* 在读 */
+  /* ★ 手动补充的书（还没写文章、想先占位的）：
+     { title, href, category, reading } —— category 必须是上面五类之一 */
+  var BOOK_EXTRA = (window.LULIY_EXTRA_BOOKS && Array.isArray(window.LULIY_EXTRA_BOOKS))
+    ? window.LULIY_EXTRA_BOOKS : [];
+
+  var BOOK_PALETTE = ['#7A2E6B', '#2C4E6B', '#2E5C5A', '#5C2E6B', '#6B2E4A', '#3E2E6B'];
+  function bookHash(s) {
+    var h = 0; s = String(s);
+    for (var i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
+    return Math.abs(h);
+  }
+
+  function isBookPage() {
+    return /(^|\/)book(\.html)?$/i.test(location.pathname);
+  }
+
+  function initBookPage() {
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    if (document.getElementById('luliy-bookshelf')) return;   /* 幂等 */
+    document.body.classList.add('luliy-book-takeover', 'luliy-hide-pagination');
+
+    pb.innerHTML = '<div id="luliy-bookshelf" class="luliy-bookshelf">' +
+      '<div class="luliy-book-loading">\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    var root2 = document.getElementById('luliy-bookshelf');
+
+    fetchPosts().then(function (posts) {
+      var books = [];
+      (posts || []).forEach(function (p) {
+        var names = (p.labels || []).map(function (l) { return l.name; });
+        if (names.indexOf(BOOK_LABEL) === -1) return;   /* 只要 Library 文章 */
+        /* 分类 = 第一个命中五大类的标签，否则归杂项 */
+        var cat = '\u6742\u9879';
+        for (var i = 0; i < names.length; i++) {
+          if (BOOK_CATEGORIES.indexOf(names[i]) !== -1) { cat = names[i]; break; }
+        }
+        books.push({
+          title: p.title, href: buildPostLink(p.link), created: (p.created || '').slice(0, 10),
+          category: cat, reading: names.indexOf(BOOK_READING_LABEL) !== -1
+        });
+      });
+      /* 合并手动补充的书 */
+      BOOK_EXTRA.forEach(function (b) {
+        books.push({
+          title: b.title || '\u672a\u547d\u540d', href: b.href || '#',
+          created: b.created || '', category: BOOK_CATEGORIES.indexOf(b.category) !== -1 ? b.category : '\u6742\u9879',
+          reading: !!b.reading
+        });
+      });
+      renderBookshelf(books);
+    }).catch(function () {
+      root2.innerHTML = '<div class="luliy-book-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
+        '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
+    });
+
+    function renderBookshelf(books) {
+      var readingBooks = books.filter(function (b) { return b.reading; });
+
+      var html = '<div class="luliy-book-header">' +
+        '<h1 class="luliy-book-title">\u6211\u7684\u4e66\u67b6</h1>' +   /* 我的书架 */
+        '<p class="luliy-book-sub">\u70b9\u51fb\u4e66\u810a\uff0c\u524d\u5f80\u5bf9\u5e94\u7684\u6587\u7ae0 \u00b7 \u5171 ' +
+          books.length + ' \u672c</p></div>';   /* 点击书脊，前往对应的文章 · 共 N 本 */
+
+      html += '<div class="luliy-bookcase">';
+      BOOK_CATEGORIES.forEach(function (cat, ci) {
+        var inCat = books.filter(function (b) { return b.category === cat; });
+        html += '<section class="luliy-shelf">';
+        html += '<div class="luliy-shelf-plaque">' + esc(cat) +
+          ' <span class="luliy-shelf-count">' + inCat.length + ' \u672c</span></div>';   /* N 本 */
+        html += '<div class="luliy-shelf-row">';
+        if (!inCat.length) {
+          html += '<div class="luliy-shelf-empty">\u6682\u65e0\u4e66\u7c4d</div>';   /* 暂无书籍 */
+        } else {
+          inCat.forEach(function (b) { html += buildSpine(b); });
+        }
+        /* 在读书堆放在第一个有在读书的分类那一层尾部 */
+        if (ci === 0 && readingBooks.length) {
+          html += buildReadingZone(readingBooks);
+        }
+        html += '</div><div class="luliy-shelf-board"></div></section>';
+      });
+      html += '</div>';
+
+      root2.innerHTML = html;
+    }
+
+    function buildSpine(b) {
+      var h = bookHash(b.title);
+      var w = 44 + (h % 20);          /* 44–64px */
+      var ht = 150 + (h % 36);        /* 150–186px */
+      var tilt = (h % 7) - 3;         /* -3..3deg */
+      var color = BOOK_PALETTE[h % BOOK_PALETTE.length];
+      var meta = b.created ? ('<span class="luliy-spine-note">' + esc(b.created) + '</span>') : '';
+      return '<a class="luliy-spine" href="' + esc(b.href) + '" ' +
+        'style="--tilt:' + tilt + 'deg;width:' + w + 'px;height:' + ht + 'px;' +
+        'background:linear-gradient(90deg,' + color + ',' + color + 'cc);" ' +
+        'aria-label="' + esc(b.title) + '">' +
+        '<span class="luliy-spine-title">' + esc(b.title) + '</span>' +
+        '<span class="luliy-spine-tip"><strong>' + esc(b.title) + '</strong>' + meta + '</span>' +
+        '</a>';
+    }
+
+    function buildReadingZone(readingBooks) {
+      var h = '<div class="luliy-reading-zone"><span class="luliy-reading-label">\u5728\u8bfb</span>' +   /* 在读 */
+        '<div class="luliy-reading-stack">';
+      readingBooks.slice(0, 3).forEach(function (b, i) {
+        var color = BOOK_PALETTE[bookHash(b.title) % BOOK_PALETTE.length];
+        h += '<a class="luliy-flat-book' + (i === 0 ? ' is-top' : '') + '" href="' + esc(b.href) + '" ' +
+          'style="bottom:' + (i * 12) + 'px;z-index:' + (10 - i) + ';background:' + color + ';" ' +
+          'aria-label="\u5728\u8bfb\uff1a' + esc(b.title) + '">' + esc(b.title) + '</a>';
+      });
+      h += '</div></div>';
+      return h;
+    }
+  }
+
+
   function initCards() {
-    if (/tag\.html?$|\/tag\/?$/i.test(location.pathname)) return;
-    var nav = document.querySelector('nav.SideNav, ul.SideNav, .SideNav');
+    var isTagPage = /tag\.html?$|\/tag\/?$/i.test(location.pathname);
+    var isArchive = isArchivePage();
+
+    /* ★ 归档页改用全新的「Archives 双标签页」模块（Weekly/Other + 分页），
+       不再走下面这套「卡片 + 时间线」渲染。 */
+    if (isArchive) { initArchivesPage(); return; }
+
+    /* ★ 真正的首页（既不是分类页也不是归档页）只要「Hero + 六张分类卡片」，
+       绝不在这里渲染文章列表——哪怕 Gmeek 原生还在首页 DOM 里塞了一份 SideNav。 */
+    if (isIndexPage() && !isTagPage && !isArchive) return;
+
+    var nav;
+
+    if (isTagPage) {
+      /* ★ 分类页（tag.html）：它自带一套原生 JS——会自己拉 postList.json、
+         生成 .lists 列表项、用 style.display 做标签筛选。那套和我们这套
+         卡片系统会互相打架（原生筛选只认 .lists，对我们的卡片无效；两份
+         列表还会叠加）。所以这里彻底"另起炉灶"：
+           1) 给 body 打标记，CSS 隐藏页面里所有原生 .SideNav 与原生标签条
+              （用 body 标记而非逐个打标记，可覆盖原生脚本"异步生成"的列表，
+              否则它生成晚于我们时会漏网）；
+           2) 新建一个我们自己的容器来渲染卡片；
+           3) 标签筛选完全由我们按 location.hash 控制。 */
+      document.body.classList.add('luliy-tag-takeover');
+
+      var host = document.getElementById('content') ||
+                 document.querySelector('.main') || document.body;
+      nav = document.getElementById('luliy-tag-grid');
+      if (!nav) {
+        nav = document.createElement('ul');
+        nav.id = 'luliy-tag-grid';
+        nav.className = 'SideNav';
+        host.appendChild(nav);
+      }
+    } else {
+      nav = document.querySelector('nav.SideNav, ul.SideNav, .SideNav');
+      if (!nav && isArchive) {
+        /* archive.html 是单页类型，原生没有 SideNav 列表容器——
+           在 #postBody 里现造一个，交给统一的卡片渲染逻辑接管，
+           直接复用"漂亮卡片 + 时间轴视图"。 */
+        var pbArchive = document.getElementById('postBody');
+        if (pbArchive) {
+          pbArchive.innerHTML = '';
+          nav = document.createElement('ul');
+          nav.className = 'SideNav';
+          pbArchive.appendChild(nav);
+        }
+      }
+    }
+
     if (!nav || nav.getAttribute('data-luliy-cards')) return;
     nav.setAttribute('data-luliy-cards', '1');
+    /* ★ 分类页/归档页：标记 body，隐藏 Gmeek 原生的「上一页/下一页」翻页器 */
+    if (isTagPage || isArchive) document.body.classList.add('luliy-hide-pagination');
 
     /* Show skeleton placeholders while postList.json loads */
     showCardSkeleton(nav);
@@ -2288,8 +3849,45 @@
     fetchPosts().then(function (posts) {
       if (!posts || !posts.length) { fallbackDomCards(nav); return; }
 
-      var pinnedPosts  = posts.filter(function (p) { return p.pinned; });
-      var regularPosts = posts.filter(function (p) { return !p.pinned; });
+      /* ★ 分类页（tag.html#标签名）：只保留带该标签的文章 */
+      if (isTagPage) {
+        var rawTag = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+        if (rawTag) {
+          posts = posts.filter(function (p) {
+            var labels = Array.isArray(p.labels) ? p.labels : [];
+            return labels.some(function (lbl) {
+              var name = (typeof lbl === 'object') ? lbl.name : lbl;
+              return name === rawTag;
+            });
+          });
+        }
+        var tagHead = document.getElementById('luliy-tag-head');
+        if (!tagHead) {
+          tagHead = document.createElement('h1');
+          tagHead.id = 'luliy-tag-head';
+          nav.parentNode.insertBefore(tagHead, nav);
+        }
+        tagHead.textContent = rawTag ? ('\uD83C\uDFF7\uFE0F ' + rawTag) : '\u5168\u90e8\u6587\u7ae0';
+        if (!posts.length) {
+          nav.innerHTML = '';
+          var empty = document.createElement('p');
+          empty.style.cssText = 'color:#888;padding:24px 0;';
+          empty.textContent = '\u8fd9\u4e2a\u5206\u7c7b\u4e0b\u8fd8\u6ca1\u6709\u6587\u7ae0\u3002';
+          nav.appendChild(empty);
+          return;
+        }
+      }
+
+      var pinnedPosts, regularPosts;
+      if (isIndexPage()) {
+        pinnedPosts  = posts.filter(function (p) { return p.pinned; });
+        regularPosts = posts.filter(function (p) { return !p.pinned; });
+      } else {
+        /* 归档页 / 分类页：不单独抽出"置顶区"，置顶文章混在普通列表里
+           正常按时间排序显示，避免被两边都漏掉。 */
+        pinnedPosts  = [];
+        regularPosts = posts;
+      }
 
       /* Multi-level pin sort: higher pinLevel first, then newest first */
       pinnedPosts.sort(function (a, b) {
@@ -2404,13 +4002,29 @@
 
       /* ── Route by current view + expose re-render for view switch ─ */
       function renderRegular() {
-        if (getCardView() === 'timeline') renderTimeline();
+        /* ★ 分类页：跟随设置面板里的「卡片视图」（网格/列表/时间轴），
+           和首页以前的切换方式一样，由 getCardView() 统一控制。
+           归档页：固定时间轴视图，呈现"卡片沿时间线排列"的效果——
+           这是「more」按钮的专属入口，不需要切换。 */
+        var view = isArchive ? 'timeline' : getCardView();
+        if (view === 'timeline') renderTimeline();
         else renderPaged();
-        applyCardView();
+        applyCardView(view);
       }
       root._luliyRerenderCards = renderRegular;
       root._luliyTeardownTimeline = teardownTimeline;
       renderRegular();
+
+      /* ★ 分类页内切换标签（点了另一个标签 pill 或浏览器前进后退，#hash 变了
+         但页面没刷新）：清掉"已渲染"标记，让容器可被重新填充，再渲染一遍。 */
+      if (isTagPage && !nav.getAttribute('data-luliy-hash-bound')) {
+        nav.setAttribute('data-luliy-hash-bound', '1');
+        window.addEventListener('hashchange', function () {
+          nav.removeAttribute('data-luliy-cards');
+          nav.innerHTML = '';
+          initCards();
+        });
+      }
 
     }).catch(function () { fallbackDomCards(nav); });
 
@@ -2641,6 +4255,7 @@
     _sakuraCanvas = null;
   }
   root._luliyStopSakura = stopSakura;
+  root._luliyInitSakura = initSakura;
 
   /* ---- 16b  Theme particles + meteors (all themes) -------- */
   var _particleRAF = null;
@@ -2960,87 +4575,6 @@
      · 2+ images → responsive grid
      · ✎ button → add custom image URLs (stored in localStorage)
      · click any image → lightbox zoom                          */
-  function getGalleryImages() {
-    var imgs = (LULIY_OPTS.galleryImages || []).slice();
-    try {
-      var custom = JSON.parse(localStorage.getItem('luliy-gallery') || '[]');
-      if (Array.isArray(custom)) imgs = imgs.concat(custom);
-    } catch (e) {}
-    return imgs.filter(Boolean);
-  }
-
-  function initHomeGallery() {
-    if (!isIndexPage()) return;
-    /* Wait until card grid has been built */
-    setTimeout(buildGallery, 800);
-  }
-
-  function buildGallery() {
-    var old = document.getElementById('luliy-home-gallery');
-    if (old) old.remove();
-    var content = document.getElementById('content') || document.querySelector('.main');
-    if (!content) return;
-
-    var imgs = getGalleryImages();
-    if (!imgs.length) return;
-
-    var wrap = document.createElement('div');
-    wrap.id = 'luliy-home-gallery';
-    if (imgs.length > 1) wrap.classList.add('is-grid');
-
-    imgs.forEach(function (src, i) {
-      var cell = document.createElement('div');
-      cell.className = 'luliy-gallery-cell';
-      var img = document.createElement('img');
-      img.src = src;
-      img.alt = 'Gallery ' + (i + 1);
-      img.loading = 'lazy';
-      img.addEventListener('error', function () { cell.style.display = 'none'; });
-      cell.appendChild(img);
-      cell.style.cursor = 'zoom-in';
-      cell.addEventListener('click', function () {
-        if (root._luliyLightboxOpen) root._luliyLightboxOpen(src, '\u753b\u5eca');
-      });
-      wrap.appendChild(cell);
-    });
-
-    /* Overlay caption (single-image banner only) */
-    if (imgs.length === 1) {
-      var ov = document.createElement('div');
-      ov.id = 'luliy-home-gallery-overlay';
-      var txt = document.createElement('div');
-      txt.id = 'luliy-home-gallery-text';
-      txt.textContent = LULIY_OPTS.galleryText || '';
-      ov.appendChild(txt);
-      wrap.appendChild(ov);
-    }
-
-    /* ✎ Edit button: add / reset custom images */
-    var edit = document.createElement('button');
-    edit.id = 'luliy-gallery-edit';
-    edit.type = 'button';
-    edit.title = '\u6dfb\u52a0\u81ea\u5b9a\u4e49\u56fe\u7247';   /* 添加自定义图片 */
-    edit.textContent = '\u270e';
-    edit.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var url = window.prompt(
-        '\u7c98\u8d34\u56fe\u7247\u94fe\u63a5\u6dfb\u52a0\u5230\u753b\u5eca\uff08\u8f93\u5165 reset \u6e05\u7a7a\u81ea\u5b9a\u4e49\u56fe\u7247\uff09\uff1a', '');
-      if (url === null) return;
-      url = url.trim();
-      var custom = [];
-      try { custom = JSON.parse(localStorage.getItem('luliy-gallery') || '[]'); } catch (_) {}
-      if (!Array.isArray(custom)) custom = [];
-      if (url.toLowerCase() === 'reset') custom = [];
-      else if (url) custom.push(url);
-      localStorage.setItem('luliy-gallery', JSON.stringify(custom));
-      buildGallery();
-      playSfx('click');
-    });
-    wrap.appendChild(edit);
-
-    content.appendChild(wrap);
-  }
-
   /* ---- 19  Favorites page front-end lock --------------------
      Hides the favorites page behind a password prompt.
      NOTE: this is a deterrent only — page content still exists in
@@ -3195,24 +4729,11 @@
     /* Mark body for post-page margin CSS */
     document.body.classList.add('luliy-post-page');
 
-    /* ★ 需求⑤：文章页默认背景模糊 11px
-       仅在用户本次会话没有主动设置过背景模糊时才应用默认值，
-       避免覆盖用户自己调整的偏好（通过控制面板背景按钮调整后存入 localStorage）。 */
-    (function () {
-      var stored = localStorage.getItem('luliy-bg-blur');
-      /* stored 为 null 表示用户从未设置过，应用默认 11px */
-      if (stored === null) {
-        var px = 11;
-        document.documentElement.style.setProperty('--luliy-bg-blur', px + 'px');
-        document.body.classList.toggle('luliy-bg-blurred', px > 0);
-      }
-    })();
-
     var pbody = document.getElementById('postBody');
 
     /* External links → new tab */
     document.querySelectorAll('a[href^="http"]').forEach(function (a) {
-      if (!a.href.includes('luliy6.github.io') && !a.href.includes('luliy.me'))
+      if (!a.href.includes('luliyer6-ux.github.io') && !a.href.includes(location.hostname))
         a.target = '_blank';
     });
 
@@ -3375,228 +4896,34 @@
 
     /* Mobile swipe between posts */
 
-    /* Support / appreciation panel */
-    var sp = document.createElement('div');
-    sp.style.cssText = 'margin-top:50px;text-align:center';
-    var spb = document.createElement('button');
-    spb.innerHTML = '\u2728 \u548c\u4f5c\u8005\u65e0\u9650\u8fdb\u6b65';
-    spb.style.cssText =
-      'padding:12px 28px;border-radius:30px;border:none;' +
-      'background:linear-gradient(90deg,#f0b429,#ff6b9d);' +
-      'color:#fff;font-weight:bold;font-size:15px;cursor:pointer;' +
-      'box-shadow:0 4px 15px rgba(240,180,41,0.3);transition:transform 0.3s';
-    var qr = document.createElement('div');
-    qr.innerHTML =
-      '<p style="font-size:13px;color:#888;margin:10px 0">\u65e0\u9650\u8fdb\u6b65\uff0c\u8fdb\u6b65\u6709\u4f60\uff01</p>' +
-      '<img src="https://i.pravatar.cc/300?img=45" ' +
-      'alt="\u8d5b\u8d4f\u7801" style="width:180px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1)">';
-    qr.style.cssText = 'height:0;overflow:hidden;transition:height 0.4s ease,opacity 0.4s ease;opacity:0';
-    spb.addEventListener('mouseover', function () { spb.style.transform = 'translateY(-2px)'; });
-    spb.addEventListener('mouseout',  function () { spb.style.transform = ''; });
-    spb.addEventListener('click', function () {
-      var o = !qr.style.height || qr.style.height === '0px';
-      qr.style.height = o ? '260px' : '0px';
-      qr.style.opacity = o ? '1' : '0';
-    });
-    sp.appendChild(spb); sp.appendChild(qr);
-    pbody.appendChild(sp);
+    /* Support / appreciation panel —— 原主题作者的个人赞赏码，
+       已移除。如需在文章末尾展示自己的赞赏码，可在此处重新添加，
+       把 img src 换成你自己的收款码图片直链即可。 */
   };
 
   /* ---- 22  Index page init -------------------------------- */
   root._luliyInitIndex = function () {
+    /* ★ 大改后：
+       - 首页（homepage）只要「Hero + 六张分类卡片」，不调用本函数渲染文章。
+       - 分类页（tag.html#标签）→ initCards() 内部按标签过滤，焊死网格视图。
+       - 归档页（archive.html）→ initCards() 内部在 #postBody 里现造容器，
+         焊死时间轴视图，与分类页共用同一套"漂亮卡片"渲染逻辑。
+       - 旧的 "Remember, this is your world." 横幅、底部画廊横幅、
+         以及单独的 renderArchive() 简易列表，均已废弃不再调用。 */
     initCards();
-    initHeroBanner();
-    initHomeGallery();
-    setTimeout(initCardViewToggle, 900);
-
-    if (isArchivePage()) {
-      var pb = document.getElementById('postBody');
-      if (pb) {
-        pb.innerHTML = '<p style="color:#888;font-size:14px">\u6b63\u5728\u52a0\u8f7d\u5f52\u6863...</p>';
-        fetchPosts().then(function (posts) {
-          renderArchive(pb, posts);
-        }).catch(function () {
-          pb.innerHTML = '<p style="color:#e74c3c">\u5f52\u6863\u52a0\u8f7d\u5931\u8d25\uff0c\u8bf7\u5237\u65b0\u91cd\u8bd5\u3002</p>';
-        });
-      }
-    }
   };
 
   /* ---- 22b  Archive: timeline + calendar views ------------ */
-  function renderArchive(pb, posts) {
-    var view = localStorage.getItem('luliy-archive-view') || 'timeline';
-
-    function renderTimeline() {
-      var byY = {};
-      posts.forEach(function (p) {
-        var y = (p.created || '\u672a\u77e5').slice(0, 4);
-        if (!byY[y]) byY[y] = [];
-        byY[y].push(p);
-      });
-      var years = Object.keys(byY).sort(function (a, b) { return b - a; });
-      var html = '';
-      years.forEach(function (y) {
-        html += '<div class="tl-year">' + esc(y) + ' \u5e74 <span class="tl-count">' + byY[y].length + ' \u7bc7</span></div><ul class="tl-list">';
-        byY[y].sort(function (a, b) { return String(b.created).localeCompare(String(a.created)); });
-        byY[y].forEach(function (p) {
-          var md = (p.created || '').slice(5, 10).replace('-', '/');
-          html +=
-            '<li class="tl-item">' +
-            '<span class="tl-dot"></span>' +
-            '<a href="' + esc(buildPostLink(p.link)) + '">' + esc(p.title) + '</a>' +
-            '<span class="tl-date">' + md + '</span>' +
-            '</li>';
-        });
-        html += '</ul>';
-      });
-      return html;
-    }
-
-    function renderCalendar() {
-      /* Map yyyy-mm-dd -> [posts] */
-      var byDay = {};
-      posts.forEach(function (p) {
-        var d = (p.created || '').slice(0, 10);
-        if (!d) return;
-        (byDay[d] = byDay[d] || []).push(p);
-      });
-      /* Group available months */
-      var months = {};
-      Object.keys(byDay).forEach(function (d) { months[d.slice(0, 7)] = true; });
-      var mList = Object.keys(months).sort(function (a, b) { return b.localeCompare(a); });
-
-      var html = '';
-      mList.forEach(function (ym) {
-        var parts = ym.split('-'), Y = +parts[0], M = +parts[1];
-        var first = new Date(Y, M - 1, 1);
-        var startDow = first.getDay();   /* 0=Sun */
-        var days = new Date(Y, M, 0).getDate();
-        html += '<div class="cal-month"><div class="cal-mhead">' + Y + ' \u5e74 ' + M + ' \u6708</div>';
-        html += '<div class="cal-grid"><span class="cal-dow">\u65e5</span><span class="cal-dow">\u4e00</span>' +
-          '<span class="cal-dow">\u4e8c</span><span class="cal-dow">\u4e09</span><span class="cal-dow">\u56db</span>' +
-          '<span class="cal-dow">\u4e94</span><span class="cal-dow">\u516d</span>';
-        for (var b = 0; b < startDow; b++) html += '<span class="cal-cell cal-empty"></span>';
-        for (var dd = 1; dd <= days; dd++) {
-          var key = ym + '-' + (dd < 10 ? '0' + dd : dd);
-          var dayPosts = byDay[key];
-          if (dayPosts && dayPosts.length) {
-            var link = buildPostLink(dayPosts[0].link);
-            var titles = dayPosts.map(function (p) { return p.title; }).join(' / ');
-            html += '<a class="cal-cell cal-has" href="' + esc(link) + '" title="' + esc(titles) + '">' +
-              dd + '<span class="cal-badge">' + dayPosts.length + '</span></a>';
-          } else {
-            html += '<span class="cal-cell">' + dd + '</span>';
-          }
-        }
-        html += '</div></div>';
-      });
-      return html || '<p style="color:#888">\u6682\u65e0\u65e5\u671f\u6570\u636e</p>';
-    }
-
-    function paint() {
-      var html =
-        '<div class="luliy-archive-head">' +
-        '<h1>\uD83D\uDCC5 \u6587\u7ae0\u5f52\u6863</h1>' +
-        '<div class="luliy-archive-tabs">' +
-        '<button type="button" data-av="timeline" class="' + (view === 'timeline' ? 'is-active' : '') + '">\u65f6\u95f4\u8f74</button>' +
-        '<button type="button" data-av="calendar" class="' + (view === 'calendar' ? 'is-active' : '') + '">\u65e5\u5386</button>' +
-        '</div></div>' +
-        '<div class="luliy-archive-body">' + (view === 'calendar' ? renderCalendar() : renderTimeline()) + '</div>';
-      pb.innerHTML = html;
-      pb.querySelectorAll('.luliy-archive-tabs button').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          view = btn.getAttribute('data-av');
-          localStorage.setItem('luliy-archive-view', view);
-          paint();
-          playSfx('click');
-        });
-      });
-    }
-    paint();
-  }
 
   /* ════════════════════════════════════════════════════════
      NEW MODULES (v10)
   ════════════════════════════════════════════════════════ */
 
-  /* ---- Focus reading mode (F key / double-click / exit btn) */
-  function toggleFocusMode(force) {
-    var on = (typeof force === 'boolean')
-      ? force
-      : !document.body.classList.contains('luliy-focus-mode');
-    document.body.classList.toggle('luliy-focus-mode', on);
+  /* ---- 专注阅读模式已删除 ----------------------------------
+     原专注模式的好处（沉浸、宽阅读区、清晰排版）已经变成
+     文章页的默认样式（见 enhance.css），不再需要开关/快捷键/
+     退出按钮这套切换机制，故整段移除。 */
 
-    /* Focus mode = distraction-free: kill all ambient motion (particles,
-       meteors, sakura, fireflies, mouse trail) and hide the music ball.
-       Only the TOC stays. Effects restart when focus mode is exited. */
-    if (on) {
-      try { if (root._luliyStopThemeParticles) root._luliyStopThemeParticles(); } catch (e) {}
-      try { if (root._luliyStopSakura) root._luliyStopSakura(); } catch (e) {}
-      try { if (typeof stopFireflies === 'function') stopFireflies(); } catch (e) {}
-      try { if (typeof stopMouseTrail === 'function') stopMouseTrail(); } catch (e) {}
-    } else {
-      /* Restart ambient effects according to current settings */
-      try { if (root._luliyInitThemeParticles) root._luliyInitThemeParticles(); } catch (e) {}
-      try {
-        if (localStorage.getItem('luliy-sakura') !== '0' && typeof initSakura === 'function') initSakura();
-      } catch (e) {}
-      try {
-        var isDark = document.documentElement.getAttribute('data-color-mode') === 'dark';
-        if (isDark && localStorage.getItem('luliy-firefly') !== '0' && typeof initFireflies === 'function') initFireflies();
-      } catch (e) {}
-      try {
-        if (localStorage.getItem('luliy-trail') !== '0' && typeof initMouseTrail === 'function') initMouseTrail();
-      } catch (e) {}
-    }
-
-    /* Sync the settings-panel badge if present */
-    if (root._luliyFocusRow && root._luliyFocusRow._badge) {
-      root._luliyFocusRow._badge.textContent = on ? '\u5f00\u542f' : '\u5173\u95ed';
-    }
-    /* Show / hide the floating exit button */
-    var exit = document.getElementById('luliy-focus-exit');
-    if (on && !exit) {
-      exit = document.createElement('button');
-      exit.id = 'luliy-focus-exit';
-      exit.type = 'button';
-      exit.innerHTML = '\u2715 \u9000\u51fa\u4e13\u6ce8';   /* ✕ 退出专注 */
-      exit.title = '\u9000\u51fa\u4e13\u6ce8\u6a21\u5f0f (F)';
-      exit.addEventListener('click', function () { toggleFocusMode(false); });
-      document.body.appendChild(exit);
-    } else if (!on && exit) {
-      exit.remove();
-    }
-    try { playSfx('click'); } catch (e) {}
-    return on;
-  }
-
-  function initFocusMode() {
-    if (!document.getElementById('postBody')) return;
-
-    /* F key toggles focus mode (ignore when typing in a field) */
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== 'f' && e.key !== 'F') return;
-      if (e.ctrlKey || e.metaKey || e.altKey) return;   /* Ctrl+F = search */
-      var t = e.target;
-      var tag = t && t.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
-      e.preventDefault();
-      toggleFocusMode();
-    });
-
-    /* Double-click the article body toggles focus mode
-       (ignore double-clicks on links / code / images / selections) */
-    var pbody = document.getElementById('postBody');
-    pbody.addEventListener('dblclick', function (e) {
-      var t = e.target;
-      if (t.closest('a, code, pre, img, button, table, .luliy-series, mark')) return;
-      /* Don't toggle if the user is selecting text */
-      var sel = window.getSelection && window.getSelection();
-      if (sel && sel.toString().length > 0) return;
-      toggleFocusMode();
-    });
-  }
-  root._luliyToggleFocus = toggleFocusMode;
 
   /* ---- Card view (grid / list) ---------------------------- */
   var CARD_VIEWS = ['grid', 'list', 'timeline'];
@@ -3604,8 +4931,8 @@
     var v = localStorage.getItem('luliy-cardview');
     return CARD_VIEWS.indexOf(v) >= 0 ? v : 'grid';
   }
-  function applyCardView() {
-    var view = getCardView();
+  function applyCardView(forcedView) {
+    var view = forcedView || (isArchivePage() ? 'timeline' : getCardView());
     document.querySelectorAll('.luliy-card-grid').forEach(function (g) {
       /* Pinned strip always stays a grid — alt layouts make no sense there */
       if (g.classList.contains('luliy-pinned-grid')) {
@@ -3619,35 +4946,6 @@
     if (tb) tb.setAttribute('data-view', view);
   }
 
-  function initCardViewToggle() {
-    if (!isIndexPage()) return;
-    if (document.getElementById('luliy-cardview-toggle')) return;
-    var content = document.getElementById('content') || document.querySelector('.main');
-    if (!content) return;
-    var nav = document.querySelector('.luliy-card-grid');
-    if (!nav) return;
-
-    var bar = document.createElement('div');
-    bar.id = 'luliy-cardview-bar';
-    var toggle = document.createElement('div');
-    toggle.id = 'luliy-cardview-toggle';
-    toggle.setAttribute('data-view', getCardView());
-    toggle.innerHTML =
-      '<button type="button" class="cv-grid" data-v="grid" title="\u7f51\u683c\u89c6\u56fe">\u2317</button>' +
-      '<button type="button" class="cv-list" data-v="list" title="\u5217\u8868\u89c6\u56fe">\u2630</button>' +
-      '<button type="button" class="cv-timeline" data-v="timeline" title="\u65f6\u95f4\u8f74\u89c6\u56fe">\u2261\u20D7</button>';
-    toggle.querySelectorAll('button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        localStorage.setItem('luliy-cardview', b.getAttribute('data-v'));
-        if (root._luliyRerenderCards) root._luliyRerenderCards();
-        else applyCardView();
-        playSfx('click');
-      });
-    });
-    bar.appendChild(toggle);
-    nav.parentNode.insertBefore(bar, nav);
-    applyCardView();
-  }
 
   /* ---- Reduce motion ------------------------------------- */
   function prefersReduce() {
@@ -3658,7 +4956,6 @@
   }
   function applyReduceMotion() {
     document.body.classList.toggle('luliy-reduce-motion', prefersReduce());
-    if (prefersReduce()) { stopMouseTrail(); stopFireflies(); }
   }
 
   /* ---- 17b  Reading progress ring (merged into back-top) -- */
@@ -3957,14 +5254,11 @@
   function initTagCloud() {
     var onTagPage = /tag\.html?$|\/tag\/?$/i.test(location.pathname);
     if (!onTagPage) return;
-    /* Keep Gmeek's native article/tag list intact — do NOT hide it. */
-    var pbody = document.getElementById('postBody') ||
-      document.querySelector('.SideNav, .markdown-body, #content');
-    var mount = document.getElementById('content') || document.body;
+    if (document.getElementById('luliy-tagcloud')) return;   /* 防重复执行 */
 
     fetchPosts().then(function (posts) {
       if (!posts || !posts.length) return;
-      /* Count tag frequencies + collect year colors */
+      /* Count tag frequencies + collect label colors */
       var freq = {}, colors = {};
       posts.forEach(function (p) {
         (p.labels || []).forEach(function (l) {
@@ -3988,196 +5282,47 @@
 
       var cloud = document.createElement('div');
       cloud.className = 'luliy-tagcloud-body';
-      /* Sort by frequency desc for nicer layout */
       tags.sort(function (a, b) { return freq[b] - freq[a]; });
+
+      function syncActive() {
+        var cur = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+        cloud.querySelectorAll('.luliy-tag-bubble').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-tag') === cur);
+        });
+      }
+
       tags.forEach(function (t) {
         var ratio = max === min ? 0.5 : (freq[t] - min) / (max - min);
         var size = 13 + ratio * 22;  /* 13px → 35px */
         var bubble = document.createElement('a');
         bubble.className = 'luliy-tag-bubble';
+        bubble.setAttribute('data-tag', t);
+        /* ★ 点击气泡只是普通的 hash 跳转链接，不再自己渲染列表。
+           tag.html#标签名 这个 hash 变化会被 initCards() 里已经接好的
+           hashchange 监听器捕获，自动重新筛选并刷新下面那套统一的
+           卡片网格——两套 UI 由此"合二为一"，不再各管各的。 */
         bubble.href = '/tag.html#' + encodeURIComponent(t);
         bubble.style.fontSize = size.toFixed(1) + 'px';
         bubble.style.setProperty('--tag-c', colors[t]);
         bubble.innerHTML = esc(t) + '<sup>' + freq[t] + '</sup>';
-        bubble.addEventListener('click', function (e) {
-          e.preventDefault();
-          playSfx('click');
-          /* Filter the article list below by this tag */
-          if (root._luliyRenderTagList) root._luliyRenderTagList(t);
-          cloud.querySelectorAll('.luliy-tag-bubble').forEach(function(b){ b.classList.remove('is-active'); });
-          bubble.classList.add('is-active');
-        });
+        bubble.addEventListener('click', function () { playSfx('click'); });
         cloud.appendChild(bubble);
       });
       wrap.appendChild(cloud);
+      syncActive();
+      window.addEventListener('hashchange', syncActive);
 
-      /* Insert above the existing tag list */
-      var sidenav = document.querySelector('.SideNav');
-      if (sidenav && sidenav.parentNode) {
-        sidenav.parentNode.insertBefore(wrap, sidenav);
-      } else if (mount) {
-        mount.insertBefore(wrap, mount.firstChild);
-      }
-
-      /* ── Article list in list-view card style ─────────────── */
-      function renderTagArticleList(filterTag) {
-        var ex = document.getElementById('luliy-tag-articles');
-        if (ex) ex.remove();
-        var filtered = filterTag
-          ? posts.filter(function(p){ return (p.labels||[]).some(function(l){ return (l.name||l)===filterTag; }) && !(p.labels||[]).some(function(l){ return /^pinned/.test(l.name||l); }); })
-          : posts.filter(function(p){ return !(p.labels||[]).some(function(l){ return /^pinned/.test(l.name||l); }); });
-        filtered.sort(function(a,b){ return String(b.created).localeCompare(String(a.created)); });
-        var listWrap = document.createElement('div');
-        listWrap.id = 'luliy-tag-articles';
-        filtered.forEach(function(p) {
-          var card = document.createElement('a');
-          card.className = 'luliy-tag-list-card';
-          card.href = buildPostLink(p.link);
-          var meta = document.createElement('div');
-          meta.className = 'luliy-tag-card-meta';
-          var d = p.created ? new Date(p.created) : null;
-          meta.textContent = d ? (d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')) : '';
-          var titleEl = document.createElement('div');
-          titleEl.className = 'luliy-tag-card-title';
-          titleEl.textContent = p.title || p.postTitle || p.name || '';
-          var labelsEl = document.createElement('div');
-          labelsEl.className = 'luliy-tag-card-labels';
-          (p.labels||[]).filter(function(l){ return !/^pinned/.test(l.name||l); }).forEach(function(l) {
-            var tb = document.createElement('span');
-            tb.className = 'luliy-card-label';
-            tb.textContent = l.name || l;
-            tb.style.setProperty('--lc', '#'+((l.color||'0969da')+'').replace(/^#/,''));
-            labelsEl.appendChild(tb);
-          });
-          card.appendChild(meta); card.appendChild(titleEl);
-          if (labelsEl.children.length) card.appendChild(labelsEl);
-          listWrap.appendChild(card);
-        });
-        var target = sidenav ? sidenav.parentNode : mount;
-        if (sidenav) { sidenav.parentNode.insertBefore(listWrap, sidenav.nextSibling); }
-        else { mount.appendChild(listWrap); }
-      }
-      renderTagArticleList(null);
-      root._luliyRenderTagList = renderTagArticleList;
+      /* Insert above the card grid（#luliy-tag-grid 由 initCards() 创建；
+         若它还没创建好就先插到 #content 顶部，等 initCards 跑完再调整也没关系，
+         因为 #luliy-tag-grid 本身在 #content 末尾追加，先后顺序不影响视觉） */
+      var mount = document.getElementById('content') || document.body;
+      mount.insertBefore(wrap, mount.firstChild);
     }).catch(function () {});
   }
 
-  /* ---- 25a  Mouse trail (theme cursor) -------------------- */
-  var _trailHandler = null, _trailNodes = [];
-  function initMouseTrail() {
-    if (_trailHandler) return;
-    if ('ontouchstart' in window) return;     /* skip touch devices */
-    if (prefersReduce()) return;
-    var theme = document.body.getAttribute('data-luliy-theme') || 'default';
-    var glyph = theme === 'sakura' ? '\uD83C\uDF38'
-      : theme === 'space' ? '\u2727'
-      : theme === 'sunset' ? '\u2600'
-      : theme === 'your-name' ? '\u2601'
-      : '\u2728';
-    var lastT = 0;
-    _trailHandler = function (e) {
-      var now = Date.now();
-      if (now - lastT < 60) return;
-      lastT = now;
-      var s = document.createElement('span');
-      s.className = 'luliy-trail-dot';
-      s.textContent = glyph;
-      /* ★ zoom 校正：fixed 定位需除以 html zoom 才能精确跟手 */
-      var p = zoomPos(e.clientX, e.clientY);
-      s.style.left = p.x + 'px';
-      s.style.top  = p.y + 'px';
-      s.style.setProperty('--rot', (Math.random() * 360) + 'deg');
-      document.body.appendChild(s);
-      _trailNodes.push(s);
-      setTimeout(function () { s.remove(); _trailNodes.shift(); }, 1100);
-    };
-    document.addEventListener('mousemove', _trailHandler, { passive: true });
-  }
-  function stopMouseTrail() {
-    if (_trailHandler) document.removeEventListener('mousemove', _trailHandler);
-    _trailHandler = null;
-    _trailNodes.forEach(function (n) { n.remove(); }); _trailNodes = [];
-  }
+  /* ---- 25a/25b 鼠标拖尾、萤火虫特效已删除 --------------------
+     只保留樱花花瓣与点击火花两个装饰特效。 */
 
-  /* ---- 25b  Fireflies (dark mode, mouse-attracted) -------- */
-  var _ffRAF = null, _ffCanvas = null;
-  function initFireflies() {
-    if (_ffCanvas) return;
-    if (prefersReduce()) return;
-    var canvas = document.createElement('canvas');
-    canvas.id = 'luliy-firefly-canvas';
-    canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2;';
-    document.body.appendChild(canvas);
-    _ffCanvas = canvas;
-    var ctx = canvas.getContext('2d');
-    var W, H;
-    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-    resize();
-    window.addEventListener('resize', resize);
-
-    var mouse = { x: -999, y: -999 };
-    var mm = function (e) { mouse.x = e.clientX; mouse.y = e.clientY; };
-    document.addEventListener('mousemove', mm, { passive: true });
-    canvas._mm = mm;
-
-    var N = Math.min(26, Math.round(window.innerWidth / 50));
-    var flies = [];
-    for (var i = 0; i < N; i++) {
-      flies.push({
-        x: Math.random() * W, y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
-        r: 1.4 + Math.random() * 1.8,
-        ph: Math.random() * Math.PI * 2,
-        ps: 0.02 + Math.random() * 0.03
-      });
-    }
-    function tick() {
-      if (!document.getElementById('luliy-firefly-canvas')) { _ffRAF = null; return; }
-      ctx.clearRect(0, 0, W, H);
-      flies.forEach(function (f) {
-        /* Gentle attraction toward mouse */
-        var dx = mouse.x - f.x, dy = mouse.y - f.y;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 220 && dist > 1) {
-          f.vx += (dx / dist) * 0.04;
-          f.vy += (dy / dist) * 0.04;
-        }
-        f.vx += (Math.random() - 0.5) * 0.05;
-        f.vy += (Math.random() - 0.5) * 0.05;
-        f.vx *= 0.94; f.vy *= 0.94;
-        f.x += f.vx; f.y += f.vy;
-        if (f.x < 0) f.x = W; if (f.x > W) f.x = 0;
-        if (f.y < 0) f.y = H; if (f.y > H) f.y = 0;
-        f.ph += f.ps;
-        var glow = 0.45 + Math.sin(f.ph) * 0.4;
-        var grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 5);
-        grad.addColorStop(0, 'rgba(190,255,150,' + glow + ')');
-        grad.addColorStop(0.4, 'rgba(150,230,120,' + (glow * 0.4) + ')');
-        grad.addColorStop(1, 'rgba(150,230,120,0)');
-        ctx.fillStyle = grad;
-        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'rgba(220,255,180,' + glow + ')';
-        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
-      });
-      _ffRAF = requestAnimationFrame(tick);
-    }
-    tick();
-  }
-  function stopFireflies() {
-    if (_ffCanvas) {
-      if (_ffCanvas._mm) document.removeEventListener('mousemove', _ffCanvas._mm);
-      _ffCanvas.remove(); _ffCanvas = null;
-    }
-    if (_ffRAF) { cancelAnimationFrame(_ffRAF); _ffRAF = null; }
-  }
-  /* Fireflies only make sense at night; re-evaluate on theme/mode change */
-  function maybeFireflies() {
-    var wantFf = localStorage.getItem('luliy-firefly') === '1';
-    var isDark = document.documentElement.getAttribute('data-color-mode') === 'dark' ||
-      document.body.getAttribute('data-luliy-theme') === 'space';
-    if (wantFf && isDark && !prefersReduce()) initFireflies();
-    else stopFireflies();
-  }
 
   /* ---- 25b  键盘快捷键 ------------------------------------- */
   function initKeyboardShortcuts() {
@@ -4397,44 +5542,81 @@
   /* ---- 27  Main entry ------------------------------------- */
   initLocalStorage();
 
-  /* Restore theme immediately to prevent FOUC */
+  /* Restore theme immediately to prevent FOUC.
+     ★ 恢复手动选主题系统：不再跟随深浅模式自动切换。
+     读取用户上次手动选的主题（localStorage 'luliy-sink'），
+     没选过就用新默认主题「赛博朋克」。直接复用前面已经定义好的
+     applySink()，它本身就会处理 data-luliy-theme + 卡片配色变量，
+     7 套主题（含新增的 cyberpunk）全部覆盖，不用再单独维护一份
+     精简版色板。 */
   (function () {
-    var savedId = localStorage.getItem('luliy-sink') || 'default';
-    var themePalettes = {
-      'default':   { theme: 'default',   c: ['#8250df', '#0969da', '#ff6b9d', '#f0b429'] },
-      'sakura':    { theme: 'sakura',     c: ['#e05c8a', '#f9a8c9', '#c94070', '#ffb7c5'] },
-      'your-name': { theme: 'your-name',  c: ['#1a59a4', '#4a9de0', '#f4a738', '#60b8ff'] },
-      'space':     { theme: 'space',      c: ['#00e5ff', '#4a9de0', '#7b2fbe', '#0d2149'] },
-      'sunset':    { theme: 'sunset',     c: ['#f0b429', '#ffd98a', '#e8821e', '#d9930d'] },
-      'mono':      { theme: 'mono',       c: ['#222222', '#555555', '#888888', '#bbbbbb'] }
-    };
-    var def = themePalettes[savedId] || themePalettes['default'];
-    function applyFouc() {
+    function boot() {
       if (!document.body) return;
-      document.body.setAttribute('data-luliy-theme', def.theme);
-      document.documentElement.style.setProperty('--card-c1', def.c[0]);
-      document.documentElement.style.setProperty('--card-c2', def.c[1]);
-      document.documentElement.style.setProperty('--card-c3', def.c[2]);
-      document.documentElement.style.setProperty('--card-c4', def.c[3]);
+      applySink(localStorage.getItem('luliy-sink') || 'cyberpunk');
     }
-    if (document.body) applyFouc();
-    else document.addEventListener('DOMContentLoaded', applyFouc);
+    if (document.body) boot();
+    else document.addEventListener('DOMContentLoaded', boot);
   })();
 
-  /* Restore saved background image immediately (prevent flash) */
-  (function () {
-    var savedBg = localStorage.getItem('luliy-bg');
-    if (!savedBg) return;
-    function applyBg() {
-      if (!document.body) return;
-      document.body.style.setProperty('background-image', 'url("' + savedBg + '")', 'important');
-    }
-    if (document.body) applyBg();
-    else document.addEventListener('DOMContentLoaded', applyBg);
-  })();
+  /* ★ 背景图功能已全部移除 —— 全站背景统一改为纯色 #00020c，
+     直接写在 enhance.css 的 html,body 规则里，深浅模式自适配，
+     不再需要任何 JS 早期注入/恢复逻辑。 */
 
   /* Welcome splash (before DOM ready, append after body exists) */
-  /* Homepage Hero is initialised inside ready() (needs DOM + helpers) */
+  /* ★ 大改后：网站打开时的加载动画，两种随机出现：
+       · flow ：居中"ΔιάΝους"文字 + 荧光循环缠绕流动色（原有那版）
+       · sweep：居中文字默认暗，一道白光从 Δ 扫向结尾十字星，
+                光扫到哪个字母哪个字母才亮，扫过之后变暗，
+                光到达十字星时更亮地闪一下、停顿，然后循环
+     显示 splashMaxMs(默认1.5s) 后自动淡出移除。 */
+  (function initSplash() {
+    /* 避免重复、避免在 iframe / 打印时出现 */
+    if (window.top !== window.self) return;
+    var TEXT = (LULIY_OPTS && LULIY_OPTS.siteName) || '\u0394\u03b9\u03ac\u039d\u03bf\u03c5\u03c2';
+    var MAXMS = (LULIY_OPTS && LULIY_OPTS.splashMaxMs) || 1500;
+    var VARIANT = Math.random() < 0.5 ? 'flow' : 'sweep';
+
+    function build() {
+      if (!document.body) { return setTimeout(build, 10); }
+      if (document.getElementById('luliy-splash')) return;
+
+      var splash = document.createElement('div');
+      splash.id = 'luliy-splash';
+      var txt = document.createElement('div');
+      txt.id = 'luliy-splash-text';
+      txt.setAttribute('data-text', TEXT);   /* 用于 CSS 荧光叠层 */
+
+      if (VARIANT === 'sweep') {
+        txt.classList.add('is-sweep');
+        var bodyChars = TEXT.slice(0, -1);
+        var lastChar = TEXT.slice(-1);
+        txt.appendChild(document.createTextNode(bodyChars));
+        var flare = document.createElement('span');
+        flare.className = 'flare-anchor';
+        flare.textContent = lastChar;
+        txt.appendChild(flare);
+      } else {
+        txt.textContent = TEXT;
+      }
+
+      splash.appendChild(txt);
+      document.body.appendChild(splash);
+      /* 锁滚动，避免加载时页面在动画底下乱跳 */
+      document.documentElement.style.overflow = 'hidden';
+
+      var done = false;
+      function dismiss() {
+        if (done) return; done = true;
+        splash.classList.add('is-leaving');
+        document.documentElement.style.overflow = '';
+        setTimeout(function () {
+          if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 600);   /* 与 CSS 淡出时长一致 */
+      }
+      setTimeout(dismiss, MAXMS);
+    }
+    build();
+  })();
 
   /* Sakura petals */
   if (localStorage.getItem('luliy-sakura') !== '0') {
@@ -4450,22 +5632,144 @@
     }
   }
 
+  /* ============================================================
+     极简系统 Minimal System —— 与赛博朋克系统并存，可切换
+     · localStorage 键 luliy-system：'cyber'(默认) / 'minimal'
+     · 极简系统下不加载任何赛博特效，走自己的黑白灰衬线排版。
+     ============================================================ */
+  var SYSTEM_KEY = 'luliy-system';
+  var MINIMAL_HOME_IMG = 'https://picsum.photos/seed/luliy-minimal-home/1600/900';
+
+  function getSystem() {
+    try { return localStorage.getItem(SYSTEM_KEY) === 'minimal' ? 'minimal' : 'cyber'; }
+    catch (e) { return 'cyber'; }
+  }
+  function setSystem(sys) {
+    try { localStorage.setItem(SYSTEM_KEY, sys); } catch (e) {}
+    location.reload();
+  }
+  root._luliySetSystem = setSystem;
+  root._luliyGetSystem = getSystem;
+
+  function initMinimalSystem() {
+    document.body.classList.add('luliy-minimal');
+    try { document.documentElement.style.zoom = '1'; } catch (e) {}
+
+    if (!isIndexPage()) buildMinimalNav();
+    buildSystemToggle();
+
+    if (isIndexPage()) {
+      renderMinimalHome();
+    } else if (isChroniclePage()) {
+      safe(initChroniclePage, 'chronicle');
+    } else if (isBookPage()) {
+      safe(initBookPage, 'book');
+    } else if (isArchivePage()) {
+      safe(initArchivesPage, 'archives');
+    } else {
+      renderMinimalArticle();
+    }
+  }
+
+  function buildMinimalNav() {
+    if (document.getElementById('luliy-min-nav')) return;
+    var nav = document.createElement('nav');
+    nav.id = 'luliy-min-nav';
+    var links = [
+      { label: 'Home', href: '/' },
+      { label: 'Archives', href: '/archive.html' },
+      { label: 'Chronicle', href: '/chronicle.html' },
+      { label: 'About', href: '/about.html' }
+    ];
+    nav.innerHTML = links.map(function (l) {
+      return '<a href="' + l.href + '">' + l.label + '</a>';
+    }).join('<span class="luliy-min-nav-sep">/</span>');
+    document.body.insertBefore(nav, document.body.firstChild);
+  }
+
+  function buildSystemToggle() {
+    if (document.getElementById('luliy-system-toggle')) return;
+    var btn = document.createElement('button');
+    btn.id = 'luliy-system-toggle';
+    btn.type = 'button';
+    btn.title = '\u5207\u6362\u5230\u8d5b\u535a\u670b\u514b\u7cfb\u7edf';
+    btn.textContent = '\u25C8';
+    btn.addEventListener('click', function () { setSystem('cyber'); });
+    document.body.appendChild(btn);
+  }
+
+  function renderMinimalHome() {
+    var wrap = document.createElement('div');
+    wrap.id = 'luliy-min-home';
+    var hot = [
+      { href: '/about.html',     label: 'About',     style: 'left:74%;top:54%;width:8%;height:34%;' },
+      { href: '/book.html',      label: 'Book',      style: 'left:84%;top:42%;width:9%;height:38%;' },
+      { href: '/archive.html',   label: 'Archives',  style: 'left:12%;top:8%;width:58%;height:62%;' },
+      { href: '/chronicle.html', label: 'Chronicle', style: 'left:55%;top:62%;width:6%;height:34%;' }
+    ];
+    var hotHtml = hot.map(function (h) {
+      return '<a class="luliy-min-hot" href="' + h.href + '" aria-label="' + h.label +
+        '" style="' + h.style + '"></a>';
+    }).join('');
+    wrap.innerHTML =
+      '<div class="luliy-min-home-stage">' +
+        '<img class="luliy-min-home-img" src="' + MINIMAL_HOME_IMG + '" alt="" draggable="false">' +
+        hotHtml +
+      '</div>';
+    document.body.appendChild(wrap);
+  }
+
+  function renderMinimalArticle() {
+    document.body.classList.add('luliy-min-article');
+    var pb = document.getElementById('postBody');
+    if (!pb) return;
+    var heads = pb.querySelectorAll('h1, h2, h3');
+    if (heads.length >= 2) {
+      var toc = document.createElement('nav');
+      toc.id = 'luliy-min-toc';
+      var html = '';
+      heads.forEach(function (h, i) {
+        if (!h.id) h.id = 'luliy-min-h-' + i;
+        var lvl = h.tagName === 'H1' ? 'h1' : (h.tagName === 'H2' ? 'h2' : 'h3');
+        var prefix = lvl === 'h1' ? '#' : '\u2022';
+        html += '<a class="luliy-min-toc-' + lvl + '" href="#' + h.id + '">' +
+          prefix + ' ' + esc(h.textContent) + '</a>';
+      });
+      toc.innerHTML = html;
+      document.body.appendChild(toc);
+    }
+  }
+
   ready(function () {
-    /* ★ 尽早应用导航模式（hero/drawer），避免首屏两套导航同时短暂出现 */
+    /* ★ 极简系统拦截：在任何赛博初始化之前判断。命中则走极简分支并 return。 */
+    if (getSystem() === 'minimal') {
+      safe(initMinimalSystem, 'minimalSystem');
+      return;
+    }
+
+    /* ★ 大改后：全站锁定「抽屉导航」，首屏直接应用，避免两套导航闪现 */
     try {
-      var _m = (localStorage.getItem('luliy-nav-mode') === 'hero' || localStorage.getItem('luliy-nav-mode') === 'drawer')
-        ? localStorage.getItem('luliy-nav-mode')
-        : (window.innerWidth <= 768 ? 'drawer' : 'hero');
-      document.body.classList.toggle('luliy-nav-hero',   _m === 'hero');
-      document.body.classList.toggle('luliy-nav-drawer', _m === 'drawer');
+      document.body.classList.remove('luliy-nav-hero');
+      document.body.classList.add('luliy-nav-drawer');
     } catch (e) {}
-    safe(initHomeHero,        'homeHero');
+
+    /* ★ 把 Gmeek 原生 header 里的博客名也改成 ΔιάΝους（保持一致；
+       原生 header 在抽屉模式下被压扁隐藏，但改掉更稳妥） */
+    try {
+      var _bn = (LULIY_OPTS && LULIY_OPTS.siteName) || '\u0394\u03b9\u03ac\u039d\u03bf\u03c5\u03c2';
+      document.querySelectorAll('.blogTitle, .blogTitle a, a.blogTitle').forEach(function (el) {
+        /* 只改纯文字节点，避免动到里头的头像 <img> */
+        if (el.children.length === 0) el.textContent = _bn;
+      });
+    } catch (e) {}
+
+    safe(initCategoryCards,   'categoryCards');
     safe(initAPlayer,         'aplayer');
     safe(initProgressBar,     'progressBar');
     safe(initDynamicTitle,    'dynamicTitle');
     safe(initUptime,          'uptime');
     safe(initSfxEvents,       'sfx');
-    safe(initClickSparks,     'sparks');
+    safe(initCyberParticles,  'cyberParticles');
     safe(initThemeRipple,     'ripple');
     safe(initTagEnhance,      'tagEnhance');
     safe(initHeroCluster,     'navbar');
@@ -4479,26 +5783,27 @@
 
     /* v10 global features */
     safe(applyReduceMotion,   'reduceMotion');
-    safe(applyBgBlur,         'bgBlur');
     safe(applyPbWidth,        'pbWidth');
-    safe(initFocusMode,       'focusMode');
+    safe(applyGlassVars,      'glassVars');
+    safe(applyCatSize,        'catSize');
     safe(initViewTransitions, 'viewTransitions');
     safe(initTagCloud,        'tagCloud');
-    if (localStorage.getItem('luliy-trail') === '1') safe(initMouseTrail, 'mouseTrail');
-    safe(maybeFireflies,      'fireflies');
-
-    /* Re-evaluate fireflies when color mode flips (Gmeek toggles data-color-mode) */
-    (function () {
-      var mo = new MutationObserver(maybeFireflies);
-      try { mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-mode'] }); } catch (e) {}
-      if (document.body) {
-        var mo2 = new MutationObserver(maybeFireflies);
-        try { mo2.observe(document.body, { attributes: true, attributeFilter: ['data-luliy-theme'] }); } catch (e) {}
-      }
-    })();
 
     var isPost    = !!document.getElementById('postBody');
     var hasList   = !!document.querySelector('.SideNav,.post-item,.postList,.post-list');
+
+    /* ★ 编年史 Chronicle 单页：优先识别（它也有 #postBody，但要走自己的
+       渲染，不能当普通文章页）。识别后直接接管，不再往下走文章页逻辑。 */
+    if (isChroniclePage()) {
+      safe(initChroniclePage, 'chronicle');
+      return;
+    }
+
+    /* ★ 书架 Bookshelf 单页：同理，自己接管渲染 */
+    if (isBookPage()) {
+      safe(initBookPage, 'book');
+      return;
+    }
 
     if (isPost) root._luliyInitPost();
     if (isIndexPage() || isArchivePage() || (!isPost && hasList)) root._luliyInitIndex();
