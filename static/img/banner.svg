@@ -1,0 +1,59 @@
+<svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbeee0"/>
+      <stop offset="45%" stop-color="#f3d9c4"/>
+      <stop offset="100%" stop-color="#e7c2a8"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd9a0"/>
+      <stop offset="100%" stop-color="#f29c6b"/>
+    </linearGradient>
+    <linearGradient id="m1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9fb8c8"/>
+      <stop offset="100%" stop-color="#7a98ab"/>
+    </linearGradient>
+    <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c97a9"/>
+      <stop offset="100%" stop-color="#5b7a8e"/>
+    </linearGradient>
+    <linearGradient id="m3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#56707f"/>
+      <stop offset="100%" stop-color="#3a5563"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+
+  <!-- sun -->
+  <circle cx="1480" cy="360" r="160" fill="url(#sun)" opacity="0.9"/>
+
+  <!-- birds -->
+  <g stroke="#5b4636" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.55">
+    <path d="M280 220 q18 -22 36 0 q18 -22 36 0"/>
+    <path d="M360 260 q14 -18 28 0 q14 -18 28 0"/>
+    <path d="M420 200 q12 -15 24 0 q12 -15 24 0"/>
+  </g>
+
+  <!-- far mountains -->
+  <path d="M0 620 L180 480 L340 590 L520 440 L720 600 L900 470 L1100 610 L1300 460 L1500 600 L1700 500 L1920 620 L1920 1080 L0 1080 Z" fill="url(#m1)" opacity="0.55"/>
+
+  <!-- mid mountains -->
+  <path d="M0 720 L220 560 L420 680 L640 520 L860 690 L1080 540 L1320 700 L1560 560 L1920 720 L1920 1080 L0 1080 Z" fill="url(#m2)" opacity="0.75"/>
+
+  <!-- near mountains -->
+  <path d="M0 860 L260 660 L480 820 L760 620 L1020 830 L1300 640 L1600 820 L1920 700 L1920 1080 L0 1080 Z" fill="url(#m3)"/>
+
+  <!-- mist bands -->
+  <rect x="0" y="700" width="1920" height="46" fill="#fbeee0" opacity="0.35"/>
+  <rect x="0" y="840" width="1920" height="60" fill="#fbeee0" opacity="0.30"/>
+
+  <!-- foreground pine silhouettes -->
+  <g fill="#2f4450" opacity="0.92">
+    <path d="M150 1080 L150 980 L110 980 L150 900 L120 900 L150 830 L180 900 L150 900 L190 980 L150 980 Z"/>
+    <path d="M1760 1080 L1760 1000 L1726 1000 L1760 930 L1734 930 L1760 870 L1790 930 L1764 930 L1798 1000 L1760 1000 Z"/>
+  </g>
+
+  <!-- water reflection line -->
+  <line x1="0" y1="980" x2="1920" y2="980" stroke="#fbeee0" stroke-width="2" opacity="0.4"/>
+</svg>
