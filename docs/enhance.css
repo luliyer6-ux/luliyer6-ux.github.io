@@ -5467,6 +5467,59 @@ html body.luliy-minimal .luliy-arch-year {
 [data-color-mode="light"] #luliy-post-footer-bar { color: #555 !important; border-top-color: rgba(0,0,0,0.10) !important; }
 [data-color-mode="dark"] #luliy-post-footer-bar { color: #aaa !important; border-top-color: rgba(255,255,255,0.12) !important; }
 
+/* ════════ 极简模式：隐藏右下角 目录/搜索/回顶 三个悬浮按钮 ════════ */
+body.luliy-minimal #luliy-toc-fab,
+body.luliy-minimal #luliy-search-fab,
+body.luliy-minimal #luliy-search-bar,
+body.luliy-minimal #luliy-back-top {
+  display: none !important;
+}
+
+/* ════════ 极简模式：文章表格去掉所有样式，仅保留细黑线边框 ════════ */
+html body.luliy-minimal #postBody table {
+  width: 100% !important;
+  display: table !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid #1c1c1e !important;
+  margin: 1.5em 0 !important;
+}
+html body.luliy-minimal #postBody thead tr,
+html body.luliy-minimal #postBody tr,
+html body.luliy-minimal #postBody th,
+html body.luliy-minimal #postBody td {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+html body.luliy-minimal #postBody th,
+html body.luliy-minimal #postBody td {
+  border: 1px solid #1c1c1e !important;
+  padding: 8px 12px !important;
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  font-weight: 400 !important;
+  text-align: left;
+}
+html body.luliy-minimal #postBody th { font-weight: 700 !important; }
+
+/* ════════ 极简模式：右侧目录跟随页面滚动，高亮当前所在标题 ════════ */
+#luliy-min-toc a.is-current {
+  color: var(--min-title) !important;
+  -webkit-text-fill-color: var(--min-title) !important;
+  font-weight: 600;
+}
+[data-color-mode] body.luliy-minimal #luliy-min-toc a.is-current {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+
 /* ── 顶部操作组：[Link] [简洁模式]（沉思者图标右边）── */
 #luliy-top-actions {
   position: fixed; top: 14px; z-index: 10002;
