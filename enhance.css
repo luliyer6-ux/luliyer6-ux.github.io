@@ -38,6 +38,7 @@
 ══════════════════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
 
 
 /* ══════════════════════════════════════════════════════════
@@ -60,8 +61,23 @@
   --th-strong:     #8250df;
 
   /* 合并自原第二个 :root 块（消除重复声明） */
-  --luliy-bg-blur: 0px;
   --luliy-pb-extra: 0px;
+
+  /* ★ 液态玻璃可调参数（设置面板里三个滑块联动这三个变量）：
+     模糊程度 / 不透明度 / 色调。用于深色模式下的卡片、文章正文面板、
+     标签云容器——统一替换掉之前写死的 rgba(...) 数值。
+     默认不透明度刻意调低（0.5 而不是原来的 0.72/0.75），
+     避免再叠加出"看起来像纯黑"的效果。 */
+  --luliy-glass-blur: 22px;
+  --luliy-glass-opacity: 0.5;
+  --luliy-glass-hue: 250;
+
+  /* ★ 主页卡片宽 / 高，可在设置面板滑块调节 */
+  --luliy-cat-w: 1700px;   /* ★ 默认再横向加宽 */
+  --luliy-cat-h: 338px;
+
+  /* ★ 文章正文面板独立不透明度（和卡片/标签云的玻璃透明度分开控制） */
+  --luliy-article-opacity: 0.5;
 }
 
 html { scroll-behavior: smooth; zoom: 1.1; }
@@ -95,43 +111,7 @@ body.luliy-post-page #postBody {
 }
 
 
-/* ── Tag page article list cards ──────────────────────────── */
-#luliy-tag-articles {
-  margin-top: 20px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.luliy-tag-list-card {
-  display: flex; flex-direction: column; gap: 6px;
-  padding: 16px 20px; border-radius: 14px;
-  text-decoration: none !important;
-  background: rgba(255,255,255,0.72);
-  border: 1px solid rgba(130,80,223,0.10);
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
-}
-[data-color-mode="dark"] .luliy-tag-list-card {
-  background: rgba(22,16,36,0.72);
-  border-color: rgba(130,80,223,0.18);
-}
-.luliy-tag-list-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(130,80,223,0.18);
-  background: rgba(255,255,255,0.88);
-}
-[data-color-mode="dark"] .luliy-tag-list-card:hover { background: rgba(28,20,44,0.88); }
-.luliy-tag-card-meta {
-  font-size: 12px; opacity: 0.60;
-  font-family: 'LXGW WenKai Mono', monospace;
-  color: var(--th-accent, #8250df);
-}
-.luliy-tag-card-title {
-  font-size: 16px; font-weight: 700;
-  color: #1a1430;
-  line-height: 1.4;
-}
-[data-color-mode="dark"] .luliy-tag-card-title { color: rgba(245,240,255,0.95); }
-.luliy-tag-card-labels { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+/* ── 旧的重复文章列表样式已删除（duplicateList，见 initTagCloud 改造说明） ── */
 .luliy-tag-bubble.is-active {
   background: var(--tag-c, #8250df) !important;
   color: #fff !important;
@@ -170,7 +150,12 @@ body.luliy-post-page #postBody {
   overflow: hidden;
   z-index: 1;
   margin-bottom: 8px;
+  /* ★ 大改后：整张图都可点击进入主页，不再依赖滚动 */
+  cursor: pointer;
+  transition: opacity 0.55s ease;
 }
+/* 点击后的淡出（JS 加 is-leaving，淡出完再从 DOM 移除） */
+#luliy-hero.is-leaving { opacity: 0; pointer-events: none; }
 #luliy-hero-inner {
   position: relative;
   z-index: 2;
@@ -249,36 +234,577 @@ body.luliy-reduce-motion #luliy-hero-hint { transform: translateX(-50%) !importa
 body.luliy-reduce-motion #luliy-hero-hint { animation: none; }
 /* On article / single pages there is no hero, so this never applies. */
 
-/* ══════════════════════════════════════════════════════════
-   03  Background image — fixed, full viewport
-══════════════════════════════════════════════════════════ */
-/* 注：--luliy-bg-blur / --luliy-pb-extra 已合并到顶部主 :root 块 */
-body {
-  background-image: url('https://picsum.photos/seed/luliy-bg/1920/1080') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-attachment: fixed !important;
-  background-repeat: no-repeat !important;
-  background-color: transparent !important;
+/* ── Hero corner badge (Rockstar "Pre-order on ..." style tag) ── */
+#luliy-hero-badge {
+  position: absolute;
+  top: 28px; left: 28px;
+  z-index: 3;
+  padding: 7px 16px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0,0,0,0.38);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  animation: luliyHeroIn 1.2s cubic-bezier(.2,.7,.3,1) 0.15s both;
 }
-/* Blur overlay: a fixed pseudo-layer that blurs the page background
-   without blurring the content (content sits above it). */
-body.luliy-bg-blurred::before {
-  content: '';
+@media (max-width: 600px) {
+  #luliy-hero-badge { top: 16px; left: 16px; font-size: 12px; padding: 6px 12px; }
+}
+body.luliy-reduce-motion #luliy-hero-badge { animation: none !important; opacity: 1 !important; }
+
+/* ══════════════════════════════════════════════════════════
+   02a  Loading splash — "ΔιάΝους" 赛博朋克荧光文字
+══════════════════════════════════════════════════════════ */
+#luliy-splash {
   position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;   /* inset:0 的回退写法（兼容旧 Safari） */
   inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #00020c;
+  overflow: hidden;
+  transition: opacity 0.55s ease, visibility 0.55s ease;
+}
+#luliy-splash.is-leaving { opacity: 0; visibility: hidden; }
+
+#luliy-splash-text {
+  position: relative;
+  font-family: 'Noto Sans SC', system-ui, sans-serif;
+  font-size: clamp(30px, 7vw, 60px);
+  font-weight: 800;
+  letter-spacing: 3px;
+  padding: 10px 30px;
+  /* 流动渐变文字：青→紫→品红循环流动，制造"荧光缠绕"感 */
+  background: linear-gradient(90deg, #00e5ff, #7b2fbe, #ff2bd6, #00e5ff);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;   /* Safari 上让渐变透出文字更可靠 */
+  color: transparent;
+  animation:
+    luliyNeonFlow 3.2s linear infinite,
+    luliyNeonPulse 1.8s ease-in-out infinite;
+}
+/* 文字背后一圈缓慢旋转的光晕环，呼应"循环缠绕" */
+#luliy-splash-text::before {
+  content: '';
+  position: absolute;
+  inset: -50px -70px;
   z-index: -1;
-  background-image: var(--luliy-bg-url, none);
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(0,229,255,0.55) 12%,
+    transparent 25%,
+    rgba(255,43,214,0.55) 45%,
+    transparent 58%,
+    rgba(123,47,190,0.55) 78%,
+    transparent 92%
+  );
+  filter: blur(28px);
+  animation: luliyNeonSpin 4.5s linear infinite;
+}
+@keyframes luliyNeonFlow {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+@keyframes luliyNeonPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(0,229,255,0.55)) drop-shadow(0 0 22px rgba(123,47,190,0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(0,229,255,0.85)) drop-shadow(0 0 36px rgba(255,43,214,0.55));
+  }
+}
+@keyframes luliyNeonSpin { to { transform: rotate(360deg); } }
+body.luliy-reduce-motion #luliy-splash-text,
+body.luliy-reduce-motion #luliy-splash-text::before { animation: none; }
+
+/* ── 加载动画第二种：光线扫描 ──────────────────────────
+   居中文字默认是暗色，一道白光从 Δ 扫向结尾的十字星，
+   光扫到哪个字母哪个字母才亮，扫过之后变暗；
+   光到达十字星时更亮地闪一下、停顿，然后循环。
+   实现思路：用同一个 background-clip:text 渐变技巧，
+   渐变里大部分是暗色，只在一小段做出"亮带"，
+   靠 background-position 动画让亮带扫过文字。 */
+#luliy-splash-text.is-sweep {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: 4px;
+  background: linear-gradient(
+    100deg,
+    rgba(150,120,210,0.32) 0%,
+    rgba(150,120,210,0.32) 38%,
+    #ffffff 47%,
+    #ffffff 53%,
+    rgba(150,120,210,0.32) 62%,
+    rgba(150,120,210,0.32) 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 14px rgba(180,150,255,0.25);
+  animation: luliySweepMove 3.2s cubic-bezier(.45,0,.3,1) infinite;
+}
+@keyframes luliySweepMove {
+  0%   { background-position: 0% 50%; }
+  72%  { background-position: 100% 50%; }
+  86%  { background-position: 100% 50%; }   /* 到达结尾，停顿一下 */
+  100% { background-position: 130% 50%; }   /* 移出，准备下一轮循环 */
+}
+/* 结尾十字星：装饰本身（横竖两道光）独立闪烁；
+   字母本身（ς）依然跟其它字母一样，由外层的扫描渐变统一控制明暗，
+   不再写死常亮，这样才是"光扫到它才亮"。 */
+#luliy-splash-text.is-sweep .flare-anchor {
+  position: relative;
+  display: inline-block;
+}
+#luliy-splash-text.is-sweep .flare-anchor::before,
+#luliy-splash-text.is-sweep .flare-anchor::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 100%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  animation: luliySweepFlare 3.2s cubic-bezier(.45,0,.3,1) infinite;
+}
+#luliy-splash-text.is-sweep .flare-anchor::before {
+  width: 70px; height: 2px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+}
+#luliy-splash-text.is-sweep .flare-anchor::after {
+  width: 2px; height: 34px;
+  background: linear-gradient(180deg, transparent, #fff, transparent);
+}
+@keyframes luliySweepFlare {
+  0%, 68%   { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+  74%, 86%  { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }   /* 光到达时闪亮 + 停顿 */
+  96%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+}
+body.luliy-reduce-motion #luliy-splash-text.is-sweep,
+body.luliy-reduce-motion #luliy-splash-text.is-sweep .flare-anchor::before,
+body.luliy-reduce-motion #luliy-splash-text.is-sweep .flare-anchor::after { animation: none; }
+
+/* ══════════════════════════════════════════════════════════
+   02b  Top-left brand name  ΔιάΝους  (click → home)
+══════════════════════════════════════════════════════════ */
+/* ★ 标题样式套用自用户上传的赛博朋克粒子页面：等宽字体 + 品红霓虹光
+   （青色/白色复合阴影）+ 故障感闪烁动画。不再分深浅模式两套颜色——
+   全站背景始终是深色，这套高亮霓虹色在哪种模式下都清晰可见。 */
+#luliy-brand {
+  position: fixed;
+  top: 14px;
+  left: 18px;            /* ☰ 已移到右上角，站名左移贴边 */
+  z-index: 10002;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1;
+  /* ★ 恒星核心发光效果：纯白文字 + 多层 text-shadow 叠出
+     "炽白核心 + 外层粉/紫/青晕染"的星光感，取代原来的霓虹故障风。 */
+  color: #fff;
+  text-decoration: none !important;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 10px #fff,
+    0 0 18px #ff9eda,
+    0 0 32px #ff6ec7,
+    0 0 55px #b48cff,
+    0 0 90px #6ec7ff;
+  animation: luliyBrandStarPulse 2.6s ease-in-out infinite;
+  transition: transform 0.2s;
+  white-space: nowrap;
+}
+#luliy-brand:hover { transform: translateY(-1px); }
+@keyframes luliyBrandStarPulse {
+  0%, 100% { filter: brightness(1); opacity: 1; }
+  50%      { filter: brightness(1.35); opacity: 0.92; }
+}
+/* 结尾字符的十字星芒：一道横、一道竖，叠在最后一个字的右侧 */
+#luliy-brand .flare-anchor {
+  position: relative;
+  display: inline-block;
+}
+#luliy-brand .flare-anchor::before,
+#luliy-brand .flare-anchor::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 100%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: luliyBrandStarPulse 2.6s ease-in-out infinite;
+}
+#luliy-brand .flare-anchor::before {
+  width: 52px; height: 1.4px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+}
+#luliy-brand .flare-anchor::after {
+  width: 1.4px; height: 24px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.9), transparent);
+}
+body.luliy-reduce-motion #luliy-brand,
+body.luliy-reduce-motion #luliy-brand .flare-anchor::before,
+body.luliy-reduce-motion #luliy-brand .flare-anchor::after { animation: none; }
+@media (max-width: 600px) {
+  #luliy-brand { font-size: 18px; left: 64px; }
+  #luliy-brand .flare-anchor::before { width: 38px; }
+  #luliy-brand .flare-anchor::after  { height: 18px; }
+}
+
+/* 博客名右边的「沉思者」图标：透明背景，发光样式和博客名一致 */
+#luliy-issues-link {
+  position: fixed;
+  top: 14px;
+  z-index: 10002;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: #fff;
+  filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 8px #ff9eda) drop-shadow(0 0 16px #6ec7ff);
+  opacity: 0.92;
+  transition: transform 0.2s, opacity 0.2s, filter 0.3s;
+}
+#luliy-issues-link:hover {
+  opacity: 1;
+  transform: translateY(-1px) scale(1.06);
+  filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 12px #ff9eda) drop-shadow(0 0 22px #6ec7ff);
+}
+body.luliy-reduce-motion #luliy-issues-link { transition: none; }
+@media (max-width: 600px) {
+  #luliy-issues-link svg { width: 18px; height: 18px; }
+}
+
+/* 副标题：紧贴在 ΔιάΝους 正下方，仅首页显示 */
+#luliy-subtitle {
+  position: fixed;
+  top: 56px;
+  left: 18px;            /* 和站名左对齐 */
+  z-index: 10001;
+  color: rgba(180,140,255,0.6);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+  pointer-events: auto;   /* ★ 改为可点击 */
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+/* 副标题链接：继承父元素颜色，悬停时变亮 */
+.luliy-subtitle-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.luliy-subtitle-link:hover {
+  color: rgba(200,170,255,0.95);
+  text-shadow: 0 0 10px rgba(180,140,255,0.6), 0 1px 6px rgba(0,0,0,0.5);
+}
+@media (max-width: 600px) {
+  #luliy-subtitle {
+    /* 手机端：副标题下移到导航栏下方，避免和博客名/图标重叠导致误触 */
+    top: 58px;
+    left: 14px;
+    right: 14px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    white-space: normal;     /* 允许折行，不裁剪 */
+    max-width: none;
+    overflow: visible;
+  }
+}
+
+/* ★ 抽屉快捷链接：隐藏 Chronicle / Book / Favorites 三个页面的入口
+   （副标题已经承担了这三个页面的跳转功能，抽屉里不用重复显示）。
+   用 href 属性后缀匹配，只影响这三个链接，其余链接不受影响。 */
+#luliy-drawer-quick .lds-link[href$="/chronicle.html"],
+#luliy-drawer-quick .lds-link[href$="/book.html"],
+#luliy-drawer-quick .lds-link[href$="/favorites.html"] { display: none !important; }
+
+
+/* ══════════════════════════════════════════════════════════
+   02c  Homepage category cards — 6 张，2 行 3 列，满屏垂直居中
+══════════════════════════════════════════════════════════ */
+/* ★ 首页：把 Gmeek 原生 #content 里的所有东西全部隐藏（副标题、文章列表、
+   翻页器等），只保留我们注入的六张分类卡片。
+   用后代选择器（空格）而非直接子选择器（>），因为 Gmeek 运行时会把翻页器
+   包进 .paginate-container 等额外层级，直接子选择器会漏掉。 */
+body.luliy-home #content {
+  display: none !important;
+}
+/* 兜底：万一翻页器被插到 #content 之外，也一并隐藏 */
+body.luliy-home .pagination,
+body.luliy-home .paginate-container,
+body.luliy-home #pagination {
+  display: none !important;
+}
+
+/* 卡片区：正常文档流 + min-height:100vh + flex 居中。
+   能这样写是因为上面已经把 #content 整个 display:none 了（高度归零），
+   所以卡片区不再被"它后面还有别的高内容"顶歪，可以放心居中；
+   同时它是 #footer（Gmeek 原生页脚）的前一个兄弟节点，
+   página 自然顺序就是「卡片区 → footer」，footer 会乖乖待在卡片下方，
+   不用再像之前那样用 fixed 叠加层去"硬居中"。 */
+#luliy-cats-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 96px 24px 32px;   /* 顶部留出 logo / 播放器空间 */
+  box-sizing: border-box;
+}
+/* 卡片网格本身限制最大宽度并居中
+   ★ 宽度在原 1200px 基础上 +25% = 1500px；卡片高度在 375px 基础上
+   -10% ≈ 338px。两个尺寸都改成 CSS 变量驱动（--luliy-cat-w /
+   --luliy-cat-h），设置面板里新增了对应滑块，可以自己再调，
+   不用每次都来回找我改代码。 */
+#luliy-cats {
+  /* ★ 修复宽度滑块"调大没反应"的真 bug：原来是 width:100% + max-width:var()，
+     而 max-width 只在"想要的值比容器自然宽度还小"时才生效——一旦滑块调
+     得比容器自然宽度（约 1300px 左右，取决于视口）还大，就彻底没效果了。
+     改成 width:min(var(...), 100%)，滑块的值永远优先生效，
+     只在超过视口实际可用宽度时才被压缩，调大调小都有反应。 */
+  width: min(var(--luliy-cat-w, 1500px), 100%);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.luliy-cat-card {
+  position: relative;
+  will-change: transform, box-shadow;
+  height: var(--luliy-cat-h, 338px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;            /* 1 倍 */
+  border-radius: 16px;      /* 1 倍 */
+  text-decoration: none !important;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: 0 6px 26px rgba(0,0,0,0.35);
+  transition: transform 0.35s cubic-bezier(.2,.7,.3,1), box-shadow 0.35s ease;
+}
+/* ★ 图片单独一层（::before），可以独立缩放/加滤镜而不带歪文字 */
+.luliy-cat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  will-change: transform, filter;
+  background-image: var(--cat-img);
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  filter: blur(var(--luliy-bg-blur, 0px));
-  transform: scale(1.08);   /* hide blurred edges */
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+/* 底部渐变暗化遮罩，固定不跟着图片缩放，保证文字始终清晰可读 */
+.luliy-cat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(6,5,16,0.88) 8%, rgba(6,5,16,0.30) 50%, rgba(6,5,16,0.10) 100%);
   pointer-events: none;
 }
-body.luliy-bg-blurred {
-  background-image: none !important;   /* hand off to the ::before layer */
+/* ★ 悬停效果：卡片本身上浮 6px + 阴影变大变深 + 一圈粉色霓虹光晕，
+   营造"悬浮发光"的赛博朋克质感。 */
+.luliy-cat-card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 18px 46px rgba(0,0,0,0.55),
+    0 0 0 1.5px rgba(255,110,199,0.55),
+    0 0 36px 6px rgba(255,110,199,0.40);
+}
+/* ★ 悬停时图片单独放大到 106%（轻微视差/呼吸感）+ 滤镜增强
+   （饱和度/对比度/亮度都提高），瞬间更鲜艳更清晰 */
+.luliy-cat-card:hover::before {
+  transform: scale(1.06);
+  filter: saturate(1.35) contrast(1.15) brightness(1.12);
+}
+.luliy-cat-card:hover .luliy-cat-title { transform: translateY(-3px); }
+.luliy-cat-kicker {
+  position: relative; z-index: 2;
+  align-self: flex-start;
+  font-size: 12px;          /* 1 倍 */
+  letter-spacing: 4px;      /* 1 倍 */
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  text-transform: uppercase;
+  margin-bottom: 8px;       /* 1 倍 */
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+}
+.luliy-cat-title {
+  position: relative; z-index: 2;
+  margin: 0 0 8px;          /* 1 倍 */
+  font-size: 26px;          /* 1 倍 */
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 2px;      /* 1 倍 */
+  text-shadow: 0 2px 18px rgba(0,0,0,0.7);
+  transition: transform 0.3s ease;
+}
+.luliy-cat-desc {
+  position: relative; z-index: 2;
+  margin: 0;
+  font-size: 13px;          /* 1 倍 */
+  line-height: 1.5;
+  color: rgba(255,255,255,0.86);
+  text-shadow: 0 1px 10px rgba(0,0,0,0.6);
+}
+/* "more →" row, bottom-right, → archive ★ 同步用 min() 写法 */
+#luliy-cats-more-row {
+  width: min(var(--luliy-cat-w, 1500px), 100%);
+  display: flex;
+  justify-content: flex-end;
+  margin: 18px auto 0;      /* 1 倍 */
+}
+#luliy-cats-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;                 /* 1 倍 */
+  font-size: 14px;          /* 1 倍 */
+  font-weight: 700;
+  letter-spacing: 1px;      /* 1 倍 */
+  color: #c8e8ff;
+  text-decoration: none !important;
+  padding: 9px 20px;        /* 1 倍 */
+  border: 1px solid rgba(0,229,255,0.4);
+  border-radius: 999px;
+  background: rgba(0,200,255,0.06);
+  transition: background 0.25s, color 0.25s, transform 0.2s, gap 0.25s;
+}
+#luliy-cats-more:hover {
+  background: rgba(0,200,255,0.16);
+  color: #fff;
+  gap: 14px;
+  transform: translateY(-2px);
+}
+[data-color-mode="light"] #luliy-cats-more {
+  color: #0a6c8f;
+  border-color: rgba(10,134,176,0.4);
+  background: rgba(10,134,176,0.05);
+}
+[data-color-mode="light"] #luliy-cats-more:hover { color: #06506b; background: rgba(10,134,176,0.14); }
+
+/* Tablet: 3 列太挤，6 张卡片改 2 列（3 行）；手机进一步降到 1 列 */
+@media (max-width: 860px) {
+  #luliy-cats { grid-template-columns: repeat(2, 1fr); }
+  .luliy-cat-card { height: 240px; }
+}
+@media (max-width: 560px) {
+  #luliy-cats { grid-template-columns: 1fr; }
+  /* 手机单列：6 张卡片总高超过一屏，容器顶对齐 + 可滚动，能看全 */
+  #luliy-cats-wrap { justify-content: flex-start; padding: 80px 16px 32px; }
+  .luliy-cat-card { height: 200px; padding: 20px; }
+  .luliy-cat-title { font-size: 24px; }
+}
+body.luliy-reduce-motion .luliy-cat-card,
+body.luliy-reduce-motion #luliy-cats-more { transition: none; }
+
+/* 矮窗口（如多数笔记本 ≤800px 高）：6 张卡片整体偏高，自动压缩卡片高度
+   与顶部留白，尽量让六张卡片 + more 在一屏内完整显示、保持居中。 */
+@media (min-width: 861px) and (max-height: 800px) {
+  #luliy-cats-wrap { padding-top: 72px; }
+  .luliy-cat-card { height: 230px; }
+}
+@media (min-width: 861px) and (max-height: 680px) {
+  #luliy-cats-wrap { padding-top: 60px; }
+  .luliy-cat-card { height: 190px; padding: 18px; }
+  .luliy-cat-title { font-size: 23px; margin-bottom: 6px; }
+  .luliy-cat-desc { font-size: 12px; }
+}
+
+/* ── 大改后：隐藏因「锁定太空主题」而不再需要的功能入口 ──
+   （元素仍在 DOM 里，只是视觉隐藏；日后恢复多主题时删掉本段即可） */
+.luliy-hidden-feature { display: none !important; }
+/* 浮动设置面板里的「主题预览卡」（与已删的多主题对应，隐藏） */
+.luliy-panel-theme-block { display: none !important; }
+/* Gmeek 原生 header 里的主题切换圆钮（onclick=modeSwitch） */
+#themeSwitch, a[onclick*="modeSwitch"] { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════
+   02d  Category page (tag.html) — 复用统一的卡片系统
+   原方案试图把 Gmeek 原生的 .lists/.SideNav-item 强行套成网格，
+   但和原生筛选逻辑冲突（见 enhance.js 注释）。现改为：
+     · 隐藏原生 SideNav 列表与原生标签筛选条；
+     · 我们自建的 #luliy-tag-grid 容器复用统一卡片系统（.luliy-card 等）。
+══════════════════════════════════════════════════════════ */
+/* 隐藏原生列表与原生标签条（但放过我们自建的 #luliy-tag-grid 容器）。
+   用 body 标记覆盖原生"异步生成"的列表，避免漏网。 */
+body.luliy-tag-takeover .SideNav:not(#luliy-tag-grid),
+body.luliy-tag-takeover #taglabel,
+body.luliy-tag-takeover .notFind {
+  display: none !important;
+}
+
+/* 分类页标题（🏷️ 标签名） */
+#luliy-tag-head {
+  margin: 8px 0 20px;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--th-h1, #00e5ff);
+}
+
+/* 我们自建的卡片容器：标准三列网格（≥860px，仅网格模式下生效）。
+   用 :not() 排除列表/时间轴模式，避免 ID 选择器的高优先级
+   抢了 .luliy-card-grid.luliy-card-list / .luliy-card-timeline 的样式
+   （那两个是纯 class 选择器，优先级比 ID 低，不加 :not() 会被盖掉）。
+   .luliy-card / .luliy-card-grid 等具体卡片样式由后面统一区块提供。 */
+#luliy-tag-grid.luliy-card-grid:not(.luliy-card-list):not(.luliy-card-timeline) {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 860px) {
+  #luliy-tag-grid.luliy-card-grid:not(.luliy-card-list):not(.luliy-card-timeline) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  #luliy-tag-grid.luliy-card-grid:not(.luliy-card-list):not(.luliy-card-timeline) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   03  Background — 纯色基底 #00020c（深浅模式通用）
+   原来这里还有一层 CSS 画的网格+光晕装饰，现已删除——
+   背景装饰改由 #luliy-cyber-canvas（赛博朋克粒子系统）负责，
+   这里只保留纯色兜底，避免 canvas 还没绘制完成前露出白底。
+══════════════════════════════════════════════════════════ */
+/* ★ 全站底色：从死黑 #00020c 换成赛博朋克渐变（取自用户上传的粒子页面）。
+   这是"中间黑色竖条"的根治办法——之前底色是近乎纯黑，全屏粒子 canvas
+   中间区域粒子稀疏时就会露出这片死黑；换成渐变后，无论粒子怎么分布，
+   背后始终是深蓝→紫→品红的渐变，不会再有死黑块。
+   渐变挂在 html 上铺满整个视口，body 透明，让 html 渐变透上来。 */
+html {
+  background: linear-gradient(160deg, #0a0e2a 0%, #1a1140 30%, #3d1a5c 55%, #5c1a4a 75%, #1a0e2e 100%) !important;
+  background-attachment: fixed !important;
+  min-height: 100%;
+}
+body {
+  background: transparent !important;
+  background-image: none !important;
+}
+[data-color-mode="light"] html {
+  background: linear-gradient(160deg, #0a0e2a 0%, #1a1140 30%, #3d1a5c 55%, #5c1a4a 75%, #1a0e2e 100%) !important;
+  background-attachment: fixed !important;
+}
+[data-color-mode="light"] body {
+  background: transparent !important;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -288,6 +814,23 @@ body.luliy-bg-blurred {
 /* Body text: 霞鹜文楷 Screen (regular) */
 body {
   font-family: 'LXGW WenKai Screen', 'LXGW WenKai', 'Noto Serif SC', serif;
+}
+
+/* ★ 页脚对比度修复：原来用的是 Primer 默认的灰黑色文字，
+   在咱们这套深色背景下几乎看不清。改成统一的浅灰/浅紫白，
+   链接用强调色，深浅模式都保证够亮。 */
+#footer, #footer1, #footer2 {
+  color: rgba(225,220,240,0.65) !important;
+}
+#footer a {
+  color: var(--th-accent, #cba6f7) !important;
+}
+#footer a:hover { color: #fff !important; }
+[data-color-mode="light"] #footer, [data-color-mode="light"] #footer1, [data-color-mode="light"] #footer2 {
+  color: rgba(230,225,245,0.70) !important;
+}
+[data-color-mode="light"] #footer a {
+  color: var(--th-accent, #8250df) !important;
 }
 
 /* Headings: 思源黑体 Medium */
@@ -316,7 +859,7 @@ body.luliy-canger #postBody li,
 body.luliy-canger #postBody td,
 body.luliy-canger #postBody th,
 body.luliy-canger #postBody blockquote {
-  font-family: 'CangEr', 'LXGW WenKai Screen', serif !important;
+  font-family: 'Ma Shan Zheng', 'LXGW WenKai Screen', serif !important;
 }
 
 /* ── 黑体模式: sans-serif reading toggle (body.luliy-sans) ── */
@@ -395,14 +938,29 @@ body[data-luliy-theme="space"] #postBody p,
 body[data-luliy-theme="space"] #postBody li,
 body[data-luliy-theme="space"] #postBody span,
 body[data-luliy-theme="space"] #postBody figcaption { color: #c8e8ff !important; }
+/* Space theme forces light text even in day mode */
+body[data-luliy-theme="cyberpunk"] #postBody,
+body[data-luliy-theme="cyberpunk"] #postBody p,
+body[data-luliy-theme="cyberpunk"] #postBody li,
+body[data-luliy-theme="cyberpunk"] #postBody span,
+body[data-luliy-theme="cyberpunk"] #postBody figcaption { color: #c8e8ff !important; }
 body[data-luliy-theme="space"] #postBody a { color: #00e5ff !important; }
+body[data-luliy-theme="cyberpunk"] #postBody a { color: #00e5ff !important; }
 body[data-luliy-theme="space"] #postBody a:hover { color: #80f4ff !important; }
+body[data-luliy-theme="cyberpunk"] #postBody a:hover { color: #80f4ff !important; }
 body[data-luliy-theme="space"] #postBody code  { color: #00e5ff !important; background: rgba(0,200,255,0.12) !important; }
+body[data-luliy-theme="cyberpunk"] #postBody code  { color: #00e5ff !important; background: rgba(0,200,255,0.12) !important; }
 body[data-luliy-theme="space"] #postBody strong { color: var(--th-strong, #00e5ff) !important; }
+body[data-luliy-theme="cyberpunk"] #postBody strong { color: var(--th-strong, #00e5ff) !important; }
 body[data-luliy-theme="space"] #postBody blockquote {
   color: rgba(180,220,255,0.80) !important;
   background: rgba(0,100,200,0.14) !important;
   border-left-color: rgba(0,200,255,0.50) !important;
+}
+body[data-luliy-theme="cyberpunk"] #postBody blockquote {
+  color: rgba(220,200,255,0.85) !important;
+  background: rgba(123,47,190,0.14) !important;
+  border-left-color: rgba(255,43,214,0.55) !important;
 }
 
 /* ── Focus-visible (keyboard accessibility) ─────────────── */
@@ -420,7 +978,7 @@ button:focus-visible, a:focus-visible {
 
 /* Global selections & external link indicator */
 ::selection { background: #f0b429; color: #000; }
-a[target='_blank']::after { content: ' \2197'; font-size: 0.75em; opacity: 0.6; }
+/* ★ 外链 ↗ 箭头已删除（会出现在沉思者图标、Music 等所有 target=_blank 元素上，影响美观） */
 
 /* ── Label tags ─────────────────────────────────────────── */
 a.Label {
@@ -491,6 +1049,7 @@ body[data-luliy-theme="default"] #luliy-nav-rebuilt  { border-top: 2px solid rgb
 body[data-luliy-theme="sakura"] #luliy-nav-rebuilt   { border-top: 2px solid rgba(201,64,112,0.55); }
 body[data-luliy-theme="your-name"] #luliy-nav-rebuilt{ border-top: 2px solid rgba(255,169,77,0.65); }
 body[data-luliy-theme="space"] #luliy-nav-rebuilt    { border-top: 2px solid rgba(0,229,255,0.55); }
+body[data-luliy-theme="cyberpunk"] #luliy-nav-rebuilt    { border-top: 2px solid rgba(255,43,214,0.55); }
 body[data-luliy-theme="sunset"] #luliy-nav-rebuilt   { border-top: 2px solid rgba(232,168,56,0.65); }
 body[data-luliy-theme="mono"] #luliy-nav-rebuilt     { border-top: 2px solid rgba(150,150,150,0.5); }
 
@@ -555,7 +1114,14 @@ body[data-luliy-theme="mono"] #luliy-nav-rebuilt     { border-top: 2px solid rgb
 #luliy-hero-capsule {
   grid-area: capsule;
   display: flex; align-items: center;
-  justify-content: center;
+  /* ★ bug修复：原 justify-content:center + overflow-x:auto 组合是经典
+     CSS 陷阱——内容溢出时居中会让左侧溢出量变成「负向 scrollLeft」，
+     浏览器无法滚到那里，造成左侧文字永久裁切不可见（如"Favorites"
+     显示成"rites"），右侧也只能看到居中窗口内的一段。
+     现在改用 flex-start + overflow:hidden + 纯CSS响应式降级（窄屏只显
+     示图标，见 section 38），不再用 JS 测量溢出，没有滚动、没有
+     "测量时机不对"的问题，这个陷阱不会再出现。 */
+  justify-content: flex-start;
   gap: 0;
   padding: 6px 8px;
   border-radius: 14px;
@@ -563,10 +1129,9 @@ body[data-luliy-theme="mono"] #luliy-nav-rebuilt     { border-top: 2px solid rgb
   border: 1px solid var(--th-hero-border, rgba(255,255,255,0.5));
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   width: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
+  min-width: 0;
+  overflow: hidden;
 }
-#luliy-hero-capsule::-webkit-scrollbar { display: none; }
 [data-color-mode="dark"] #luliy-hero-capsule {
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.10);
@@ -757,11 +1322,13 @@ body[data-luliy-theme="mono"] #luliy-nav-rebuilt     { border-top: 2px solid rgb
     0 0 0 1.5px var(--th-accent-soft, rgba(255,255,255,0.50)) inset !important;
 }
 [data-color-mode="dark"] .luliy-card {
-  background: rgba(18,14,34,0.72) !important;
+  background: hsla(var(--luliy-glass-hue), 45%, 14%, var(--luliy-glass-opacity)) !important;
+  backdrop-filter: blur(var(--luliy-glass-blur)) saturate(1.9) !important;
+  -webkit-backdrop-filter: blur(var(--luliy-glass-blur)) saturate(1.9) !important;
   border-color: rgba(255,255,255,0.12) !important;
 }
 [data-color-mode="dark"] .luliy-card:hover {
-  background: rgba(26,20,50,0.82) !important;
+  background: hsla(var(--luliy-glass-hue), 45%, 18%, calc(var(--luliy-glass-opacity) + 0.1)) !important;
   border-color: var(--th-accent, rgba(255,255,255,0.20)) !important;
   box-shadow: 0 18px 48px rgba(0,0,0,0.55), 0 0 0 1px var(--th-accent-soft, rgba(255,255,255,0.08)) inset !important;
 }
@@ -881,11 +1448,30 @@ body[data-luliy-theme="space"] .luliy-card-deco {
     radial-gradient(circle 1px   at 5%  50%, rgba(180,220,255,0.60) 0%, transparent 80%);
   background-repeat: no-repeat;
 }
+/* Space theme: star field — tiny white twinkle dots */
+body[data-luliy-theme="cyberpunk"] .luliy-card-deco {
+  opacity: 0.60;
+  background-image:
+    radial-gradient(circle 1.5px at 12% 20%, rgba(255,255,255,0.90) 0%, transparent 80%),
+    radial-gradient(circle 1px   at 78% 14%, rgba(180,230,255,0.85) 0%, transparent 80%),
+    radial-gradient(circle 2px   at 55% 30%, rgba(255,255,255,0.70) 0%, transparent 80%),
+    radial-gradient(circle 1px   at 92% 55%, rgba(200,240,255,0.80) 0%, transparent 80%),
+    radial-gradient(circle 1.5px at 35% 68%, rgba(255,255,255,0.75) 0%, transparent 80%),
+    radial-gradient(circle 1px   at 20% 82%, rgba(180,210,255,0.65) 0%, transparent 80%),
+    radial-gradient(circle 2px   at 68% 75%, rgba(255,255,255,0.60) 0%, transparent 80%),
+    radial-gradient(circle 1px   at 47% 90%, rgba(200,230,255,0.70) 0%, transparent 80%),
+    radial-gradient(circle 1.5px at 85% 88%, rgba(255,255,255,0.55) 0%, transparent 80%),
+    radial-gradient(circle 1px   at 5%  50%, rgba(180,220,255,0.60) 0%, transparent 80%);
+  background-repeat: no-repeat;
+}
 /* Animate star twinkle on hover */
 @keyframes luliyStarTwinkle {
   0%,100% { opacity: 0.60; } 50% { opacity: 0.90; }
 }
 body[data-luliy-theme="space"] .luliy-card:hover .luliy-card-deco {
+  animation: luliyStarTwinkle 1.8s ease-in-out infinite;
+}
+body[data-luliy-theme="cyberpunk"] .luliy-card:hover .luliy-card-deco {
   animation: luliyStarTwinkle 1.8s ease-in-out infinite;
 }
 .luliy-card::after {
@@ -1012,7 +1598,7 @@ body.luliy-post-page .main {
 /* ── Default: 50% iOS26 liquid glass background ─────────── */
 body[data-luliy-theme="default"] #postBody,
 body:not([data-luliy-theme]) #postBody {
-  background: rgba(255,255,255,0.50) !important;
+  background: hsla(0, 0%, 100%, var(--luliy-article-opacity, 0.5)) !important;
   backdrop-filter: blur(40px) saturate(2.2) brightness(1.06) !important;
   -webkit-backdrop-filter: blur(40px) saturate(2.2) brightness(1.06) !important;
   border: 1px solid rgba(255,255,255,0.65) !important;
@@ -1027,7 +1613,7 @@ body:not([data-luliy-theme]) #postBody {
 }
 [data-color-mode="dark"] body[data-luliy-theme="default"] #postBody,
 [data-color-mode="dark"] body:not([data-luliy-theme]) #postBody {
-  background: rgba(14,10,28,0.50) !important;
+  background: hsla(252, 45%, 7%, var(--luliy-article-opacity, 0.5)) !important;
   backdrop-filter: blur(40px) saturate(2.2) brightness(0.96) !important;
   -webkit-backdrop-filter: blur(40px) saturate(2.2) brightness(0.96) !important;
   border-color: rgba(255,255,255,0.10) !important;
@@ -1040,7 +1626,7 @@ body:not([data-luliy-theme]) #postBody {
 
 /* ── Sakura: cherry blossom girl — pink frosted glass ────── */
 body[data-luliy-theme="sakura"] #postBody {
-  background: rgba(255,238,245,0.84) !important;
+  background: hsla(338, 100%, 97%, var(--luliy-article-opacity, 0.5)) !important;
   backdrop-filter: blur(26px) saturate(1.6) !important;
   -webkit-backdrop-filter: blur(26px) saturate(1.6) !important;
   border: 1px solid rgba(249,168,201,0.50) !important;
@@ -1051,17 +1637,19 @@ body[data-luliy-theme="sakura"] #postBody {
   box-shadow: 0 6px 44px rgba(224,92,138,0.16), 0 0 60px rgba(249,168,201,0.08) !important;
 }
 [data-color-mode="dark"] body[data-luliy-theme="sakura"] #postBody {
-  background: rgba(42,10,28,0.80) !important;
+  background: hsla(340, 62%, 10%, var(--luliy-article-opacity, 0.5)) !important;
   border-color: rgba(249,168,201,0.22) !important;
 }
 
 /* ── Your Name: sky blue frosted glass ───────────────────── */
-/* ── Your Name: 新海诚 sky-blue glass with golden top light ── */
+/* ── Your Name: 新海诚 sky-blue glass with golden top light ──
+   三层背景：上面两层是金色/紫色点缀光晕，固定透明度不受滑块影响；
+   只有最底下的主基调层（蓝调渐变）接入 --luliy-article-opacity。 */
 body[data-luliy-theme="your-name"] #postBody {
   background:
     radial-gradient(120% 80% at 80% -10%, rgba(255,212,59,0.18), transparent 55%),
     radial-gradient(120% 90% at 10% 0%, rgba(229,153,247,0.14), transparent 50%),
-    linear-gradient(165deg, rgba(225,242,255,0.90), rgba(206,234,255,0.86)) !important;
+    linear-gradient(165deg, hsla(204,100%,94%,var(--luliy-article-opacity, 0.5)), hsla(204,100%,90%,var(--luliy-article-opacity, 0.5))) !important;
   backdrop-filter: blur(28px) saturate(1.7) !important;
   -webkit-backdrop-filter: blur(28px) saturate(1.7) !important;
   border: 1px solid rgba(30,111,212,0.28) !important;
@@ -1078,16 +1666,16 @@ body[data-luliy-theme="your-name"] #postBody {
   background:
     radial-gradient(120% 80% at 80% -10%, rgba(255,212,59,0.12), transparent 55%),
     radial-gradient(120% 90% at 10% 0%, rgba(116,192,252,0.14), transparent 50%),
-    linear-gradient(165deg, rgba(8,24,64,0.88), rgba(4,16,46,0.90)) !important;
+    linear-gradient(165deg, hsla(220,75%,14%,var(--luliy-article-opacity, 0.5)), hsla(220,85%,10%,var(--luliy-article-opacity, 0.5))) !important;
   border-color: rgba(116,192,252,0.30) !important;
   border-top-color: rgba(255,212,59,0.55) !important;
 }
 
-/* ── Space: deep space dark glass ────────────────────────── */
+/* ── Space: 液态玻璃文章面板（参数由设置面板的三个滑块控制） ── */
 body[data-luliy-theme="space"] #postBody {
-  background: rgba(2,8,36,0.75) !important;
-  backdrop-filter: blur(26px) saturate(2) !important;
-  -webkit-backdrop-filter: blur(26px) saturate(2) !important;
+  background: hsla(var(--luliy-glass-hue), 70%, 9%, var(--luliy-article-opacity, 0.5)) !important;
+  backdrop-filter: blur(var(--luliy-glass-blur)) saturate(2) !important;
+  -webkit-backdrop-filter: blur(var(--luliy-glass-blur)) saturate(2) !important;
   border: 1px solid rgba(0,200,255,0.22) !important;
   border-top: 3px solid rgba(0,200,255,0.50) !important;
   border-radius: 20px !important;
@@ -1095,18 +1683,24 @@ body[data-luliy-theme="space"] #postBody {
   margin-bottom: 48px !important;
   box-shadow: 0 6px 44px rgba(0,80,180,0.30), 0 0 80px rgba(0,200,255,0.08) !important;
 }
-/* Space: day mode is still dark (it's space) */
-[data-color-mode="dark"] body[data-luliy-theme="space"] #postBody {
-  background: rgba(1,4,22,0.85) !important;
-  border-color: rgba(0,200,255,0.28) !important;
+/* ── Space: 液态玻璃文章面板（参数由设置面板的三个滑块控制） ── */
+body[data-luliy-theme="cyberpunk"] #postBody {
+  background: hsla(var(--luliy-glass-hue), 70%, 9%, var(--luliy-article-opacity, 0.5)) !important;
+  backdrop-filter: blur(var(--luliy-glass-blur)) saturate(2) !important;
+  -webkit-backdrop-filter: blur(var(--luliy-glass-blur)) saturate(2) !important;
+  border: 1px solid rgba(255,43,214,0.22) !important;
+  border-top: 3px solid rgba(255,43,214,0.55) !important;
+  border-radius: 20px !important;
+  padding: 36px 40px !important;
+  margin-bottom: 48px !important;
+  box-shadow: 0 6px 44px rgba(120,0,140,0.28), 0 0 80px rgba(0,200,255,0.10) !important;
 }
-
 /* ── Sunset: 日落大道 highway dusk gradient glass ─────────── */
 body[data-luliy-theme="sunset"] #postBody {
   background:
     radial-gradient(130% 70% at 50% -10%, rgba(255,214,120,0.42), transparent 55%),
     radial-gradient(120% 60% at 85% 110%, rgba(240,180,41,0.22), transparent 55%),
-    linear-gradient(170deg, rgba(255,248,228,0.94), rgba(255,238,200,0.90)) !important;
+    linear-gradient(170deg, hsla(45,100%,93%,var(--luliy-article-opacity, 0.5)), hsla(42,100%,88%,var(--luliy-article-opacity, 0.5))) !important;
   backdrop-filter: blur(26px) saturate(1.5) !important;
   -webkit-backdrop-filter: blur(26px) saturate(1.5) !important;
   border: 1px solid rgba(232,168,56,0.36) !important;
@@ -1123,14 +1717,14 @@ body[data-luliy-theme="sunset"] #postBody {
   background:
     radial-gradient(130% 70% at 50% -10%, rgba(255,193,77,0.20), transparent 55%),
     radial-gradient(120% 70% at 85% 115%, rgba(232,130,30,0.18), transparent 55%),
-    linear-gradient(170deg, rgba(40,30,14,0.92), rgba(28,22,10,0.94)) !important;
+    linear-gradient(170deg, hsla(38,48%,11%,var(--luliy-article-opacity, 0.5)), hsla(35,45%,7%,var(--luliy-article-opacity, 0.5))) !important;
   border-color: rgba(255,193,77,0.30) !important;
   border-top-color: rgba(255,193,77,0.58) !important;
 }
 
 /* ── Mono: minimalist black & white paper ────────────────── */
 body[data-luliy-theme="mono"] #postBody {
-  background: rgba(255,255,255,0.93) !important;
+  background: hsla(0, 0%, 100%, var(--luliy-article-opacity, 0.5)) !important;
   backdrop-filter: blur(18px) saturate(0.2) !important;
   -webkit-backdrop-filter: blur(18px) saturate(0.2) !important;
   border: 1px solid rgba(0,0,0,0.16) !important;
@@ -1141,7 +1735,7 @@ body[data-luliy-theme="mono"] #postBody {
   box-shadow: 0 4px 30px rgba(0,0,0,0.12) !important;
 }
 [data-color-mode="dark"] body[data-luliy-theme="mono"] #postBody {
-  background: rgba(14,14,14,0.92) !important;
+  background: hsla(0, 0%, 5%, var(--luliy-article-opacity, 0.5)) !important;
   border-color: rgba(255,255,255,0.16) !important;
   border-top-color: #ddd !important;
 }
@@ -1192,8 +1786,18 @@ body[data-luliy-theme="space"] #postBody pre {
   border-color: rgba(130,80,223,0.40) !important;
   box-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 0 40px rgba(130,80,223,0.12) !important;
 }
+[data-color-mode="dark"] #postBody pre,
+body[data-luliy-theme="cyberpunk"] #postBody pre {
+  background: rgba(14,12,26,0.97) !important;
+  border-color: rgba(130,80,223,0.40) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 0 40px rgba(130,80,223,0.12) !important;
+}
 [data-color-mode="dark"] #postBody pre:hover,
 body[data-luliy-theme="space"] #postBody pre:hover {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.65), 0 0 55px rgba(130,80,223,0.22) !important;
+}
+[data-color-mode="dark"] #postBody pre:hover,
+body[data-luliy-theme="cyberpunk"] #postBody pre:hover {
   box-shadow: 0 10px 40px rgba(0,0,0,0.65), 0 0 55px rgba(130,80,223,0.22) !important;
 }
 /* Mono theme: grayscale code blocks */
@@ -1220,6 +1824,8 @@ body[data-luliy-theme="mono"] .mac-lang { color: rgba(0,0,0,0.50); }
 #postBody pre code { color: #2d2040 !important; background: none !important; padding: 0 !important; font-weight: normal !important; }
 [data-color-mode="dark"] #postBody pre code,
 body[data-luliy-theme="space"] #postBody pre code { color: #cdd6f4 !important; }
+[data-color-mode="dark"] #postBody pre code,
+body[data-luliy-theme="cyberpunk"] #postBody pre code { color: #cdd6f4 !important; }
 
 /* macOS title strip */
 .mac-strip {
@@ -1231,6 +1837,11 @@ body[data-luliy-theme="space"] #postBody pre code { color: #cdd6f4 !important; }
 }
 [data-color-mode="dark"] .mac-strip,
 body[data-luliy-theme="space"] .mac-strip {
+  background: rgba(22,18,40,0.92);
+  border-bottom-color: rgba(130,80,223,0.28);
+}
+[data-color-mode="dark"] .mac-strip,
+body[data-luliy-theme="cyberpunk"] .mac-strip {
   background: rgba(22,18,40,0.92);
   border-bottom-color: rgba(130,80,223,0.28);
 }
@@ -1255,6 +1866,8 @@ body[data-luliy-theme="space"] .mac-strip {
 }
 [data-color-mode="dark"] .mac-lang,
 body[data-luliy-theme="space"] .mac-lang { color: rgba(160,140,255,0.70); }
+[data-color-mode="dark"] .mac-lang,
+body[data-luliy-theme="cyberpunk"] .mac-lang { color: rgba(160,140,255,0.70); }
 
 /* Folded state */
 pre.is-folded { max-height: 40px !important; overflow: hidden !important; }
@@ -1306,10 +1919,22 @@ body[data-luliy-theme="space"] #postBody table {
     rgba(18,14,32,0.90);
   box-shadow: 0 2px 16px rgba(0,0,0,0.50), 0 0 0 1px rgba(130,80,223,0.22);
 }
+[data-color-mode="dark"] #postBody table,
+body[data-luliy-theme="cyberpunk"] #postBody table {
+  /* 深色 / 星空主题：深色底上同样叠加主题色调 */
+  background:
+    linear-gradient(var(--th-accent-soft, rgba(0,200,255,0.12)), var(--th-accent-soft, rgba(0,200,255,0.12))),
+    rgba(18,14,32,0.90);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.50), 0 0 0 1px rgba(130,80,223,0.22);
+}
 /* 表头渐变也跟随主题强调色（原为固定紫色） */
 #postBody thead tr { background: linear-gradient(90deg, var(--th-accent-soft, rgba(130,80,223,0.10)), transparent); }
 [data-color-mode="dark"] #postBody thead tr,
 body[data-luliy-theme="space"] #postBody thead tr {
+  background: linear-gradient(90deg, rgba(130,80,223,0.26), rgba(9,105,218,0.20));
+}
+[data-color-mode="dark"] #postBody thead tr,
+body[data-luliy-theme="cyberpunk"] #postBody thead tr {
   background: linear-gradient(90deg, rgba(130,80,223,0.26), rgba(9,105,218,0.20));
 }
 #postBody th {
@@ -1317,20 +1942,16 @@ body[data-luliy-theme="space"] #postBody thead tr {
   color: var(--th-h2, #8250df) !important; text-align: left;
   border-bottom: 2px solid rgba(130,80,223,0.18);
   font-family: 'Noto Sans SC', sans-serif;
-  /* ── Sticky header: stays visible while scrolling long tables ── */
-  position: sticky;
-  top: 60px;                 /* below fixed navbar */
-  z-index: 5;
-  /* Sticky cells need an opaque-ish background of their own */
-  background: rgba(244,240,252,0.97);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 [data-color-mode="dark"] #postBody th {
   color: #cba6f7 !important; border-bottom-color: rgba(130,80,223,0.32);
   background: rgba(26,20,46,0.97);
 }
 body[data-luliy-theme="space"] #postBody th {
+  color: #00e5ff !important;
+  background: rgba(8,14,38,0.97);
+}
+body[data-luliy-theme="cyberpunk"] #postBody th {
   color: #00e5ff !important;
   background: rgba(8,14,38,0.97);
 }
@@ -1348,6 +1969,8 @@ body[data-luliy-theme="mono"] #postBody th    { background: rgba(245,245,245,0.9
 }
 [data-color-mode="dark"] #postBody td,
 body[data-luliy-theme="space"] #postBody td { color: #cdd6f4 !important; border-bottom-color: rgba(130,80,223,0.12); }
+[data-color-mode="dark"] #postBody td,
+body[data-luliy-theme="cyberpunk"] #postBody td { color: #cdd6f4 !important; border-bottom-color: rgba(130,80,223,0.12); }
 #postBody tr:last-child td { border-bottom: none; }
 #postBody tbody tr:nth-child(even) { background: rgba(130,80,223,0.03); }
 [data-color-mode="dark"] #postBody tbody tr:nth-child(even) { background: rgba(130,80,223,0.07); }
@@ -1396,12 +2019,6 @@ body[data-luliy-theme="your-name"] {
   --th-accent: #1e6fd4;
   --th-accent-soft: rgba(30,111,212,0.11);
   --th-accent-hover: rgba(30,111,212,0.18);
-  /* twilight / golden accents used by the panel gradient */
-  --yn-sky-top: #1e6fd4;
-  --yn-sky-mid: #74c0fc;
-  --yn-glow:    #ffd43b;
-  --yn-warm:    #ffa94d;
-  --yn-twilight:#e599f7;
 }
 
 /* 4  Space — deep night blue */
@@ -1412,6 +2029,17 @@ body[data-luliy-theme="space"] {
   --th-accent: #00c8ff;
   --th-accent-soft: rgba(0,200,255,0.12);
   --th-accent-hover: rgba(0,200,255,0.20);
+}
+/* 5  Cyberpunk — neon city (青 + 品红，默认主题) */
+body[data-luliy-theme="cyberpunk"] {
+  /* ★ 赛博朋克主题专属配色：青 + 品红双色调，呼应粒子背景/品牌名/光标
+     的统一霓虹色板，和纯青色调的「太空旅行」主题做出区分。 */
+  --th-h1: #ff2bd6; --th-h1-border: 2px solid rgba(255,43,214,0.35);
+  --th-h2: #00c8ff; --th-h2-bl: 5px solid #ff2bd6; --th-h2-bg: rgba(123,47,190,0.12);
+  --th-h3: #c77dff; --th-h4: #6ec7ff; --th-strong: #ff6ec7;
+  --th-accent: #00e5ff;
+  --th-accent-soft: rgba(255,43,214,0.14);
+  --th-accent-hover: rgba(255,43,214,0.24);
 }
 
 /* 5  Sunset — dusk orange */
@@ -1425,12 +2053,6 @@ body[data-luliy-theme="sunset"] {
   --th-accent: #d9930d;
   --th-accent-soft: rgba(217,147,13,0.13);
   --th-accent-hover: rgba(217,147,13,0.22);
-  /* warm gradient stops used by the panel */
-  --ss-sky:    #fff3d6;
-  --ss-amber:  #ffd98a;
-  --ss-gold:   #f0b429;
-  --ss-orange: #e8821e;
-  --ss-glow:   #fff0c4;
 }
 /* Markdown text colours (light) */
 body[data-luliy-theme="sunset"] #postBody a,
@@ -1490,6 +2112,13 @@ body[data-luliy-theme="mono"] {
   --th-accent: #40d8ff;
   --th-accent-soft: rgba(0,229,255,0.18);
   --th-accent-hover: rgba(0,229,255,0.30);
+}
+/* cyberpunk：黑夜也是霓虹都市，白天/夜间都一样亮 */
+[data-color-mode="dark"] body[data-luliy-theme="cyberpunk"] {
+  --th-h1: #ff6ec7; --th-h2: #6ec7ff; --th-h3: #c77dff; --th-strong: #ff9eda;
+  --th-accent: #00e5ff;
+  --th-accent-soft: rgba(255,43,214,0.18);
+  --th-accent-hover: rgba(255,43,214,0.30);
 }
 [data-color-mode="dark"] body[data-luliy-theme="sunset"] {
   --th-h1: #ffce6b; --th-h2: #ffd98a; --th-h3: #ffe2a8; --th-h4: #ffecc4; --th-strong: #ffb347;
@@ -2219,6 +2848,23 @@ body[data-luliy-theme="mono"] {
 [data-color-mode="dark"] #luliy-aplayer .aplayer-controller .aplayer-bar-wrap .aplayer-bar .aplayer-loaded {
   background: rgba(255,255,255,0.18) !important;
 }
+/* ★ 修复夜间模式播放列表一黑一白问题：
+   APlayer 默认用 nth-child 给奇偶行设不同背景，强制全部统一为深色 */
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list ol li,
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list ol li:nth-child(even) {
+  background: rgba(14,10,28,0.92) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list ol li:hover,
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list ol li.aplayer-list-cur {
+  background: rgba(var(--luliy-glass-hue, 250), 0%, 0%, 0.12) !important;
+  background: hsla(var(--luliy-glass-hue, 250), 40%, 30%, 0.30) !important;
+}
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list-author,
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list-index,
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list-title { color: rgba(220,215,250,0.80) !important; }
+[data-color-mode="dark"] #luliy-aplayer .aplayer-list-cur .aplayer-list-title { color: var(--th-accent, #00e5ff) !important; }
+
 /* Theme accent on progress bar */
 #luliy-aplayer .aplayer-bar .aplayer-played { background: var(--th-accent, #e8a838) !important; }
 #luliy-aplayer .aplayer-volume-bar .aplayer-volume { background: var(--th-accent, #e8a838) !important; }
@@ -2228,7 +2874,7 @@ body[data-luliy-theme="mono"] {
   border-radius: 10px !important;
   box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
 }
-/* ── Mini control strip: add-music + hide-to-side ───────── */
+/* ── Mini control strip: add-music ──────────────────────── */
 .luliy-ap-tools {
   display: flex; gap: 4px;
   position: absolute; top: 2px; right: 2px;
@@ -2246,21 +2892,56 @@ body[data-luliy-theme="mono"] {
 }
 .luliy-ap-tool:hover { transform: scale(1.15); background: var(--th-accent, #8250df); }
 .luliy-ap-add { font-size: 15px; font-weight: 700; }
-.luliy-ap-hide { font-size: 15px; font-weight: 700; }
 [data-color-mode="dark"] #luliy-aplayer .luliy-ap-tool { background: rgba(255,255,255,0.18); }
-/* ── Hide-to-side: collapse the player to a thin edge tab ── */
+
+/* ══════════════════════════════════════════════════════════
+   音乐播放器：圆形按钮默认收起，点击展开（交互方式与目录按钮一致）
+══════════════════════════════════════════════════════════ */
+/* 圆形折叠按钮，样式参照 #luliy-toc-fab，在它正上方紧接着排列 */
+#luliy-ap-fab {
+  /* ★ 位置改由 JS 控制（left/top），支持拖拽 + 和播放器位置同步，
+     不再写死 bottom/right。 */
+  position: fixed;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--th-accent-soft, rgba(130,80,223,0.22));
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.35));
+  color: var(--th-accent, #8250df); font-size: 18px;
+  cursor: grab; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; z-index: 9994;
+  user-select: none; touch-action: none;
+  transition: opacity 0.28s, background 0.25s, color 0.25s, box-shadow 0.2s;
+}
+#luliy-ap-fab.is-visible { opacity: 1; pointer-events: all; }
+/* 播放器展开时，按钮藏起来（两者共用同一坐标点，不隐藏会糊在
+   展开后面板的左上角，造成重叠） */
+#luliy-ap-fab.is-hidden-while-open { opacity: 0 !important; pointer-events: none !important; }
+#luliy-ap-fab.is-dragging { cursor: grabbing; transition: none; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+#luliy-ap-fab.is-active {
+  background: var(--th-accent, #8250df) !important;
+  color: #fff !important;
+  border-color: var(--th-accent, #8250df) !important;
+}
+#luliy-ap-fab:hover:not(.is-dragging) { background: var(--th-accent-hover, rgba(130,80,223,0.35)); }
+[data-color-mode="dark"] #luliy-ap-fab { color: var(--th-accent, #cba6f7); }
+
+/* 完整播放器：默认收起（不占地方、不拦截点击），点圆形按钮后展开 */
 #luliy-aplayer {
-  transition: box-shadow 0.2s, transform 0.32s cubic-bezier(.4,0,.2,1);
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.2,.8,.3,1), visibility 0.22s;
+  transform-origin: top right;
 }
-#luliy-aplayer.is-tucked {
-  transform: translateX(calc(-100% + 16px));   /* only a 16px sliver shows */
-  cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.45) !important;
+#luliy-aplayer.is-open {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  visibility: visible;
 }
-#luliy-aplayer.is-tucked:hover { transform: translateX(calc(-100% + 24px)); }
-#luliy-aplayer.is-tucked .luliy-ap-hide {
-  position: absolute; top: 50%; right: 2px; transform: translateY(-50%);
-  background: var(--th-accent, #8250df);
+@media (max-width: 768px) {
+  /* 位置已改由 JS 的 left/top 控制（含手机端默认值），这里不用再写 bottom */
 }
 
 
@@ -2462,8 +3143,381 @@ body.luliy-tl-infinite .paginate,
 body.luliy-tl-infinite #pagination,
 body.luliy-tl-infinite .Paginate,
 body.luliy-tl-infinite .pagenav,
-body.luliy-tl-infinite a[href*="?page="] {
+body.luliy-tl-infinite a[href*="?page="],
+/* ★ 分类页 / 归档页：始终隐藏 Gmeek 原生「上一页/下一页」翻页器
+   （含运行时包裹的 .paginate-container 层） */
+body.luliy-hide-pagination .pagination,
+body.luliy-hide-pagination .paginate-container,
+body.luliy-hide-pagination .paginate,
+body.luliy-hide-pagination #pagination,
+body.luliy-hide-pagination .Paginate,
+body.luliy-hide-pagination .pagenav {
   display: none !important;
+}
+
+/* ============================================================
+   归档页 Archives —— 双标签页 + 按年分组 + 分页（赛博朋克风）
+   ============================================================ */
+.luliy-archives { max-width: 760px; margin: 0 auto; padding: 8px 0 40px; }
+.luliy-arch-loading, .luliy-arch-error, .luliy-arch-empty {
+  text-align: center; padding: 40px 16px;
+  color: rgba(220,210,245,0.7); font-size: 15px;
+}
+.luliy-arch-error { color: #ff6ec7; }
+.luliy-arch-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding-bottom: 14px; margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255,43,214,0.28);
+}
+.luliy-arch-title {
+  margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 2px;
+  color: #fff; text-shadow: 0 0 10px rgba(255,110,199,0.5), 0 0 28px rgba(110,199,255,0.3);
+}
+.luliy-arch-tabbar { display: flex; align-items: center; gap: 12px; }
+.luliy-arch-tab {
+  background: none; border: none; cursor: pointer;
+  font-size: 15px; font-weight: 600; letter-spacing: 1px;
+  color: rgba(200,190,230,0.55); padding: 4px 2px;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.luliy-arch-tab:hover { color: rgba(255,255,255,0.85); }
+.luliy-arch-tab.is-active {
+  color: #fff; text-shadow: 0 0 10px var(--th-accent, #00e5ff);
+}
+.luliy-arch-tabsep { width: 1px; height: 16px; background: rgba(255,255,255,0.25); }
+
+.luliy-arch-year {
+  font-size: 22px; font-weight: 800; letter-spacing: 1px;
+  color: var(--th-accent, #00e5ff);
+  margin: 26px 0 10px; padding-bottom: 4px;
+  text-shadow: 0 0 12px rgba(0,229,255,0.35);
+}
+.luliy-arch-year:first-child { margin-top: 4px; }
+.luliy-arch-row {
+  display: flex; align-items: baseline; gap: 16px;
+  padding: 9px 10px; border-radius: 8px;
+  text-decoration: none !important;
+  transition: background 0.18s, transform 0.18s;
+}
+.luliy-arch-row:hover {
+  background: hsla(var(--luliy-glass-hue, 250), 50%, 50%, 0.10);
+  transform: translateX(4px);
+}
+.luliy-arch-date {
+  flex: 0 0 auto; width: 96px;
+  font-family: 'Courier New', monospace; font-size: 13px;
+  color: rgba(180,170,210,0.7);
+}
+.luliy-arch-name {
+  flex: 1 1 auto; font-size: 15px; line-height: 1.5;
+  color: rgba(235,230,250,0.92);
+  transition: color 0.18s;
+}
+.luliy-arch-row:hover .luliy-arch-name { color: #fff; }
+.luliy-arch-row:hover .luliy-arch-date { color: var(--th-accent, #00e5ff); }
+
+.luliy-arch-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  margin-top: 32px; padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.luliy-arch-pgbtn {
+  width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+  background: hsla(var(--luliy-glass-hue, 250), 50%, 50%, 0.12);
+  border: 1px solid rgba(255,43,214,0.30);
+  color: #fff; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+}
+.luliy-arch-pgbtn:hover:not(:disabled) {
+  background: var(--th-accent, #00e5ff);
+  color: #0a0e2a;
+  box-shadow: 0 0 16px rgba(0,229,255,0.5);
+}
+.luliy-arch-pgbtn:disabled { opacity: 0.3; cursor: default; }
+.luliy-arch-pginfo {
+  font-family: 'Courier New', monospace; font-size: 14px;
+  color: rgba(210,200,235,0.8); letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   编年史 Chronicle —— 年份/分类切换 + 三种表格（赛博朋克风）
+   ============================================================ */
+.luliy-chronicle { max-width: 1100px; margin: 0 auto; padding: 8px 0 40px; }
+.luliy-chron-loading, .luliy-chron-error, .luliy-chron-empty {
+  text-align: center; padding: 40px 16px;
+  color: rgba(220,210,245,0.7); font-size: 15px;
+}
+.luliy-chron-error { color: #ff6ec7; }
+.luliy-chron-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,43,214,0.28);
+}
+.luliy-chron-title {
+  margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 2px;
+  color: #fff; text-shadow: 0 0 10px rgba(255,110,199,0.5), 0 0 28px rgba(110,199,255,0.3);
+}
+.luliy-chron-years { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.luliy-chron-year-tab {
+  background: none; border: none; cursor: pointer;
+  font-size: 15px; font-weight: 700; letter-spacing: 1px;
+  color: rgba(200,190,230,0.5); padding: 4px 2px; position: relative;
+  transition: color 0.2s;
+}
+.luliy-chron-year-tab:hover { color: rgba(255,255,255,0.85); }
+.luliy-chron-year-tab.is-active { color: #fff; }
+.luliy-chron-year-tab.is-active::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 2px;
+  background: var(--th-accent, #00e5ff); box-shadow: 0 0 8px var(--th-accent, #00e5ff);
+}
+
+.luliy-chron-cats {
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  margin: 18px 0 22px;
+}
+.luliy-chron-cat-tab {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; font-weight: 600; letter-spacing: 1px;
+  color: rgba(200,190,230,0.5); padding: 4px 2px; position: relative;
+  transition: color 0.2s;
+}
+.luliy-chron-cat-tab:hover { color: rgba(255,255,255,0.85); }
+.luliy-chron-cat-tab.is-active { color: #fff; text-shadow: 0 0 10px rgba(255,110,199,0.4); }
+.luliy-chron-cat-tab.is-active::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 2px;
+  background: #ff2bd6; box-shadow: 0 0 8px #ff2bd6;
+}
+
+/* 横向滚动用外层容器处理，避免 overflow-x:auto 隐式把 overflow-y 也改成
+   auto，导致表格高度被截断、内容从顶部被裁掉 */
+.luliy-chron-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+.luliy-chron-tablewrap {
+  /* 不再在这里设置 overflow */
+  min-width: 580px;   /* 确保窄屏下触发外层横向滚动 */
+}
+.luliy-chron-table {
+  width: 100%; border-collapse: collapse; font-size: 14px;
+  background: transparent;   /* ★ 表格整体透明 */
+}
+.luliy-chron-table td[rowspan],
+.luliy-chron-table .luliy-chron-month-cell {
+  vertical-align: middle;    /* ★ 垂直居中 */
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 52px;
+  text-align: center;        /* ★ 水平居中 */
+  border-right: 1px solid rgba(255,255,255,0.35);
+}
+.luliy-chron-table th, .luliy-chron-table td {
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 10px 14px; text-align: left; vertical-align: top;
+}
+.luliy-chron-table th {
+  background: hsla(var(--luliy-glass-hue, 250), 55%, 14%, 0.55);
+  color: var(--th-accent, #00e5ff); font-weight: 700;
+  white-space: nowrap; letter-spacing: 0.5px;
+}
+/* ★ 夜间模式下 td 完全无底纹 */
+[data-color-mode="dark"] .luliy-chron-table td,
+.luliy-chron-table td { background: transparent; color: rgba(230,225,250,0.9); }
+.luliy-chron-table a { color: var(--th-accent, #6ec7ff); text-decoration: none; }
+.luliy-chron-table a:hover { text-decoration: underline; color: #fff; }
+
+/* ★ Chronicle 页面：隐藏顶部「预计阅读 X 分钟 | 共 XX 字」和文末字数信息条 */
+body.luliy-chronicle-takeover #luliy-readmeta,
+body.luliy-chronicle-takeover #luliy-post-footer-bar { display: none !important; }
+
+/* 海报墙 7/5/3 列响应式 */
+.luliy-chron-posters {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;
+}
+.luliy-poster-item {
+  position: relative; display: block; overflow: hidden; border-radius: 10px;
+  aspect-ratio: 2 / 3; text-decoration: none !important;
+  border: 1px solid rgba(255,43,214,0.22);
+  background: hsla(var(--luliy-glass-hue, 250), 45%, 9%, 0.4);
+  cursor: pointer; padding: 0;   /* button reset */
+  -webkit-appearance: none; appearance: none;
+}
+
+/* ══════════════════════════════════════════════════════
+   海报灯箱（全屏展示 + 左右切换 + 触摸滑动）
+══════════════════════════════════════════════════════ */
+#luliy-lb {
+  position: fixed; inset: 0; z-index: 200000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s, visibility 0.25s;
+}
+#luliy-lb.is-open { opacity: 1; visibility: visible; }
+body.luliy-lb-open { overflow: hidden; }
+
+.luliy-lb-bg {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.88);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.luliy-lb-img-wrap {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  max-width: min(90vw, 520px); max-height: 90vh;
+}
+.luliy-lb-img {
+  display: block; max-width: 100%; max-height: calc(90vh - 80px);
+  object-fit: contain; border-radius: 12px;
+  box-shadow: 0 8px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,43,214,0.25);
+  transition: opacity 0.2s;
+}
+.luliy-lb-cap {
+  margin-top: 12px; font-size: 14px; color: rgba(240,235,255,0.85);
+  text-align: center; letter-spacing: 0.5px;
+  text-shadow: 0 0 12px rgba(180,140,255,0.4);
+}
+.luliy-lb-link {
+  display: inline-block; margin-top: 8px;
+  font-size: 12px; color: var(--th-accent, #00e5ff);
+  text-decoration: none; letter-spacing: 0.5px;
+  opacity: 0.8; transition: opacity 0.15s;
+}
+.luliy-lb-link:hover { opacity: 1; text-decoration: underline; }
+
+/* 左右箭头 */
+.luliy-lb-prev, .luliy-lb-next {
+  position: absolute; z-index: 2; top: 50%; transform: translateY(-50%);
+  width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.10); color: #fff; font-size: 26px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background 0.15s, transform 0.15s;
+}
+.luliy-lb-prev { left: 16px; }
+.luliy-lb-next { right: 16px; }
+.luliy-lb-prev:hover, .luliy-lb-next:hover { background: rgba(255,43,214,0.40); transform: translateY(-50%) scale(1.08); }
+.luliy-lb-prev:disabled, .luliy-lb-next:disabled { opacity: 0.2; cursor: default; }
+
+/* 关闭按钮 */
+.luliy-lb-close {
+  position: absolute; z-index: 2; top: 16px; right: 16px;
+  width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.12); color: #fff; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.luliy-lb-close:hover { background: rgba(255,43,214,0.45); }
+
+@media (max-width: 640px) {
+  .luliy-lb-prev { left: 4px; width: 38px; height: 38px; font-size: 20px; }
+  .luliy-lb-next { right: 4px; width: 38px; height: 38px; font-size: 20px; }
+  .luliy-lb-img-wrap { max-width: 96vw; }
+}
+
+.luliy-poster-img {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  transition: transform 0.4s ease;
+}
+.luliy-poster-item:hover .luliy-poster-img { transform: scale(1.08); }
+.luliy-poster-title {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 18px 8px 8px; font-size: 12px; line-height: 1.4; color: #fff;
+  background: linear-gradient(to top, rgba(6,5,16,0.92), transparent);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.luliy-poster-item:hover .luliy-poster-title { opacity: 1; }
+
+@media (max-width: 900px) {
+  .luliy-chron-posters { grid-template-columns: repeat(5, 1fr); }
+}
+@media (max-width: 560px) {
+  .luliy-chron-posters { grid-template-columns: repeat(3, 1fr); }
+  .luliy-arch-date { width: 78px; }
+  .luliy-arch-title, .luliy-chron-title { font-size: 23px; }
+}
+
+/* ══════════════════════════════════════════════════════
+   Chronicle 手机端适配（≤ 640px）
+   两个表格在小屏下从「多列横排」转为「卡片堆叠」，
+   每条记录变成一块独立卡片，清晰易读。
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* 容器收窄 */
+  .luliy-chronicle { padding: 4px 0 32px; }
+
+  /* 标题和年份标签竖排（年份多时不挤在一行） */
+  .luliy-chron-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .luliy-chron-years  { gap: 12px; }
+  .luliy-chron-cats   { gap: 16px; margin: 12px 0 16px; }
+  .luliy-chron-title  { font-size: 22px; }
+
+  /* ── 出游 / 书影游：卡片化 ── */
+  /* 关掉外层横向滚动，改用纵向卡片堆叠 */
+  .luliy-chron-scroll-x { overflow-x: visible; }
+  .luliy-chron-tablewrap { min-width: 0; }
+
+  /* 整个表格变成 block 流式排列 */
+  .luliy-chron-table,
+  .luliy-chron-table thead,
+  .luliy-chron-table tbody,
+  .luliy-chron-table tr,
+  .luliy-chron-table th,
+  .luliy-chron-table td { display: block; width: 100% !important; box-sizing: border-box; }
+
+  /* 表头隐藏 */
+  .luliy-chron-table thead { display: none !important; }
+
+  /* 每行变成一张卡片 */
+  .luliy-chron-table tbody tr {
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  /* 每个 td：flex 横排「列名 + 内容」 */
+  .luliy-chron-table td {
+    display: flex !important;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 14px;
+    border: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+    text-align: left !important;
+    vertical-align: top !important;
+    white-space: normal !important;
+    min-width: 0;
+  }
+  .luliy-chron-table td:last-child { border-bottom: none !important; }
+
+  /* data-label 前置标签（给非月份格用） */
+  .luliy-chron-table td:not(.luliy-chron-month-cell)::before {
+    content: attr(data-label);
+    flex: 0 0 4.5em;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+    color: var(--th-accent, #00e5ff);
+    opacity: 0.75;
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+
+  /* 月份行：居中、加粗、深色背景突出 */
+  .luliy-chron-table .luliy-chron-month-cell {
+    justify-content: center !important;
+    background: hsla(var(--luliy-glass-hue,250), 55%, 20%, 0.45) !important;
+    font-size: 13px; font-weight: 800;
+    border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+    border-right: none !important;
+    white-space: nowrap !important;
+  }
+
+  /* 海报墙：手机端 2 列（3 列图片偏小） */
+  .luliy-chron-posters { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
 }
 
 /* Mobile: collapse to single left-aligned column */
@@ -2481,36 +3535,131 @@ body.luliy-tl-infinite a[href*="?page="] {
   }
 }
 
-/* ── Focus-mode floating exit button ──────────────────────── */
-#luliy-focus-exit {
-  position: fixed; top: 20px; right: 20px;
-  z-index: 100001;
-  padding: 9px 18px; border-radius: 30px;
-  background: var(--th-accent, #8250df); color: #fff;
-  border: none; cursor: pointer;
-  font-size: 13px; font-weight: 700; letter-spacing: 1px;
-  font-family: 'Noto Sans SC', sans-serif;
-  box-shadow: 0 6px 22px rgba(0,0,0,0.30);
-  opacity: 0; transform: translateY(-12px);
-  animation: luliyFocusExitIn 0.4s cubic-bezier(.2,.7,.3,1) 0.1s forwards;
-  transition: transform 0.2s, box-shadow 0.2s;
+/* focus-exit 按钮、退出提示已删除（专注模式整体移除） */
+
+/* ══════════════════════════════════════════════════════
+   书架 Bookshelf —— 赛博朋克风
+   ══════════════════════════════════════════════════════ */
+.luliy-bookshelf { max-width: 1080px; margin: 0 auto; padding: 8px 0 40px; }
+.luliy-book-loading, .luliy-book-error {
+  text-align: center; padding: 40px 16px;
+  color: rgba(220,210,245,0.7); font-size: 15px;
 }
-#luliy-focus-exit:hover { transform: translateY(-2px); box-shadow: 0 9px 28px rgba(0,0,0,0.4); }
-@keyframes luliyFocusExitIn {
-  to { opacity: 1; transform: translateY(0); }
+.luliy-book-error { color: #ff6ec7; }
+
+.luliy-book-header { text-align: center; margin-bottom: 32px; }
+.luliy-book-title {
+  margin: 0 0 8px; font-size: 30px; font-weight: 800; letter-spacing: 3px;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255,110,199,0.5), 0 0 28px rgba(110,199,255,0.35);
 }
-/* Subtle hint that double-click / F exits, shown briefly on entering focus mode */
-body.luliy-focus-mode::after {
-  content: 'F 或双击退出专注模式';
-  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.66); color: #fff;
-  padding: 8px 18px; border-radius: 24px; font-size: 12px; letter-spacing: 1px;
-  z-index: 100001; pointer-events: none;
-  animation: luliyFocusHint 3.2s ease forwards;
+.luliy-book-sub { margin: 0; font-size: 13px; color: rgba(190,180,225,0.7); letter-spacing: 1px; }
+
+/* 书柜外框：暗色玻璃 + 霓虹描边 */
+.luliy-bookcase {
+  background: linear-gradient(180deg, hsla(var(--luliy-glass-hue,250),45%,12%,0.55), hsla(var(--luliy-glass-hue,250),50%,7%,0.65));
+  border: 1px solid rgba(255,43,214,0.30);
+  border-radius: 14px;
+  padding: 28px 18px 18px;
+  display: flex; flex-direction: column; gap: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 40px rgba(110,199,255,0.06);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
-@keyframes luliyFocusHint {
-  0% { opacity: 0; } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; }
+
+.luliy-shelf { position: relative; }
+.luliy-shelf-plaque {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  background: linear-gradient(90deg, var(--th-accent, #00e5ff), #6ec7ff);
+  color: #0a0e2a; font-weight: 800; font-size: 13px;
+  padding: 4px 14px 5px; border-radius: 4px 4px 0 0; margin-left: 14px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 14px rgba(0,229,255,0.4);
 }
+.luliy-shelf-count { font-size: 11px; font-weight: 600; opacity: 0.7; }
+
+.luliy-shelf-row {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 7px;
+  padding: 0 16px 12px; min-height: 60px;
+}
+.luliy-shelf-empty {
+  color: rgba(180,170,210,0.5); font-size: 13px; padding: 18px 6px; font-style: italic;
+}
+.luliy-shelf-board {
+  height: 5px; margin: 0 6px; border-radius: 3px;
+  background: linear-gradient(90deg, transparent, var(--th-accent, #00e5ff), #ff2bd6, transparent);
+  opacity: 0.55;
+  box-shadow: 0 0 12px rgba(0,229,255,0.4);
+}
+
+/* 书脊 */
+.luliy-spine {
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none !important; color: #fff;
+  border-radius: 3px 3px 1px 1px;
+  box-shadow: inset -3px 0 6px rgba(0,0,0,0.35), inset 2px 0 0 rgba(255,255,255,0.14), 0 3px 8px rgba(0,0,0,0.4);
+  cursor: pointer; position: relative; padding: 10px 0;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.luliy-spine:hover, .luliy-spine:focus-visible {
+  transform: translateY(-12px) rotate(0deg);
+  box-shadow: inset -3px 0 6px rgba(0,0,0,0.35), inset 2px 0 0 rgba(255,255,255,0.14),
+    0 14px 22px rgba(0,0,0,0.5), 0 0 22px rgba(255,110,199,0.5);
+  outline: none;
+}
+.luliy-spine-title {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 15px;
+  letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-height: 100%; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+/* 悬停提示卡 */
+.luliy-spine-tip {
+  position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, 6px);
+  min-width: 120px; max-width: 200px;
+  background: hsla(var(--luliy-glass-hue,250),50%,16%,0.96);
+  border: 1px solid rgba(255,43,214,0.35);
+  color: #fff; border-radius: 8px; padding: 8px 12px;
+  writing-mode: horizontal-tb; text-orientation: initial;
+  opacity: 0; pointer-events: none; margin-bottom: 8px; z-index: 5;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.luliy-spine:hover .luliy-spine-tip, .luliy-spine:focus-visible .luliy-spine-tip {
+  opacity: 1; transform: translate(-50%, 0);
+}
+.luliy-spine-tip strong { display: block; font-size: 13px; margin-bottom: 2px; }
+.luliy-spine-note { display: block; font-size: 11px; color: var(--th-accent, #6ec7ff); }
+
+/* 在读书堆 */
+.luliy-reading-zone {
+  margin-left: auto; display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding-bottom: 4px;
+}
+.luliy-reading-label {
+  font-size: 10px; letter-spacing: 2px; color: var(--th-accent, #00e5ff); font-weight: 700;
+}
+.luliy-reading-stack { position: relative; width: 88px; height: 50px; }
+.luliy-flat-book {
+  position: absolute; left: 0; width: 88px; height: 16px; border-radius: 2px;
+  text-decoration: none !important; display: flex; align-items: center; padding-left: 8px;
+  font-family: 'Noto Serif SC', serif; font-size: 9px; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.12);
+  transition: transform 0.15s ease;
+}
+.luliy-flat-book:hover { transform: translateX(3px); }
+.luliy-flat-book.is-top { transform: rotate(-5deg); }
+
+@media (max-width: 560px) {
+  .luliy-bookcase { padding: 22px 10px 12px; gap: 24px; }
+  .luliy-book-title { font-size: 24px; }
+  .luliy-shelf-row { padding: 0 8px 10px; gap: 5px; }
+  .luliy-spine-title { font-size: 13px; }
+  .luliy-reading-zone { margin-left: 0; margin-top: 10px; }
+}
+
+
 
 /* ── 28.4 Card skeleton ───────────────────────────────────── */
 .luliy-card-skeleton {
@@ -2562,6 +3711,7 @@ body[data-luliy-theme="mono"] .luliy-series-prog     { background: #444; }
 body[data-luliy-theme="your-name"] .luliy-series-prog{ background: #1e6fd4; }
 body[data-luliy-theme="sakura"] .luliy-series-prog   { background: #c94070; }
 body[data-luliy-theme="space"] .luliy-series-prog    { background: #0070b8; }
+body[data-luliy-theme="cyberpunk"] .luliy-series-prog    { background: #0070b8; }
 .luliy-series-dots { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .luliy-series-dot {
   width: 12px; height: 12px; border-radius: 50%;
@@ -2710,7 +3860,12 @@ mark.luliy-search-hit.is-current {
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255,255,255,0.30);
 }
-[data-color-mode="dark"] .luliy-tagcloud-body { background: rgba(18,14,34,0.45); border-color: rgba(255,255,255,0.08); }
+[data-color-mode="dark"] .luliy-tagcloud-body {
+  background: hsla(var(--luliy-glass-hue), 45%, 14%, calc(var(--luliy-glass-opacity) * 0.9));
+  -webkit-backdrop-filter: blur(var(--luliy-glass-blur));
+  backdrop-filter: blur(var(--luliy-glass-blur));
+  border-color: rgba(255,255,255,0.08);
+}
 .luliy-tag-bubble {
   --tag-c: #8250df;
   display: inline-flex; align-items: baseline; gap: 2px;
@@ -2807,47 +3962,8 @@ mark.luliy-search-hit.is-current {
   100% { opacity: 0; transform: translate(-50%, 20px) rotate(var(--rot, 0deg)) scale(0.4); }
 }
 
-/* ── 28.12 Focus reading mode ─────────────────────────────── */
-body.luliy-focus-mode #header,
-body.luliy-focus-mode #luliy-toolbar,
-body.luliy-focus-mode #luliy-sakura-canvas,
-body.luliy-focus-mode #luliy-firefly-canvas,
-body.luliy-focus-mode #luliy-meteor-canvas,
-body.luliy-focus-mode #luliy-aplayer,
-body.luliy-focus-mode #luliy-search-fab,
-body.luliy-focus-mode #luliy-progress-bar,
-body.luliy-focus-mode .luliy-prevnext {
-  opacity: 0 !important; pointer-events: none !important;
-}
-/* Hard-hide canvases + music ball so no residual motion/sound UI shows */
-body.luliy-focus-mode #luliy-meteor-canvas,
-body.luliy-focus-mode #luliy-sakura-canvas,
-body.luliy-focus-mode #luliy-firefly-canvas,
-body.luliy-focus-mode #luliy-aplayer,
-body.luliy-focus-mode .luliy-trail-dot {
-  display: none !important;
-}
-/* Focus mode KEEPS the TOC (fab + panel) and back-to-top */
-body.luliy-focus-mode #luliy-toc-fab.is-visible,
-body.luliy-focus-mode #luliy-back-top.is-visible {
-  opacity: 1 !important; pointer-events: all !important;
-}
-body.luliy-focus-mode #luliy-toc-panel.is-open {
-  opacity: 1 !important; pointer-events: auto !important;
-}
-body.luliy-focus-mode #postBody {
-  /* Escape the narrow parent using viewport units */
-  width: min(calc(720px + var(--luliy-pb-extra, 0px) * 2), calc(100vw - 48px)) !important;
-  max-width: none !important;
-  margin: 0 auto !important;
-  /* Use margin:auto + explicit negative margins to centre without transform
-     (avoids compositing conflict with backdrop-filter parents in some browsers) */
-  position: relative !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  transform-origin: top center !important;  /* Safari fix */
-  will-change: transform !important;
-}
+/* 专注模式整段样式已删除（好处已并入文章默认样式，见上方 04/21 区块） */
+
 
 /* ── 28.13 Reduce motion ──────────────────────────────────── */
 body.luliy-reduce-motion #luliy-sakura-canvas,
@@ -3003,6 +4119,15 @@ body.luliy-reduce-motion * {
   body[data-luliy-theme="mono"] #postBody {
     border-radius: 0 !important; padding: 20px 15px !important;
   }
+  body[data-luliy-theme="default"] #postBody,
+  body:not([data-luliy-theme]) #postBody,
+  body[data-luliy-theme="sakura"] #postBody,
+  body[data-luliy-theme="your-name"] #postBody,
+  body[data-luliy-theme="cyberpunk"] #postBody,
+  body[data-luliy-theme="sunset"] #postBody,
+  body[data-luliy-theme="mono"] #postBody {
+    border-radius: 0 !important; padding: 20px 15px !important;
+  }
 
   /* ── 表格横向滚动（≥600px 时；<600px 由 section 31 卡片化接管）─── */
   #luliy-back-top { right: 14px; bottom: 94px; }
@@ -3049,7 +4174,6 @@ body.luliy-reduce-motion * {
      大面积重绘 / 滚动卡顿）。显式设为 scroll 既修复 iOS 表现，也消除
      移动端滚动时的重绘开销。 */
   body { background-attachment: scroll !important; }
-  body.luliy-bg-blurred::before { background-attachment: scroll !important; }
 
   /* (2) 降低毛玻璃模糊半径。
      手机 GPU/合成器对 backdrop-filter 极敏感，首页一屏多张 blur(24px)
@@ -3222,7 +4346,7 @@ body.luliy-nav-drawer #luliy-hero-banner { margin-top: 70px; }
 
 /* ── ☰「更多」按钮（固定左上角）── */
 #luliy-ham-btn {
-  position: fixed; top: 14px; left: 14px; z-index: 10002;
+  position: fixed; top: 14px; right: 14px; z-index: 10002;
   width: 44px; height: 44px; padding: 12px 10px;
   display: flex; flex-direction: column; justify-content: space-between;
   box-sizing: border-box; cursor: pointer;
@@ -3246,31 +4370,78 @@ body.luliy-nav-drawer #luliy-hero-banner { margin-top: 70px; }
 [data-color-mode="light"] #luliy-ham-btn span { background: rgba(40,30,60,0.88); }
 
 /* ── 遮罩 ── */
+/* ★ 不再给页面其它区域加黑色蒙版——保留这个元素只是为了
+   "点击抽屉外部关闭抽屉"的交互能继续工作，但视觉上完全透明，
+   旁边的页面内容保持原样可见。 */
 #luliy-drawer-mask {
   position: fixed; inset: 0; z-index: 10003;
-  background: rgba(0,0,0,0.45);
+  background: transparent;
   opacity: 0; visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
-  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  pointer-events: none;
+  transition: visibility 0.3s;
 }
-#luliy-drawer-mask.is-open { opacity: 1; visibility: visible; }
+#luliy-drawer-mask.is-open { opacity: 1; visibility: visible; pointer-events: auto; }
 
 /* ── 抽屉本体（从左滑入）── */
 #luliy-drawer {
-  position: fixed; top: 0; left: 0; z-index: 10004;
+  position: fixed; top: 0; right: 0; z-index: 10004;
   width: 300px; max-width: 86vw; height: 100%;
   display: flex; flex-direction: column;
-  background: rgba(16,12,28,0.92);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
-  border-right: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 6px 0 40px rgba(0,0,0,0.45);
-  transform: translateX(-105%);
-  transition: transform 0.34s cubic-bezier(.4,.0,.2,1);
+  will-change: transform;
+  /* ★ 默认（赛博朋克主题）背景，下面按主题分别覆盖 */
+  background: hsla(var(--luliy-glass-hue, 250), 45%, 12%, var(--luliy-glass-opacity, 0.5));
+  -webkit-backdrop-filter: blur(var(--luliy-glass-blur, 22px)) saturate(1.6);
+  backdrop-filter: blur(var(--luliy-glass-blur, 22px)) saturate(1.6);
+  border-left: 1px solid rgba(255,255,255,0.10);
+  box-shadow: -6px 0 40px rgba(0,0,0,0.45);
+  transform: translateX(105%);
+  transition: transform 0.34s cubic-bezier(.4,.0,.2,1), background 0.3s;
   overflow-y: auto; overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
 #luliy-drawer.is-open { transform: translateX(0); }
-[data-color-mode="light"] #luliy-drawer { background: rgba(248,246,252,0.94); border-right-color: rgba(0,0,0,0.08); }
+
+/* ★ 抽屉样式跟文章正文面板一样，按当前选择的主题变化——
+   每套主题给抽屉一个专属色相，模糊/透明度仍由液态玻璃滑块统一控制。 */
+body[data-luliy-theme="cyberpunk"] #luliy-drawer { background: hsla(320, 60%, 12%, var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(255,110,199,0.18); }
+body[data-luliy-theme="default"]   #luliy-drawer,
+body:not([data-luliy-theme])       #luliy-drawer { background: hsla(265, 45%, 12%, var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(130,80,223,0.18); }
+body[data-luliy-theme="sakura"]    #luliy-drawer { background: hsla(338, 55%, 14%, var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(249,168,201,0.22); }
+body[data-luliy-theme="your-name"] #luliy-drawer { background: hsla(212, 60%, 12%, var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(116,192,252,0.20); }
+body[data-luliy-theme="space"]     #luliy-drawer { background: hsla(195, 65%, 9%,  var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(0,200,255,0.20); }
+body[data-luliy-theme="sunset"]    #luliy-drawer { background: hsla(36,  55%, 13%, var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(255,193,77,0.22); }
+body[data-luliy-theme="mono"]      #luliy-drawer { background: hsla(0,   0%,  10%, var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(255,255,255,0.14); }
+
+/* 白天 / 浅色外观时，抽屉换成对应的浅色玻璃质感 */
+[data-color-mode="light"] #luliy-drawer { background: hsla(var(--luliy-glass-hue, 250), 35%, 95%, var(--luliy-glass-opacity, 0.5)); border-left-color: rgba(0,0,0,0.08); }
+[data-color-mode="light"] body[data-luliy-theme="default"]   #luliy-drawer,
+[data-color-mode="light"] body:not([data-luliy-theme])       #luliy-drawer { background: hsla(265, 40%, 95%, var(--luliy-glass-opacity, 0.5)); }
+[data-color-mode="light"] body[data-luliy-theme="sakura"]    #luliy-drawer { background: hsla(338, 70%, 96%, var(--luliy-glass-opacity, 0.5)); }
+[data-color-mode="light"] body[data-luliy-theme="your-name"] #luliy-drawer { background: hsla(204, 70%, 94%, var(--luliy-glass-opacity, 0.5)); }
+[data-color-mode="light"] body[data-luliy-theme="sunset"]    #luliy-drawer { background: hsla(45,  80%, 94%, var(--luliy-glass-opacity, 0.5)); }
+[data-color-mode="light"] body[data-luliy-theme="mono"]      #luliy-drawer { background: hsla(0,   0%,  98%, var(--luliy-glass-opacity, 0.5)); }
+/* cyberpunk / space 主题本来就是常驻深色调，浅色模式下也保持深色玻璃质感 */
+[data-color-mode="light"] body[data-luliy-theme="cyberpunk"] #luliy-drawer { background: hsla(320, 60%, 12%, var(--luliy-glass-opacity, 0.5)); }
+[data-color-mode="light"] body[data-luliy-theme="space"]     #luliy-drawer { background: hsla(195, 65%, 9%,  var(--luliy-glass-opacity, 0.5)); }
+/* ★ 这两个主题在白天模式下抽屉背景依然是深色，文字要强制改回白色系，
+   不然会出现"深色字配深色底"看不清的问题（其它 5 套浅色背景主题
+   不受影响，继续用原来的深色文字）。 */
+[data-color-mode="light"] body[data-luliy-theme="cyberpunk"] .ldh-name,
+[data-color-mode="light"] body[data-luliy-theme="space"]     .ldh-name,
+[data-color-mode="light"] body[data-luliy-theme="cyberpunk"] .lds-header,
+[data-color-mode="light"] body[data-luliy-theme="space"]     .lds-header,
+[data-color-mode="light"] body[data-luliy-theme="cyberpunk"] .lds-link,
+[data-color-mode="light"] body[data-luliy-theme="space"]     .lds-link {
+  color: #fff !important;
+}
+[data-color-mode="light"] body[data-luliy-theme="cyberpunk"] .ldh-date,
+[data-color-mode="light"] body[data-luliy-theme="space"]     .ldh-date {
+  color: rgba(255,255,255,0.55) !important;
+}
+[data-color-mode="light"] body[data-luliy-theme="cyberpunk"] .lds-link:hover,
+[data-color-mode="light"] body[data-luliy-theme="space"]     .lds-link:hover {
+  color: var(--th-accent, #00e5ff) !important;
+}
 
 /* 抽屉滚动条 */
 #luliy-drawer::-webkit-scrollbar { width: 6px; }
@@ -3283,8 +4454,35 @@ body.luliy-nav-drawer #luliy-hero-banner { margin-top: 70px; }
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 [data-color-mode="light"] #luliy-drawer-head { border-bottom-color: rgba(0,0,0,0.06); }
-.ldh-avatar { display: inline-block; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2px solid var(--th-accent, #8250df); }
-.ldh-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* 抽屉关闭按钮：右上角，明确可见的退出入口
+   （之前蒙版改透明后，光靠"点外面关闭"不够直观，加这个更保险） */
+#luliy-drawer-close {
+  position: absolute;
+  top: 12px; left: 12px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.75);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  z-index: 2;
+}
+#luliy-drawer-close:hover {
+  background: var(--th-accent, #8250df);
+  color: #fff;
+  transform: scale(1.08);
+}
+[data-color-mode="light"] #luliy-drawer-close {
+  background: rgba(0,0,0,0.06);
+  color: rgba(20,15,40,0.65);
+}
+.ldh-avatar { display: inline-block; width: 72px; height: 72px; overflow: visible; }
+.ldh-avatar img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .ldh-name {
   display: block; margin: 10px 0 0; font-size: 20px; font-weight: 700;
   color: #fff; text-decoration: none; letter-spacing: 0.5px;
@@ -3296,18 +4494,7 @@ body.luliy-nav-drawer #luliy-hero-banner { margin-top: 70px; }
 .ldh-date { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 3px; letter-spacing: 0.5px; }
 [data-color-mode="light"] .ldh-date { color: rgba(40,30,60,0.6); }
 
-/* 抽屉里的导航模式切换按钮 */
-#luliy-drawer-modebtn {
-  margin-top: 14px; width: 100%;
-  padding: 9px 12px; border-radius: 10px;
-  background: var(--th-accent-soft, rgba(130,80,223,0.18));
-  border: 1px solid var(--th-accent, #8250df);
-  color: var(--th-accent, #cba6f7); font-size: 13px; font-weight: 600;
-  font-family: 'Noto Sans SC', sans-serif; cursor: pointer;
-  transition: background 0.18s, transform 0.15s;
-}
-#luliy-drawer-modebtn:hover { background: var(--th-accent, #8250df); color: #fff; }
-#luliy-drawer-modebtn:active { transform: scale(0.97); }
+/* 抽屉导航模式切换按钮已删除（顶部导航系统整体移除） */
 
 /* ── 折叠分区 ── */
 .luliy-drawer-section { border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -3404,8 +4591,8 @@ body.luliy-drawer-open #luliy-aplayer { z-index: 8000; }
 /* 中间副标题(切换按钮)允许收缩，不挤压两侧 */
 #luliy-hero-subtitle { min-width: 0; }
 
-/* 链接胶囊：本就整行、可横向滚动，确保不被裁掉、滚动条隐藏 */
-#luliy-hero-capsule { min-width: 0; max-width: 100%; overflow-x: auto; }
+/* 链接胶囊：min-width:0 + overflow:hidden 已在基础规则定义，
+   窄屏降级为纯图标见 section 38，不再有 JS 测量/滚动相关的设置 */
 
 /* 右区(设置pill)不收缩、始终可见 */
 #luliy-hero-right { flex-shrink: 0; }
@@ -3420,12 +4607,12 @@ body.luliy-drawer-open #luliy-aplayer { z-index: 8000; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   37  抽屉快捷链接平铺 + 顶部日夜按钮 + 隐藏重复主题 + hero More 下拉  ★
+   37  抽屉快捷链接平铺 + 顶部日夜按钮 + 隐藏重复主题  ★
 ══════════════════════════════════════════════════════════ */
 
 /* ── 抽屉顶部：切换按钮 + 日夜按钮 并排 ── */
 .ldh-btn-row { display: flex; gap: 8px; margin-top: 14px; align-items: stretch; }
-#luliy-drawer-modebtn { margin-top: 0 !important; flex: 1; }   /* 覆盖原 margin-top */
+#luliy-drawer-dnbtn { margin-top: 0 !important; flex: 1; }   /* 日夜按钮占满该行 */
 #luliy-drawer-dnbtn {
   flex: 0 0 auto; width: 42px;
   display: flex; align-items: center; justify-content: center;
@@ -3445,49 +4632,863 @@ body.luliy-drawer-open #luliy-aplayer { z-index: 8000; }
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 [data-color-mode="light"] #luliy-drawer-quick { border-bottom-color: rgba(0,0,0,0.05); }
-/* .lds-link 样式已在 section 35 定义，这里复用；外链加 ↗ */
-#luliy-drawer-quick .lds-link.is-ext .lds-link-txt::after {
-  content: ' \2197'; font-size: 0.82em; opacity: 0.6;
-}
+/* ★ 抽屉快捷链接的外链 ↗ 箭头已删除 */
 
 /* ── 设置分区：隐藏搬进抽屉后的「风格主题」标题+6行（抽屉已有独立主题分区）── */
 #luliy-ctrl-panel.in-drawer .luliy-panel-theme-block { display: none !important; }
 /* 风格主题区前的分隔线也一并隐藏（紧邻的 hr） */
 #luliy-ctrl-panel.in-drawer .luliy-ctrl-theme-preview { display: none !important; }
 
-/* ══ hero More 下拉（桌面端链接溢出时）══ */
-#luliy-hero-more { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
-#luliy-hero-more-btn {
-  display: inline-flex; align-items: center; gap: 3px;
-  padding: 5px 12px; border-radius: 16px; cursor: pointer;
-  background: var(--th-accent-soft, rgba(130,80,223,0.14));
-  border: 1px solid var(--th-accent-soft, rgba(130,80,223,0.22));
-  color: var(--th-hero-fg, #2a2440);
-  font-size: 13px; font-weight: 600; font-family: 'Noto Sans SC', sans-serif;
-  white-space: nowrap; transition: background 0.15s, transform 0.12s;
+/* ══════════════════════════════════════════════════════════
+   38  hero 链接胶囊响应式降级（替代已删除的 More 下拉）  ★
+   逻辑：More 机制依赖 JS 测量元素宽度来决定收纳，但测量时机很容易
+   出错（隐藏态测量为 0、resize 不覆盖所有触发场景等），上一版就因
+   此出现过显示异常。改用纯 CSS 方案后没有这些问题：
+   - 空间还够时，图标+文字都显示
+   - 视口变窄、capsule 撑不下全部链接文字时，文字自动隐藏，只留图标
+   - 纯 CSS 渐进降级，没有"测量时机"这个概念，不存在出错的时间窗口
+   断点选择：每个链接图标+间距约 36px，文字额外占 50~70px，
+   1024px 临界是经验值——可按实际链接数量调整。 ══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .luliy-hero-cap-link .luliy-hero-cap-txt { display: none; }
+  .luliy-hero-cap-link { padding: 7px 9px; }   /* 纯图标时缩小左右留白，更紧凑 */
 }
-[data-color-mode="dark"] #luliy-hero-more-btn { color: rgba(245,242,255,0.92); }
-#luliy-hero-more-btn:hover { background: var(--th-accent, #8250df); color: #fff; }
-.lhm-arrow { font-size: 10px; transition: transform 0.22s; }
-#luliy-hero-more.is-open .lhm-arrow { transform: rotate(180deg); }
-#luliy-hero-more-menu {
-  position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
-  min-width: 160px; padding: 6px;
-  display: none; flex-direction: column; gap: 2px;
-  background: rgba(18,14,32,0.96);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
-  border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
-  box-shadow: 0 10px 34px rgba(0,0,0,0.4);
+/* 更窄时（逼近抽屉切换的临界区）进一步收紧分隔符间距，挤出更多空间 */
+@media (max-width: 860px) {
+  .luliy-hero-cap-sep { margin: 0 2px; }
+  #luliy-hero-capsule { gap: 0; padding: 6px 6px; }
 }
-[data-color-mode="light"] #luliy-hero-more-menu { background: rgba(250,248,254,0.97); border-color: rgba(0,0,0,0.08); }
-#luliy-hero-more.is-open #luliy-hero-more-menu { display: flex; }
-/* More 菜单里的链接（原胶囊链接移入后竖排） */
-#luliy-hero-more-menu .luliy-hero-cap-link {
-  display: flex !important; align-items: center; gap: 8px;
-  padding: 8px 12px; border-radius: 8px; white-space: nowrap;
-  color: rgba(255,255,255,0.85) !important; text-decoration: none;
-  transition: background 0.15s;
+
+
+/* ══════════════════════════════════════════════════════════
+   32  自定义鼠标样式 —— 赛博朋克激光箭头
+   素材来源：用户提供的 Windows .ani 动态光标包（lasers 文件夹）。
+   说明：浏览器不支持 .ani 这种 Windows 专用格式，所以这里取了其中
+   一帧裁成静态 PNG，转 Base64 直接内嵌（不用另外上传图片文件，
+   替换这一份 enhance.css 就能用）。
+     · 默认光标：珊瑚粉箭头（来自 laser arrow.ani 第一帧）
+     · 链接/按钮悬停：亮品红箭头（来自 laser link.ani 第一帧）
+   热点坐标（光标图片里"指尖"对应的像素点）已经按原文件保留，
+   保证点击定位准确。放在文件最后 + !important，
+   确保能覆盖前面散落的 34 处 cursor:pointer 声明。
+══════════════════════════════════════════════════════════ */
+html, body {
+  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABy1BMVEX/////UWv/UWv/UWv/UWv/UWv/UWv/UWv/UWv/UWv/UWv/UWv/////hZP/UWv/UWv/UWv/UWv/m6X/UWv/UWv/UWv/UWv/UWv/3+L/lqD/UWv/UWv/UWv/UWv/UWv/c4T/3uD/kZz/UWv/UWv/UWv/UWv/eYn/4OL/i5f/UWv/UWv/UWv/fo3/4uT/hpP/UWv/gpD/5Ob/gY//UWv/h5T/5uj/fYz/6Or/eon/j5v/UWv/UWv/6uz/eIj/k57/UWv/U2z/7O7/dYX/lqH/UWv/UWv/Vm//7/D/coP/mqT/UWv/UWv/W3L/8PH/cYL/nqf/UWv/UWv/X3X/8vP/oar/UWv/UWv/UWv/Y3j/9PX/pK3/UWv/UWv/an3/9vb+/v7/qLD/cIL/9/j/dob/q7P/UWv/d4f/+Pn/rrX/UWv/+vr/sbj/hJL/+vv/tLv/i5j/+/v/UWv/t73/kp7/usD/e4r/vcL/fIv/wMX/qLH/wsf/r7f/f47/xcr/tr3/9/f/gI7/yMz/vsP/9fX/y8//xsv/8/T/zdH/g5H/z9P/09f/7u//0tb/VG3/2dz9/f3/1Nj/WHD/trz/pa3/n6j/19r/297/6er/qrJknfD5AAAAmXRSTlMABQoUHigjMktfWjf/r6qWc4L/8MOHRqX////SfWm+////uXgtbv////q0Qf////X///+v////////5uH////c/////82g/////5Fk/////4xV////UBnr////1w///////////zz///+b/////////8j///////////////////////////////////////////////////+YHlefAAAACXBIWXMAAA9hAAAPYQGoP6dpAAADPklEQVRYhe3X+3vSVhgHcMIlB9JXCCMF/UJRCekFVFTmZVDFKWiFuZVNqApbvFVXr61uc/PuNu/azd3/3J1Tn+rKSgjhNx+/PyY5nyfJec/JG5frHYkkuSVpgOFuj9cnez1up4Dby/wBxT8kOxU8TKE1wZDqdyp4/WGiDyLacNShIAditJbWIZ6Ieh0JvpEkrd9AG5HSnQlpQ6NRjNH4REbPOhGYqtEmYDNtyWVUJwIzUrQVwDbaHnEkMCNPH3IAO2inI4EZQRoXAHbRbieCAD5CrlAsYJL2OBDEI+xFKRUMlvZ9TPv7FwRwAOVKwqgUDx6iqb7ngql5OoxytZatVYqfHKFP+xWYmqHPUJ6uy0O1WOHzL2hqItVXRQngKOLVhqc5NBKbOXac1vcnCOAEWtVGW+JCMPLlV+Z+9CMwNUUn0Qo12i4uGPnIqdPmGSTtCwI4i1Ko3ubbW3PWyE+cO2+eQ9L26mZ6kr5GcU4ALndzVs1g5wVzDzS7ggAuovAa4DtkVk3h0mVz1LYggCsoVJQlQAh6Elfnzd1YsCcwXaNrmIkpHteykNBwfUkI2xEE8A0ibwAuRMMLODxvfmtPYAmNvkMuGFgGXG45Gi7j6Lx5A2UbAkss0PcrAC74h+P44YK5yY4ggJuYyNfeAkKYbuHWefO2EHp8L1iiTHeAfK35n4NtuVEt4e498z7ivQQBPAAyKwBX29eoFvHjT+Z2xHt8swTwMwdGVgBcqIcKePjI3NpLYOE4PQZSHQAXlLkZPD5iPoGmzza7NxACeAokOwGpnVYqkX3PnpuXchXF1/0WBPCCA0YHIIRALPdycfKXJymDtS2AFv0KaIa388ySMPPqt9//SKpDntXGvgH+5ID6P8AleVhgrhzJtSo1ZgEMl2gRWFgFEEI9EapUVb/P4hE48FcXgAu+2YZSj6abFi+RAxuAsr4asNTDyaKHs5jG4SKNAXFd7nKBJNJ1+GtgsxXQK2y6SNuAVmIQYMcgQJrXwd/iJToFfHxPnBSLadVZsBG5FqR/UJpTOteC3Xgb4UypFdSz3WvNOrxa9eq04U877dZ5ux+tN7Jpiy3DOlJ7wB8OUe/ugf553ud9Bs2/C+GRdDvhxBUAAAAASUVORK5CYII=") 6 6, auto !important;
 }
-[data-color-mode="light"] #luliy-hero-more-menu .luliy-hero-cap-link { color: rgba(40,30,60,0.85) !important; }
-#luliy-hero-more-menu .luliy-hero-cap-link:hover { background: var(--th-accent-soft, rgba(130,80,223,0.18)); }
-#luliy-hero-more-menu .luliy-hero-cap-link svg { width: 16px; height: 16px; }
+a, button, [role="button"], [onclick],
+input[type="button"], input[type="submit"], input[type="reset"],
+select, summary, label[for],
+.luliy-cat-card, .luliy-card, .luliy-tag-bubble,
+#luliy-ham-btn, #luliy-brand, #luliy-cats-more,
+.luliy-ctrl-panel button, .luliy-ctrl-row,
+#luliy-ap-fab, #luliy-toc-fab, #luliy-search-fab, #luliy-back-top {
+  cursor: url("data:image/png;base64,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") 23 7, pointer !important;
+}
+/* 触屏设备没有鼠标，自定义光标没有意义，干脆不设，用系统默认即可 */
+@media (hover: none) and (pointer: coarse) {
+  html, body,
+  a, button, [role="button"], [onclick],
+  input[type="button"], input[type="submit"], input[type="reset"],
+  select, summary, label[for],
+  .luliy-cat-card, .luliy-card, .luliy-tag-bubble,
+  #luliy-ham-btn, #luliy-brand, #luliy-cats-more,
+  .luliy-ctrl-panel button, .luliy-ctrl-row,
+  #luliy-ap-fab, #luliy-toc-fab, #luliy-search-fab, #luliy-back-top {
+    cursor: auto !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   极简系统 Minimal System
+   黑白灰 + 衬线大标题 + 账本式留白。配色/字体/留白/组件/布局
+   严格按规范。只在 body.luliy-minimal 下生效，绝不影响赛博系统。
+   ════════════════════════════════════════════════════════════ */
+body.luliy-minimal {
+  /* —— 配色 —— */
+  --min-bg: rgb(230, 225, 212);
+  --min-title: #1c1c1e;       /* 标题：近黑炭灰 */
+  --min-text: #3a3a3a;        /* 正文：深灰，不用纯黑 */
+  --min-muted: #8c8c8c;       /* 次要：中灰（日期/字数/未激活tab） */
+  --min-line: #3a3a3a;        /* 硬边框线：深灰近黑 */
+  --min-serif: 'Noto Serif SC', 'Songti SC', Georgia, 'Times New Roman', serif;
+  --min-sans: 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  background: var(--min-bg) !important;
+  color: var(--min-text);
+  font-family: var(--min-sans);
+  zoom: 1 !important;
+}
+/* 极简系统下：彻底隐藏所有赛博系统的元素（保险，即使没初始化） */
+body.luliy-minimal #luliy-cyber-canvas,
+body.luliy-minimal #luliy-sakura-canvas,
+body.luliy-minimal #luliy-splash,
+body.luliy-minimal #luliy-brand,
+body.luliy-minimal #luliy-subtitle,
+body.luliy-minimal #luliy-issues-link,
+body.luliy-minimal #luliy-to-minimal,
+body.luliy-minimal #luliy-ham-btn,
+body.luliy-minimal #luliy-drawer,
+body.luliy-minimal #luliy-drawer-scrim,
+body.luliy-minimal #luliy-aplayer,
+body.luliy-minimal #luliy-ap-fab,
+body.luliy-minimal #luliy-ctrl-panel,
+body.luliy-minimal #luliy-ctrl-fab,
+body.luliy-minimal .luliy-cats,
+body.luliy-minimal #header,
+body.luliy-minimal #footer {
+  display: none !important;
+}
+body.luliy-minimal #content { background: transparent !important; }
+
+/* —— 顶部导航：Home / Archives / Chronicle / About —— */
+#luliy-min-nav {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 48px 0;
+  font-family: var(--min-sans);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: var(--min-muted);
+}
+#luliy-min-nav a {
+  color: var(--min-title);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+#luliy-min-nav a:hover { opacity: 0.55; }
+.luliy-min-nav-sep { margin: 0 10px; color: var(--min-muted); }
+
+/* —— 系统切换按钮（极简 → 赛博） —— */
+#luliy-system-toggle {
+  position: fixed; top: 22px; right: 28px; z-index: 100;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--min-line);
+  background: transparent; color: var(--min-title);
+  font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+#luliy-system-toggle:hover { background: var(--min-title); color: var(--min-bg); }
+
+/* —— 赛博系统里「切到极简」的按钮（放沉思者图标旁） —— */
+#luliy-to-minimal {
+  position: fixed; top: 14px; z-index: 10002;
+  width: 30px; height: 44px;
+  background: transparent; border: none; cursor: pointer;
+  color: #fff; font-size: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  opacity: 0.7;
+  filter: drop-shadow(0 0 6px rgba(110,199,255,0.6));
+  transition: opacity 0.2s, transform 0.2s;
+}
+#luliy-to-minimal:hover { opacity: 1; transform: scale(1.15); }
+
+/* ════════ 主页：楼梯图 + 隐形热区 ════════ */
+#luliy-min-home {
+  position: fixed; inset: 0;
+  background: var(--min-bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50;
+}
+.luliy-min-home-stage {
+  position: relative;
+  width: 100%; max-width: 1400px;
+  margin: 0 auto;
+}
+.luliy-min-home-img {
+  display: block; width: 100%; height: auto;
+  user-select: none; -webkit-user-drag: none;
+}
+.luliy-min-hot {
+  position: absolute;
+  display: block;
+  cursor: pointer;
+  /* 透明热区；hover 时极淡描边提示可点击 */
+  border-radius: 4px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.luliy-min-hot:hover {
+  background: rgba(28,28,30,0.04);
+  box-shadow: inset 0 0 0 1px rgba(28,28,30,0.18);
+}
+
+/* ════════ 普通文章 / about：极简排版 ════════ */
+body.luliy-min-article #content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px 120px;
+}
+body.luliy-min-article #postBody {
+  max-width: 680px;          /* 正文主列偏左、不居中 */
+  margin: 0;
+  margin-right: auto;
+  font-family: var(--min-sans);
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--min-text);
+}
+/* 文章标题：衬线、全站最大 */
+body.luliy-min-article #postBody h1 {
+  font-family: var(--min-serif);
+  font-weight: 700;
+  font-size: 34px;
+  color: var(--min-title);
+  letter-spacing: 1px;
+  margin: 18px 0 8px;
+  line-height: 1.3;
+}
+/* 二级小标题：无衬线加粗 + # 前缀 */
+body.luliy-min-article #postBody h2 {
+  font-family: var(--min-sans);
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--min-title);
+  margin: 48px 0 14px;
+}
+body.luliy-min-article #postBody h2::before { content: '# '; color: var(--min-muted); }
+body.luliy-min-article #postBody h3 {
+  font-family: var(--min-sans);
+  font-weight: 600; font-size: 16px; color: var(--min-title);
+  margin: 32px 0 10px;
+}
+body.luliy-min-article #postBody p {
+  margin: 0 0 26px;          /* 段落间留白明显大于行内行距 */
+  color: var(--min-text);
+}
+body.luliy-min-article #postBody a { color: var(--min-title); text-decoration: underline; text-underline-offset: 3px; }
+body.luliy-min-article #postBody img { max-width: 100%; border-radius: 2px; }
+/* 文章 meta（日期/字数）：最小、浅灰、等宽数字感 */
+body.luliy-min-article #postBody .luliy-readmeta,
+body.luliy-min-article .luliy-readmeta {
+  font-family: var(--min-sans);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px; color: var(--min-muted) !important;
+  margin-bottom: 40px;
+}
+
+/* —— 右侧悬浮目录（漂浮在留白区，不占主列） —— */
+#luliy-min-toc {
+  position: fixed;
+  top: 120px; right: max(40px, calc((100vw - 1100px) / 2 + 48px));
+  width: 220px; max-height: 70vh; overflow-y: auto;
+  font-family: var(--min-sans); font-size: 13px; line-height: 1.7;
+  z-index: 40;
+}
+#luliy-min-toc a { display: block; color: var(--min-muted); text-decoration: none; transition: color 0.15s; }
+#luliy-min-toc a:hover { color: var(--min-title); }
+#luliy-min-toc .luliy-min-toc-h1 { color: var(--min-text); font-weight: 600; margin-top: 10px; }
+#luliy-min-toc .luliy-min-toc-h2 { padding-left: 14px; }
+#luliy-min-toc .luliy-min-toc-h3 { padding-left: 28px; font-size: 12px; }
+@media (max-width: 1080px) {
+  #luliy-min-toc { display: none; }   /* 窄屏不显示边注目录 */
+  body.luliy-min-article #content { padding: 0 24px 80px; }
+}
+
+/* ════════ Archives / Chronicle / Book 的极简皮肤 ════════
+   复用现有结构，只覆盖颜色/字体/边框，做成黑白灰账本风。 */
+body.luliy-minimal .luliy-archives,
+body.luliy-minimal .luliy-chronicle,
+body.luliy-minimal .luliy-bookshelf {
+  max-width: 1100px; margin: 0 auto; padding: 8px 48px 80px;
+}
+/* 年份/分组大标题：衬线斜体数字感 */
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-book-title,
+body.luliy-minimal .luliy-arch-year {
+  font-family: var(--min-serif) !important;
+  font-weight: 700 !important; font-style: italic;
+  color: var(--min-title) !important;
+  text-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-book-title { font-size: 32px !important; font-style: normal; }
+body.luliy-minimal .luliy-arch-year {
+  font-size: 28px !important; margin: 56px 0 14px !important;   /* 年份间大留白 */
+}
+/* Tab：纯文字，激活态仅下划线 */
+body.luliy-minimal .luliy-arch-tab,
+body.luliy-minimal .luliy-chron-year-tab,
+body.luliy-minimal .luliy-chron-cat-tab {
+  background: none !important; color: var(--min-muted) !important;
+  text-shadow: none !important; font-family: var(--min-sans) !important;
+  border-radius: 0 !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active,
+body.luliy-minimal .luliy-chron-year-tab.is-active,
+body.luliy-minimal .luliy-chron-cat-tab.is-active {
+  color: var(--min-title) !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active::after,
+body.luliy-minimal .luliy-chron-year-tab.is-active::after,
+body.luliy-minimal .luliy-chron-cat-tab.is-active::after {
+  background: var(--min-title) !important; box-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-tabsep { background: var(--min-muted) !important; }
+/* 归档列表：无卡片无分割线，靠两栏对齐 + 行距 */
+body.luliy-minimal .luliy-arch-row { background: none !important; }
+body.luliy-minimal .luliy-arch-row:hover { background: rgba(28,28,30,0.04) !important; transform: none !important; }
+body.luliy-minimal .luliy-arch-date { color: var(--min-muted) !important; font-variant-numeric: tabular-nums; }
+body.luliy-minimal .luliy-arch-name { color: var(--min-title) !important; }
+body.luliy-minimal .luliy-arch-row:hover .luliy-arch-date,
+body.luliy-minimal .luliy-arch-row:hover .luliy-arch-name { color: var(--min-title) !important; }
+body.luliy-minimal .luliy-arch-header,
+body.luliy-minimal .luliy-chron-header { border-bottom: none !important; }
+/* 分页 */
+body.luliy-minimal .luliy-arch-pgbtn {
+  background: none !important; border: 1px solid var(--min-line) !important;
+  color: var(--min-title) !important; box-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-pgbtn:hover:not(:disabled) {
+  background: var(--min-title) !important; color: var(--min-bg) !important;
+}
+body.luliy-minimal .luliy-arch-pginfo { color: var(--min-muted) !important; font-variant-numeric: tabular-nums; }
+
+/* 编年史表格：全站唯一硬边框组件，1px 直角网格，无底色无斑马纹 */
+body.luliy-minimal .luliy-chron-table { background: transparent !important; }
+body.luliy-minimal .luliy-chron-table th,
+body.luliy-minimal .luliy-chron-table td {
+  border: 1px solid var(--min-line) !important;
+  color: var(--min-text) !important;
+  background: transparent !important;
+}
+body.luliy-minimal .luliy-chron-table th {
+  font-weight: 700 !important; color: var(--min-title) !important;
+  background: transparent !important;
+}
+body.luliy-minimal .luliy-chron-month-cell {
+  border-right: 1px solid var(--min-line) !important;
+  color: var(--min-title) !important; font-weight: 700 !important;
+}
+body.luliy-minimal .luliy-chron-table a { color: var(--min-title) !important; text-decoration: underline; }
+/* 海报墙：去霓虹，简单灰边框 */
+body.luliy-minimal .luliy-poster-item {
+  background: rgba(28,28,30,0.04) !important; border: 1px solid var(--min-line) !important;
+}
+body.luliy-minimal .luliy-poster-title { background: linear-gradient(to top, rgba(28,28,30,0.8), transparent) !important; }
+
+/* 书架：去木质/霓虹，做成极简层架 */
+body.luliy-minimal .luliy-bookcase {
+  background: transparent !important; border: none !important;
+  box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  gap: 40px !important;
+}
+body.luliy-minimal .luliy-shelf-plaque {
+  background: none !important; color: var(--min-title) !important;
+  box-shadow: none !important; font-family: var(--min-serif) !important;
+  font-style: italic; font-size: 18px !important; padding-left: 0 !important; margin-left: 0 !important;
+}
+body.luliy-minimal .luliy-shelf-count { color: var(--min-muted) !important; }
+body.luliy-minimal .luliy-shelf-board {
+  background: var(--min-line) !important; opacity: 1 !important; height: 1px !important; box-shadow: none !important;
+}
+body.luliy-minimal .luliy-spine {
+  background: rgba(28,28,30,0.06) !important;
+  color: var(--min-title) !important;
+  box-shadow: inset 0 0 0 1px var(--min-line) !important;
+}
+body.luliy-minimal .luliy-spine:hover {
+  box-shadow: inset 0 0 0 1px var(--min-line), 0 8px 16px rgba(0,0,0,0.12) !important;
+}
+body.luliy-minimal .luliy-spine-title { color: var(--min-title) !important; text-shadow: none !important; }
+body.luliy-minimal .luliy-spine-tip {
+  background: var(--min-bg) !important; border: 1px solid var(--min-line) !important; color: var(--min-text) !important;
+}
+body.luliy-minimal .luliy-spine-note { color: var(--min-muted) !important; }
+body.luliy-minimal .luliy-flat-book { color: var(--min-title) !important; background: rgba(28,28,30,0.08) !important; }
+body.luliy-minimal .luliy-reading-label { color: var(--min-muted) !important; }
+body.luliy-minimal .luliy-book-sub,
+body.luliy-minimal .luliy-shelf-empty { color: var(--min-muted) !important; }
+
+@media (max-width: 720px) {
+  #luliy-min-nav { padding: 20px 20px 0; }
+  body.luliy-minimal .luliy-archives,
+  body.luliy-minimal .luliy-chronicle,
+  body.luliy-minimal .luliy-bookshelf { padding: 8px 20px 60px; }
+}
+
+/* ── 极简系统：强制压过赛博系统的文章面板/标题装饰/文字色 ── */
+body.luliy-minimal #postBody,
+body.luliy-min-article #postBody {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+body.luliy-min-article #postBody h1,
+body.luliy-min-article #postBody h2,
+body.luliy-min-article #postBody h3 {
+  color: #1c1c1e !important;
+  border: none !important;
+  border-left: none !important;
+  padding-left: 0 !important;
+  background: none !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-shadow: none !important;
+}
+body.luliy-min-article #postBody h1 {
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+body.luliy-min-article #postBody p,
+body.luliy-min-article #postBody li {
+  color: #3a3a3a !important;
+  -webkit-text-fill-color: #3a3a3a !important;
+}
+/* 去掉赛博系统给 h2 加的竖条/色块装饰 */
+body.luliy-min-article #postBody h2::after,
+body.luliy-min-article #postBody h2::marker { content: none !important; }
+
+/* ════════════════════════════════════════════════════════════
+   极简系统 v2 总清洗 —— 彻底压掉所有泄漏的赛博样式
+   规则：背景全屏 RGB(230,225,212)、文字纯黑/灰、表格无底色、
+   md 装饰色全清、面板透明、目录在右。优先级用 html/body 双重限定。
+   ════════════════════════════════════════════════════════════ */
+
+/* —— 1. 背景全屏铺满（html + body + 所有容器都强制纯色） —— */
+html:has(body.luliy-minimal),
+html:has(body.luliy-minimal) body.luliy-minimal {
+  background: rgb(230,225,212) !important;
+  background-image: none !important;
+}
+body.luliy-minimal,
+body.luliy-minimal #content,
+body.luliy-minimal .markdown-body,
+body.luliy-minimal #postBody,
+body.luliy-minimal .SideNav,
+body.luliy-minimal main,
+body.luliy-minimal article {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+/* body 本体保留底色（作为全屏背景） */
+body.luliy-minimal { background: rgb(230,225,212) !important; }
+
+/* —— 2. 所有文字强制黑/灰，清除一切发光、渐变、彩色 —— */
+body.luliy-minimal #postBody,
+body.luliy-minimal #postBody *,
+body.luliy-minimal .luliy-archives *,
+body.luliy-minimal .luliy-chronicle *,
+body.luliy-minimal .luliy-bookshelf * {
+  text-shadow: none !important;
+}
+/* md 正文里所有元素：统一深灰，标题近黑 */
+body.luliy-min-article #postBody,
+body.luliy-min-article #postBody p,
+body.luliy-min-article #postBody li,
+body.luliy-min-article #postBody span,
+body.luliy-min-article #postBody td,
+body.luliy-min-article #postBody div,
+body.luliy-min-article #postBody strong,
+body.luliy-min-article #postBody em,
+body.luliy-min-article #postBody blockquote {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: transparent !important;
+}
+body.luliy-min-article #postBody h1,
+body.luliy-min-article #postBody h2,
+body.luliy-min-article #postBody h3,
+body.luliy-min-article #postBody h4 {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+/* md 链接：黑色带下划线 */
+body.luliy-min-article #postBody a {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-decoration: underline !important;
+}
+/* md 里的 blockquote / 代码块 / 高亮：去掉所有底色和彩边，变成极简 */
+body.luliy-min-article #postBody blockquote {
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid #3a3a3a !important;
+  padding-left: 16px !important;
+  margin-left: 0 !important;
+}
+body.luliy-min-article #postBody pre,
+body.luliy-min-article #postBody code {
+  background: rgba(28,28,30,0.05) !important;
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+body.luliy-min-article #postBody pre * {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+/* —— 3. 编年史表格：全屏背景下无底色、纯黑细线网格、文字纯黑 —— */
+body.luliy-minimal .luliy-chron-table,
+body.luliy-minimal .luliy-chron-table thead,
+body.luliy-minimal .luliy-chron-table tbody,
+body.luliy-minimal .luliy-chron-table tr {
+  background: transparent !important;
+}
+body.luliy-minimal .luliy-chron-table th,
+body.luliy-minimal .luliy-chron-table td,
+body.luliy-minimal .luliy-chron-month-cell {
+  background: transparent !important;
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  border: 1px solid #3a3a3a !important;
+  text-shadow: none !important;
+}
+body.luliy-minimal .luliy-chron-table th { font-weight: 700 !important; }
+body.luliy-minimal .luliy-chron-table a {
+  color: #1c1c1e !important; -webkit-text-fill-color: #1c1c1e !important;
+  text-decoration: underline !important;
+}
+/* 表格外层那个圆角玻璃容器也去掉 */
+body.luliy-minimal .luliy-chron-tablewrap,
+body.luliy-minimal .luliy-chron-scroll-x {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* —— 4. 归档列表：文字纯黑/灰，无底色，激活行不要色块 —— */
+body.luliy-minimal .luliy-arch-row,
+body.luliy-minimal .luliy-arch-row * {
+  background: transparent !important;
+  text-shadow: none !important;
+}
+body.luliy-minimal .luliy-arch-name { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+body.luliy-minimal .luliy-arch-date { color: #8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+body.luliy-minimal .luliy-arch-row:hover { background: rgba(28,28,30,0.05) !important; }
+/* 标题 Chronicle/Archives：去掉粉色渐变和下划线发光，改纯黑衬线 */
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-book-title {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: none !important;
+  text-shadow: none !important;
+  border-bottom: none !important;
+}
+/* 标题下面那条粉色装饰线删除 */
+body.luliy-minimal .luliy-arch-title::after,
+body.luliy-minimal .luliy-chron-title::after,
+body.luliy-minimal .luliy-book-title::after { display: none !important; }
+
+/* —— 5. Tab 文字（事件/书影音/海报墙、年份、Weekly|Other）：灰→黑，激活仅下划线 —— */
+body.luliy-minimal .luliy-arch-tab,
+body.luliy-minimal .luliy-chron-cat-tab,
+body.luliy-minimal .luliy-chron-year-tab {
+  color: #8c8c8c !important; -webkit-text-fill-color: #8c8c8c !important;
+  text-shadow: none !important; background: none !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active,
+body.luliy-minimal .luliy-chron-cat-tab.is-active,
+body.luliy-minimal .luliy-chron-year-tab.is-active {
+  color: #1c1c1e !important; -webkit-text-fill-color: #1c1c1e !important;
+}
+body.luliy-minimal .luliy-arch-tab.is-active::after,
+body.luliy-minimal .luliy-chron-cat-tab.is-active::after,
+body.luliy-minimal .luliy-chron-year-tab.is-active::after {
+  background: #1c1c1e !important; box-shadow: none !important;
+}
+
+/* —— 6. 目录固定在右侧（之前可能被覆盖），切换按钮左边留给主页导航 —— */
+#luliy-min-toc {
+  position: fixed !important;
+  top: 110px !important;
+  right: 40px !important;
+  left: auto !important;
+  width: 200px !important;
+  text-align: left;
+  z-index: 60 !important;
+}
+#luliy-min-toc a { color: #8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+#luliy-min-toc a:hover,
+#luliy-min-toc .luliy-min-toc-h1 { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+
+/* —— 7. 主页：背景全屏 + 图片居中 + 顶部文字导航（切换按钮左边） —— */
+#luliy-min-home {
+  position: fixed !important; inset: 0 !important;
+  background: rgb(230,225,212) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  z-index: 50 !important;
+}
+#luliy-min-home-nav {
+  position: fixed; top: 24px; right: 76px; z-index: 120;
+  font-family: var(--min-sans); font-size: 14px; letter-spacing: 0.5px;
+  color: #8c8c8c;
+}
+#luliy-min-home-nav a { color: #1c1c1e; text-decoration: none; }
+#luliy-min-home-nav a:hover { opacity: 0.55; }
+#luliy-min-home-nav .luliy-min-nav-sep { margin: 0 8px; color: #8c8c8c; }
+
+/* —— 8. 切换按钮：极简风、放右上角 —— */
+#luliy-system-toggle {
+  background: transparent !important;
+  border: 1px solid #3a3a3a !important;
+  color: #1c1c1e !important;
+}
+#luliy-system-toggle:hover { background: #1c1c1e !important; color: rgb(230,225,212) !important; }
+
+@media (max-width: 1080px) {
+  #luliy-min-toc { display: none !important; }
+}
+@media (max-width: 720px) {
+  #luliy-min-home-nav { right: 64px; font-size: 12px; }
+  #luliy-min-home-nav .luliy-min-nav-sep { margin: 0 5px; }
+}
+
+/* —— v2 补丁：标题/表头颜色 + 表格外框，更强覆盖 —— */
+body.luliy-minimal .luliy-chron-title,
+body.luliy-minimal .luliy-arch-title,
+body.luliy-minimal .luliy-book-title {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: none !important; background-clip: border-box !important;
+  -webkit-background-clip: border-box !important;
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+  font-style: normal !important;
+}
+/* 表头文字纯黑（去青色） */
+body.luliy-minimal .luliy-chron-table th,
+body.luliy-minimal .luliy-chron-table thead th,
+body.luliy-minimal .luliy-chron-table thead td {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+/* 表格内容文字纯黑（去淡蓝） */
+body.luliy-minimal .luliy-chron-table tbody td,
+body.luliy-minimal .luliy-chron-table tbody th,
+body.luliy-minimal .luliy-chron-month-cell {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+}
+/* 表格最外层容器：去圆角去描边去阴影 */
+body.luliy-minimal .luliy-chron-tablewrap,
+body.luliy-minimal .luliy-chron-scroll-x,
+body.luliy-minimal .luliy-chronicle .luliy-chron-body {
+  border: none !important; border-radius: 0 !important;
+  box-shadow: none !important; background: transparent !important;
+  outline: none !important;
+}
+/* 表格本身直角无圆角 */
+body.luliy-minimal .luliy-chron-table { border-radius: 0 !important; overflow: visible !important; }
+
+/* ════════ v3 最终覆盖：用 [data-color-mode] 前缀提足优先级 ════════
+   赛博的泄漏规则多是 [data-color-mode="dark"] body:not([data-luliy-theme]) #xxx，
+   优先级很高。极简覆盖必须同等或更高，这里统一加 [data-color-mode] 前缀。 */
+
+/* 文章面板：彻底透明（压掉 :not([data-luliy-theme]) #postBody 的深色面板） */
+[data-color-mode] body.luliy-minimal #postBody,
+[data-color-mode] body.luliy-minimal .markdown-body,
+[data-color-mode] body.luliy-minimal #content {
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Chronicle/Archives/Book 标题：纯黑衬线（压掉粉色渐变） */
+[data-color-mode] body.luliy-minimal .luliy-chron-title,
+[data-color-mode] body.luliy-minimal .luliy-arch-title,
+[data-color-mode] body.luliy-minimal .luliy-book-title {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+  text-shadow: none !important;
+}
+
+/* 表头 + 表格内容：纯黑（压掉青色/淡蓝） */
+[data-color-mode] body.luliy-minimal .luliy-chron-table th,
+[data-color-mode] body.luliy-minimal .luliy-chron-table td,
+[data-color-mode] body.luliy-minimal .luliy-chron-month-cell,
+[data-color-mode] body.luliy-minimal .luliy-chron-table tbody td,
+[data-color-mode] body.luliy-minimal .luliy-chron-table thead th {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  background: transparent !important;
+  border: 1px solid #3a3a3a !important;
+  text-shadow: none !important;
+}
+
+/* 归档列表文字 */
+[data-color-mode] body.luliy-minimal .luliy-arch-name { color:#1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+[data-color-mode] body.luliy-minimal .luliy-arch-date { color:#8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+
+/* Tab 文字 */
+[data-color-mode] body.luliy-minimal .luliy-arch-tab,
+[data-color-mode] body.luliy-minimal .luliy-chron-cat-tab,
+[data-color-mode] body.luliy-minimal .luliy-chron-year-tab { color:#8c8c8c !important; -webkit-text-fill-color:#8c8c8c !important; }
+[data-color-mode] body.luliy-minimal .luliy-arch-tab.is-active,
+[data-color-mode] body.luliy-minimal .luliy-chron-cat-tab.is-active,
+[data-color-mode] body.luliy-minimal .luliy-chron-year-tab.is-active { color:#1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
+
+/* ════════ v4 终极方案：极简模式下重定义所有主题色变量为黑/灰 ════════
+   赛博的标题/表头/链接大量用 var(--th-accent) var(--th-h1) 等，
+   与其逐个覆盖，不如直接把这些变量在极简模式下全设成黑灰，
+   所有引用它们的地方自动变成极简配色。这是最干净的根治。 */
+[data-color-mode] body.luliy-minimal,
+body.luliy-minimal {
+  --th-accent: #1c1c1e !important;
+  --th-accent-soft: rgba(28,28,30,0.08) !important;
+  --th-accent-hover: rgba(28,28,30,0.15) !important;
+  --th-h1: #1c1c1e !important;
+  --th-h2: #1c1c1e !important;
+  --th-h3: #1c1c1e !important;
+  --th-h4: #1c1c1e !important;
+  --th-strong: #1c1c1e !important;
+  --th-h1-border: none !important;
+  --th-h2-bl: none !important;
+  --th-h2-bg: transparent !important;
+  --luliy-glass-opacity: 0 !important;
+}
+
+/* ════════ v5 暴力覆盖：html 前缀拉满特异性，强制标题/表头黑色 ════════ */
+html body.luliy-minimal .luliy-chron-title,
+html body.luliy-minimal .luliy-arch-title,
+html body.luliy-minimal .luliy-book-title,
+html body.luliy-minimal .luliy-chron-table th,
+html body.luliy-minimal .luliy-chron-table thead th,
+html body.luliy-minimal .luliy-chron-table td,
+html body.luliy-minimal .luliy-chron-month-cell,
+html body.luliy-minimal .luliy-arch-year {
+  color: #1c1c1e !important;
+  -webkit-text-fill-color: #1c1c1e !important;
+  text-fill-color: #1c1c1e !important;
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  text-shadow: none !important;
+}
+html body.luliy-minimal .luliy-chron-title,
+html body.luliy-minimal .luliy-arch-title,
+html body.luliy-minimal .luliy-book-title,
+html body.luliy-minimal .luliy-arch-year {
+  font-family: 'Noto Serif SC', Georgia, serif !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   高对比度收尾层 —— 提升所有主题日/夜模式下文章可读性
+   核心：提高文章面板不透明度（默认 0.5 → 0.82），让文字坐在
+   更实的底上；强化正文/标题/链接/代码/按钮对比度。
+   放在文件最末尾，确保优先级最高。
+   ════════════════════════════════════════════════════════════ */
+
+/* 1. 文章面板：默认不透明度大幅提高（除非用户手动调过滑块） */
+body[data-luliy-theme] #postBody,
+body:not([data-luliy-theme]) #postBody {
+  --luliy-article-opacity: 0.86;
+}
+[data-color-mode="dark"] body[data-luliy-theme] #postBody,
+[data-color-mode="dark"] body:not([data-luliy-theme]) #postBody {
+  --luliy-article-opacity: 0.88;
+}
+
+/* 2. 白天模式：正文深色、标题更黑，保证 7:1 以上对比 */
+[data-color-mode="light"] #postBody,
+[data-color-mode="light"] #postBody p,
+[data-color-mode="light"] #postBody li,
+[data-color-mode="light"] #postBody span,
+[data-color-mode="light"] #postBody td,
+[data-color-mode="light"] #postBody figcaption {
+  color: #1a1a1f !important;
+  -webkit-text-fill-color: #1a1a1f !important;
+}
+[data-color-mode="light"] #postBody h1,
+[data-color-mode="light"] #postBody h2,
+[data-color-mode="light"] #postBody h3,
+[data-color-mode="light"] #postBody h4 {
+  color: #0d0d12 !important;
+  -webkit-text-fill-color: #0d0d12 !important;
+}
+
+/* 3. 夜间模式：正文足够亮（避免灰蒙蒙），标题更白 */
+[data-color-mode="dark"] #postBody,
+[data-color-mode="dark"] #postBody p,
+[data-color-mode="dark"] #postBody li,
+[data-color-mode="dark"] #postBody span,
+[data-color-mode="dark"] #postBody td,
+[data-color-mode="dark"] #postBody figcaption {
+  color: #e8e6f0 !important;
+  -webkit-text-fill-color: #e8e6f0 !important;
+}
+[data-color-mode="dark"] #postBody h1,
+[data-color-mode="dark"] #postBody h2,
+[data-color-mode="dark"] #postBody h3,
+[data-color-mode="dark"] #postBody h4 {
+  color: #f5f3fb !important;
+  -webkit-text-fill-color: #f5f3fb !important;
+}
+
+/* 4. 链接：日/夜都用高对比强调色 + 下划线，确保可识别 */
+[data-color-mode="light"] #postBody a {
+  color: #5b21b6 !important; -webkit-text-fill-color: #5b21b6 !important;
+  text-decoration: underline !important; text-underline-offset: 2px !important;
+}
+[data-color-mode="dark"] #postBody a {
+  color: #b9a3ff !important; -webkit-text-fill-color: #b9a3ff !important;
+  text-decoration: underline !important; text-underline-offset: 2px !important;
+}
+
+/* 5. 行内代码：日/夜都有清晰底色和高对比文字 */
+[data-color-mode="light"] #postBody code {
+  background: rgba(28,28,34,0.07) !important; color: #9333ea !important;
+  -webkit-text-fill-color: #9333ea !important; padding: 2px 6px; border-radius: 4px;
+}
+[data-color-mode="dark"] #postBody code {
+  background: rgba(255,255,255,0.10) !important; color: #d6bcfa !important;
+  -webkit-text-fill-color: #d6bcfa !important; padding: 2px 6px; border-radius: 4px;
+}
+
+/* 6. 功能按钮（浮动面板/抽屉/FAB）高对比 */
+[data-color-mode="light"] #luliy-ham-btn span { background: #1a1a1f !important; }
+[data-color-mode="dark"] #luliy-ham-btn span { background: #f0eef8 !important; }
+[data-color-mode="light"] #luliy-issues-link,
+[data-color-mode="light"] #luliy-to-minimal,
+[data-color-mode="light"] #luliy-top-link { color: #2a2440 !important; }
+[data-color-mode="dark"] #luliy-issues-link,
+[data-color-mode="dark"] #luliy-to-minimal,
+[data-color-mode="dark"] #luliy-top-link { color: #e8e6f0 !important; }
+
+/* 7. 文末字数信息条：日/夜都清晰可读 */
+[data-color-mode="light"] #luliy-post-footer-bar { color: #555 !important; border-top-color: rgba(0,0,0,0.10) !important; }
+[data-color-mode="dark"] #luliy-post-footer-bar { color: #aaa !important; border-top-color: rgba(255,255,255,0.12) !important; }
+
+/* ── 顶部操作组：[Link] [简洁模式]（沉思者图标右边）── */
+#luliy-top-actions {
+  position: fixed; top: 14px; z-index: 10002;
+  display: inline-flex; align-items: center; gap: 14px;
+  height: 44px;
+}
+#luliy-top-link, #luliy-to-minimal {
+  background: transparent; border: none; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.5px; color: #fff; padding: 4px 2px;
+  opacity: 0.78; transition: opacity 0.2s, transform 0.2s;
+  text-decoration: none; white-space: nowrap;
+  filter: drop-shadow(0 0 6px rgba(110,199,255,0.5));
+}
+#luliy-top-link:hover, #luliy-to-minimal:hover { opacity: 1; transform: translateY(-1px); }
+#luliy-to-minimal {
+  border: 1px solid rgba(255,255,255,0.35); border-radius: 14px;
+  padding: 4px 12px;
+}
+[data-color-mode="light"] #luliy-to-minimal { border-color: rgba(0,0,0,0.25); }
+@media (max-width: 600px) {
+  #luliy-top-actions { gap: 8px; }
+  #luliy-top-link, #luliy-to-minimal { font-size: 11px; }
+  #luliy-to-minimal { padding: 3px 8px; }
+}
