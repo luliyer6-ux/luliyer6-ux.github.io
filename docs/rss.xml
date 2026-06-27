@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>V</title><link>https://luliyer6-ux.github.io</link><description>我</description><copyright>V</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://avatars.githubusercontent.com/u/177055996?u=cb497e1edb10d059b285288c93ff32dab53af1c3&amp;v=4&amp;size=64</url><title>avatar</title><link>https://luliyer6-ux.github.io</link></image><lastBuildDate>Sat, 27 Jun 2026 12:43:44 +0000</lastBuildDate><managingEditor>V</managingEditor><ttl>60</ttl><webMaster>V</webMaster><item><title>测试</title><link>https://luliyer6-ux.github.io/post/ce-shi.html</link><description>11111。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/post/ce-shi.html</guid><pubDate>Sat, 27 Jun 2026 06:11:43 +0000</pubDate></item><item><title>gemmk 博客指南</title><link>https://luliyer6-ux.github.io/post/gemmk%20-bo-ke-zhi-nan.html</link><description>&lt;html&gt;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>V</title><link>https://luliyer6-ux.github.io</link><description>我</description><copyright>V</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://avatars.githubusercontent.com/u/177055996?u=cb497e1edb10d059b285288c93ff32dab53af1c3&amp;v=4&amp;size=64</url><title>avatar</title><link>https://luliyer6-ux.github.io</link></image><lastBuildDate>Sat, 27 Jun 2026 12:47:55 +0000</lastBuildDate><managingEditor>V</managingEditor><ttl>60</ttl><webMaster>V</webMaster><item><title>测试</title><link>https://luliyer6-ux.github.io/post/ce-shi.html</link><description>11111。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/post/ce-shi.html</guid><pubDate>Sat, 27 Jun 2026 06:11:43 +0000</pubDate></item><item><title>gemmk 博客指南</title><link>https://luliyer6-ux.github.io/post/gemmk%20-bo-ke-zhi-nan.html</link><description>&lt;html&gt;
 &lt;body&gt;
 &lt;!--StartFragment--&gt;&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;ΔιάΝους 博客完整说明指南&lt;/h1&gt;
 &lt;blockquote&gt;
@@ -19,16 +19,45 @@
     }
   }
 }
-&lt;!-- chronicle:data:end --&gt;。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/post/chronicle-data.html</guid><pubDate>Tue, 23 Jun 2026 15:35:04 +0000</pubDate></item><item><title>1</title><link>https://luliyer6-ux.github.io/post/1.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/post/1.html</guid><pubDate>Tue, 23 Jun 2026 11:22:27 +0000</pubDate></item><item><title>about</title><link>https://luliyer6-ux.github.io/about.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/about.html</guid><pubDate>Tue, 23 Jun 2026 15:34:42 +0000</pubDate></item><item><title>chronicle</title><link>https://luliyer6-ux.github.io/chronicle.html</link><description>&lt;script type='application/json' id='luliy-chronicle-fallback'&gt;
-{
-  'years': ['2026'],
+&lt;!-- chronicle:data:end --&gt;。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/post/chronicle-data.html</guid><pubDate>Tue, 23 Jun 2026 15:35:04 +0000</pubDate></item><item><title>1</title><link>https://luliyer6-ux.github.io/post/1.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/post/1.html</guid><pubDate>Tue, 23 Jun 2026 11:22:27 +0000</pubDate></item><item><title>about</title><link>https://luliyer6-ux.github.io/about.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/about.html</guid><pubDate>Tue, 23 Jun 2026 15:34:42 +0000</pubDate></item><item><title>chronicle</title><link>https://luliyer6-ux.github.io/chronicle.html</link><description>{
+  'years': ['2026', '2025', '2024'],
   'categories': [
     { 'key': 'travel', 'label': '出游' },
     { 'key': 'media', 'label': '书影游' },
     { 'key': 'posters', 'label': '海报墙' }
   ],
   'data': {
-    '2026': { 'travel': [], 'media': [], 'posters': [] }
-  }
-}
-&lt;/script&gt;。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/chronicle.html</guid><pubDate>Tue, 23 Jun 2026 15:34:55 +0000</pubDate></item><item><title>book</title><link>https://luliyer6-ux.github.io/book.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/book.html</guid><pubDate>Tue, 23 Jun 2026 15:39:17 +0000</pubDate></item><item><title>archive</title><link>https://luliyer6-ux.github.io/archive.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/archive.html</guid><pubDate>Tue, 23 Jun 2026 15:39:42 +0000</pubDate></item><item><title>这是秘密</title><link>https://luliyer6-ux.github.io/favorites.html</link><description>111。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/favorites.html</guid><pubDate>Sat, 27 Jun 2026 06:12:23 +0000</pubDate></item></channel></rss>
+    '2026': {
+      'travel': [
+        { 'month': '1月', 'city': '东京', 'items': [
+          { 'title': '浅草寺初诣' },
+          { 'title': '新宿御苑赏梅' }
+        ]},
+        { 'month': '1月', 'city': '镰仓', 'items': [
+          { 'title': '高德院大佛', 'url': 'https://luliyer6-ux.github.io' }
+        ]},
+        { 'month': '3月', 'city': '京都', 'items': [
+          { 'title': '清水寺', 'url': 'https://luliyer6-ux.github.io' },
+          { 'title': '伏见稻荷大社' },
+          { 'title': '夜樱·哲学之道' }
+        ]},
+        { 'month': '5月', 'city': '札幌', 'items': [
+          { 'title': '薰衣草田预踩点' }
+        ]}
+      ],
+      'media': [
+        { 'month': '1月',
+          'books': [{ 'title': '百年孤独' }, { 'title': '解忧杂货店' }],
+          'watch': [{ 'title': '爱、死亡与机器人 S4' }],
+          'shows': [],
+          'games': [{ 'title': '塞尔达传说：王国之泪' }]
+        },
+        { 'month': '2月',
+          'books': [{ 'title': '三体' }],
+          'watch': [{ 'title': '鬼灭之刃 锻刀村篇' }, { 'title': '进击的巨人 完结篇' }],
+          'shows': [{ 'title': '舞台剧《罗密欧与朱丽叶》' }],
+          'games': []
+        },
+        { 'month': '3月',
+          'books': [],
+          'watch': [{ 'title': '你的名字。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/chronicle.html</guid><pubDate>Tue, 23 Jun 2026 15:34:55 +0000</pubDate></item><item><title>book</title><link>https://luliyer6-ux.github.io/book.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/book.html</guid><pubDate>Tue, 23 Jun 2026 15:39:17 +0000</pubDate></item><item><title>archive</title><link>https://luliyer6-ux.github.io/archive.html</link><guid isPermaLink="true">https://luliyer6-ux.github.io/archive.html</guid><pubDate>Tue, 23 Jun 2026 15:39:42 +0000</pubDate></item><item><title>这是秘密</title><link>https://luliyer6-ux.github.io/favorites.html</link><description>111。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/favorites.html</guid><pubDate>Sat, 27 Jun 2026 06:12:23 +0000</pubDate></item></channel></rss>
