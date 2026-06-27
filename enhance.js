@@ -38,7 +38,7 @@
   var LULIY_OPTS = {
     /* Homepage bottom gallery: 1 image = banner, 2+ = grid. */
     galleryImages: [
-      'https://picsum.photos/seed/luliy-gallery/1600/900'
+      '/static/img/banner.svg'
     ],
     galleryText: '\u6211\u5c06\u65e0\u9650\u8fdb\u6b65',
 
@@ -53,7 +53,7 @@
 
     /* Homepage full-screen Hero (scroll down to enter). No text now —
        just the welcome image + a scroll-down hint. */
-    heroImage: 'https://picsum.photos/seed/luliy-hero/1920/1080',
+    heroImage: '/static/img/banner.svg',
     heroTitle: '',
     heroSubtitle: '',
     heroHint: '\u2193',
@@ -5638,7 +5638,7 @@
      · 极简系统下不加载任何赛博特效，走自己的黑白灰衬线排版。
      ============================================================ */
   var SYSTEM_KEY = 'luliy-system';
-  var MINIMAL_HOME_IMG = 'https://picsum.photos/seed/luliy-minimal-home/1600/900';
+  var MINIMAL_HOME_IMG = '/static/img/banner.svg';
 
   function getSystem() {
     try { return localStorage.getItem(SYSTEM_KEY) === 'minimal' ? 'minimal' : 'cyber'; }
