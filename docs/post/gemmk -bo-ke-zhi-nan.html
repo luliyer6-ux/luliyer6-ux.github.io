@@ -37,15 +37,17 @@
     var blur=parseInt(localStorage.getItem('luliy-bgblur')||'0',10)||0;
     var pw=parseInt(localStorage.getItem('luliy-pbwidth')||'0',10)||0;
     var sans=localStorage.getItem('luliy-sans')||'0';
-    var defBg='https://picsum.photos/seed/luliy-default-bg/1920/1080';
+    var defBg='';
     var url=bg||defBg;
     /* inline critical vars + theme attr BEFORE first paint to kill FOUC */
     d.style.setProperty('--luliy-bg-url','url(\''+url+'\')');
     d.style.setProperty('--luliy-bg-blur',blur+'px');
     d.style.setProperty('--luliy-pb-extra',pw+'px');
-    var css='html,body{background-image:url(\''+url+'\')!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important;}';
-    var st=document.createElement('style');st.id='luliy-fouc';st.textContent=css;
-    (d.head||d).appendChild(st);
+    if(url){
+      var css='html,body{background-image:url(\''+url+'\')!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important;}';
+      var st=document.createElement('style');st.id='luliy-fouc';st.textContent=css;
+      (d.head||d).appendChild(st);
+    }
     /* set theme + font class on <html> now; JS will mirror to body */
     d.setAttribute('data-luliy-theme',theme);
     if(blur>0)d.setAttribute('data-luliy-bgblur','1');

@@ -4803,24 +4803,20 @@ body.luliy-minimal #content { background: transparent !important; }
 .luliy-min-home-nav {
   position: absolute;
   top: 28px; right: 32px;
-  display: flex; gap: 18px;
   z-index: 2;
+  font-family: var(--min-sans);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: var(--min-muted);
 }
 .luliy-min-home-nav a {
-  font-family: 'Noto Serif SC', Georgia, serif;
-  font-size: 14px;
-  letter-spacing: 0.02em;
   color: var(--min-title);
   text-decoration: none;
-  background: rgba(255,255,255,0.78);
-  padding: 6px 14px;
-  border-radius: 3px;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 0.15s;
 }
-.luliy-min-home-nav a:hover { opacity: 0.7; background: rgba(255,255,255,0.95); }
+.luliy-min-home-nav a:hover { opacity: 0.55; }
 @media (max-width: 640px) {
-  .luliy-min-home-nav { top: 14px; right: 14px; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-  .luliy-min-home-nav a { font-size: 12px; padding: 5px 10px; }
+  .luliy-min-home-nav { top: 14px; right: 16px; font-size: 12px; }
 }
 
 /* ════════ 普通文章 / about：极简排版 ════════ */
@@ -5397,15 +5393,9 @@ html body.luliy-minimal .luliy-arch-year {
    放在文件最末尾，确保优先级最高。
    ════════════════════════════════════════════════════════════ */
 
-/* 1. 文章面板：默认不透明度大幅提高（除非用户手动调过滑块） */
-body[data-luliy-theme] #postBody,
-body:not([data-luliy-theme]) #postBody {
-  --luliy-article-opacity: 0.86;
-}
-[data-color-mode="dark"] body[data-luliy-theme] #postBody,
-[data-color-mode="dark"] body:not([data-luliy-theme]) #postBody {
-  --luliy-article-opacity: 0.88;
-}
+/* 1. 文章面板不透明度：完全交由用户的"透明度"滑杆控制，
+      这里不再强制覆盖（之前固定 0.86/0.88 导致滑杆调了也没用，
+      面板永远是接近全实心的样子，挡住了背景）。 */
 
 /* 2. 白天模式：正文深色、标题更黑，保证 7:1 以上对比 */
 [data-color-mode="light"] #postBody,
