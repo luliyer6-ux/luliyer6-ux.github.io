@@ -5101,21 +5101,30 @@ html:has(body.luliy-minimal) body.luliy-minimal {
   background: rgb(230,225,212) !important;
   background-image: none !important;
 }
-body.luliy-minimal,
-body.luliy-minimal #content,
-body.luliy-minimal .markdown-body,
-body.luliy-minimal #postBody,
-body.luliy-minimal .SideNav,
-body.luliy-minimal main,
-body.luliy-minimal article {
+/* —— 2. 内层容器（文章面板/表格容器等）强制透明、去掉磨砂玻璃效果 ——
+   ★ 同样套上 html:has(body.luliy-minimal) 外壳。原来这条选择器特异性
+   跟"Default 50% iOS26 liquid glass background"那条主题面板规则刚好
+   打平，谁赢全看文件里谁写在后面——这在多次复制粘贴、分段编辑之后
+   非常容易被破坏（顺序一旦被打乱，面板的磨砂玻璃背景就会重新盖回来，
+   正是截图里圆角卡片+背景图纹理的来源）。现在这条选择器比任何主题面板
+   规则都多两层（html + :has()），优先级稳赢，不再依赖文件顺序。 */
+html:has(body.luliy-minimal) body.luliy-minimal,
+html:has(body.luliy-minimal) body.luliy-minimal #content,
+html:has(body.luliy-minimal) body.luliy-minimal .markdown-body,
+html:has(body.luliy-minimal) body.luliy-minimal #postBody,
+html:has(body.luliy-minimal) body.luliy-minimal .SideNav,
+html:has(body.luliy-minimal) body.luliy-minimal main,
+html:has(body.luliy-minimal) body.luliy-minimal article {
   background: transparent !important;
   background-image: none !important;
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+  border: none !important;
+  border-radius: 0 !important;
 }
-/* body 本体保留底色（作为全屏背景） */
-body.luliy-minimal { background: rgb(230,225,212) !important; }
+/* body 本体保留底色（作为全屏背景，首页之外的页面会被下面的背景图规则再覆盖一次） */
+html:has(body.luliy-minimal) body.luliy-minimal { background: rgb(230,225,212) !important; }
 
 /* —— 2. 所有文字强制黑/灰，清除一切发光、渐变、彩色 —— */
 body.luliy-minimal #postBody,
@@ -5571,10 +5580,15 @@ html body.luliy-minimal #postBody th { font-weight: 700 !important; }
 }
 
 /* ════════ 极简模式：除首页外，加入统一背景图（叠加半透明遮罩保证可读性） ════════
-   ★ 必须套上跟前面"v2 总清洗"规则同款的 html:has(body.luliy-minimal) 外壳，
-   否则选择器优先级比那条 background-image:none!important 低，永远会被盖掉
-   （多了 html + :has() 两层，这两条规则的优先级才打得平/反超）。 */
-html:has(body.luliy-minimal) body.luliy-minimal:not(.luliy-min-home-page) {
+   ★ 图片画在 html 上而不是 body 上 —— body 的实际渲染宽度可能比视口窄
+   （内容区域居中、两侧留白），如果背景图画在 body 上就只会铺满 body 那一条，
+   两侧露出 html 的纯色底，正是"背景图只在中间"这个问题的根源。
+   html 才是真正贴满整个视口边缘的元素，背景图必须画在它上面。
+   ★ 同时把 body 在这个场景下改成完全透明，否则 body 自己的纯色底会盖在
+   html 的背景图上面，把图整个挡住。
+   ★ 选择器继续套 html:has(body.luliy-minimal) 外壳并多加一层 :not()，
+   保证优先级压得过前面"v2 总清洗"那条 background-image:none!important。 */
+html:has(body.luliy-minimal):not(:has(body.luliy-min-home-page)) {
   background-color: rgb(230,225,212) !important;
   background-image:
     linear-gradient(rgba(230,225,212,0.01), rgba(230,225,212,0.01)),
@@ -5584,9 +5598,13 @@ html:has(body.luliy-minimal) body.luliy-minimal:not(.luliy-min-home-page) {
   background-attachment: fixed !important;
   background-repeat: no-repeat !important;
 }
+html:has(body.luliy-minimal):not(:has(body.luliy-min-home-page)) body.luliy-minimal {
+  background: transparent !important;
+  background-image: none !important;
+}
 @media (max-width: 768px) {
   /* 移动端 fixed 背景在部分浏览器有性能/兼容问题，改为随页面滚动 */
-  html:has(body.luliy-minimal) body.luliy-minimal:not(.luliy-min-home-page) {
+  html:has(body.luliy-minimal):not(:has(body.luliy-min-home-page)) {
     background-attachment: scroll !important;
   }
 }
