@@ -5570,8 +5570,11 @@ html body.luliy-minimal #postBody th { font-weight: 700 !important; }
   border-left: 1px solid #1c1c1e !important;
 }
 
-/* ════════ 极简模式：除首页外，加入统一背景图（叠加半透明遮罩保证可读性） ════════ */
-body.luliy-minimal:not(.luliy-min-home-page) {
+/* ════════ 极简模式：除首页外，加入统一背景图（叠加半透明遮罩保证可读性） ════════
+   ★ 必须套上跟前面"v2 总清洗"规则同款的 html:has(body.luliy-minimal) 外壳，
+   否则选择器优先级比那条 background-image:none!important 低，永远会被盖掉
+   （多了 html + :has() 两层，这两条规则的优先级才打得平/反超）。 */
+html:has(body.luliy-minimal) body.luliy-minimal:not(.luliy-min-home-page) {
   background-color: rgb(230,225,212) !important;
   background-image:
     linear-gradient(rgba(230,225,212,0.01), rgba(230,225,212,0.01)),
@@ -5583,7 +5586,7 @@ body.luliy-minimal:not(.luliy-min-home-page) {
 }
 @media (max-width: 768px) {
   /* 移动端 fixed 背景在部分浏览器有性能/兼容问题，改为随页面滚动 */
-  body.luliy-minimal:not(.luliy-min-home-page) {
+  html:has(body.luliy-minimal) body.luliy-minimal:not(.luliy-min-home-page) {
     background-attachment: scroll !important;
   }
 }
