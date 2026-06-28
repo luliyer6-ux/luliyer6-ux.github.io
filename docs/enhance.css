@@ -5571,10 +5571,10 @@ html body.luliy-minimal #postBody th { font-weight: 700 !important; }
 }
 
 /* ════════ 极简模式：除首页外，加入统一背景图（叠加半透明遮罩保证可读性） ════════ */
-body.luliy-minimal:not(.luliy-min-home-page) {
+html:has(body.luliy-minimal) body.luliy-minimal:not(.luliy-min-home-page) {
   background-color: rgb(230,225,212) !important;
   background-image:
-    linear-gradient(rgba(230,225,212,0.01), rgba(230,225,212,0.01)),
+    linear-gradient(rgba(230,225,212,0.55), rgba(230,225,212,0.55)),
     url('https://free.picui.cn/free/2026/06/28/6a4119ecea136.png') !important;
   background-size: cover !important;
   background-position: center top !important;
