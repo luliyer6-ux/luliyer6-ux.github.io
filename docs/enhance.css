@@ -4834,29 +4834,46 @@ body.luliy-min-article #postBody {
   line-height: 1.9;
   color: var(--min-text);
 }
-/* 文章标题：衬线、全站最大 */
+/* 文章标题：衬线、全站最大，与下方元信息用细线分离 */
 body.luliy-min-article #postBody h1 {
   font-family: var(--min-serif);
   font-weight: 700;
-  font-size: 34px;
+  font-size: 42px;
   color: var(--min-title);
-  letter-spacing: 1px;
-  margin: 18px 0 8px;
-  line-height: 1.3;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(28,28,30,0.12);
 }
-/* 二级小标题：无衬线加粗 + # 前缀 */
+/* 二级标题：明显跳级 + 大留白，去掉机械的 # 前缀 */
 body.luliy-min-article #postBody h2 {
   font-family: var(--min-sans);
   font-weight: 700;
-  font-size: 19px;
+  font-size: 24px;
+  letter-spacing: -0.01em;
   color: var(--min-title);
-  margin: 48px 0 14px;
+  margin: 56px 0 16px;
 }
-body.luliy-min-article #postBody h2::before { content: '# '; color: var(--min-muted); }
 body.luliy-min-article #postBody h3 {
   font-family: var(--min-sans);
+  font-weight: 600; font-size: 18px; color: var(--min-title);
+  margin: 36px 0 12px;
+}
+/* 四级标题：半粗体 + 左侧 ▍ 装饰，体量与正文接近但用色块强调 */
+body.luliy-min-article #postBody h4 {
+  font-family: var(--min-sans);
   font-weight: 600; font-size: 16px; color: var(--min-title);
-  margin: 32px 0 10px;
+  margin: 28px 0 10px;
+  padding-left: 12px;
+  position: relative;
+}
+body.luliy-min-article #postBody h4::before {
+  content: '▍';
+  position: absolute;
+  left: -2px; top: 0;
+  color: var(--min-muted);
+  font-size: 14px;
 }
 body.luliy-min-article #postBody p {
   margin: 0 0 26px;          /* 段落间留白明显大于行内行距 */
@@ -5027,21 +5044,46 @@ body.luliy-min-article #postBody h1,
 body.luliy-min-article #postBody h2,
 body.luliy-min-article #postBody h3 {
   color: #1c1c1e !important;
-  border: none !important;
   border-left: none !important;
   padding-left: 0 !important;
   background: none !important;
   -webkit-text-fill-color: #1c1c1e !important;
   text-shadow: none !important;
 }
+body.luliy-min-article #postBody h2,
+body.luliy-min-article #postBody h3 {
+  border: none !important;
+}
 body.luliy-min-article #postBody h1 {
   font-family: 'Noto Serif SC', Georgia, serif !important;
   -webkit-text-fill-color: #1c1c1e !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(28,28,30,0.12) !important;
 }
 body.luliy-min-article #postBody p,
 body.luliy-min-article #postBody li {
   color: #3a3a3a !important;
   -webkit-text-fill-color: #3a3a3a !important;
+}
+/* 分割线：极细线 + 居中 ◇ 微弱装饰 */
+body.luliy-min-article #postBody hr {
+  border: 0 !important;
+  height: 1px !important;
+  background: rgba(28,28,30,0.16) !important;
+  margin: 56px 0 !important;
+  position: relative !important;
+  box-shadow: none !important;
+}
+body.luliy-min-article #postBody hr::after {
+  content: '◇';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgb(230,225,212);
+  padding: 0 14px;
+  color: var(--min-muted);
+  font-size: 12px;
+  line-height: 1;
 }
 /* 去掉赛博系统给 h2 加的竖条/色块装饰 */
 body.luliy-min-article #postBody h2::after,
@@ -5509,15 +5551,23 @@ html body.luliy-minimal #postBody td {
 }
 html body.luliy-minimal #postBody th { font-weight: 700 !important; }
 
-/* ════════ 极简模式：右侧目录跟随页面滚动，高亮当前所在标题 ════════ */
+/* ════════ 极简模式：右侧目录跟随页面滚动，当前项用细竖线高亮 ════════ */
+#luliy-min-toc a {
+  border-left: 1px solid transparent;
+  margin-left: -7px;
+  padding-left: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
 #luliy-min-toc a.is-current {
   color: var(--min-title) !important;
   -webkit-text-fill-color: var(--min-title) !important;
   font-weight: 600;
+  border-left: 1px solid var(--min-title);
 }
 [data-color-mode] body.luliy-minimal #luliy-min-toc a.is-current {
   color: #1c1c1e !important;
   -webkit-text-fill-color: #1c1c1e !important;
+  border-left: 1px solid #1c1c1e !important;
 }
 
 /* ── 顶部操作组：[Link] [简洁模式]（沉思者图标右边）── */
