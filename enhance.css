@@ -4826,9 +4826,9 @@ body.luliy-min-article #content {
   padding: 0 48px 120px;
 }
 body.luliy-min-article #postBody {
-  max-width: 680px;          /* 正文主列偏左、不居中 */
+  max-width: 680px;          /* 正文主列偏右、不居中，给左侧目录让位 */
   margin: 0;
-  margin-right: auto;
+  margin-left: auto;
   font-family: var(--min-sans);
   font-size: 16px;
   line-height: 1.9;
@@ -4893,7 +4893,7 @@ body.luliy-min-article .luliy-readmeta {
 /* —— 右侧悬浮目录（漂浮在留白区，不占主列） —— */
 #luliy-min-toc {
   position: fixed;
-  top: 120px; right: max(40px, calc((100vw - 1100px) / 2 + 48px));
+  top: 120px; left: max(40px, calc((100vw - 1100px) / 2 + 48px)); right: auto;
   width: 220px; max-height: 70vh; overflow-y: auto;
   font-family: var(--min-sans); font-size: 13px; line-height: 1.7;
   z-index: 40;
@@ -5256,12 +5256,12 @@ body.luliy-minimal .luliy-chron-year-tab.is-active::after {
   background: #1c1c1e !important; box-shadow: none !important;
 }
 
-/* —— 6. 目录固定在右侧（之前可能被覆盖），切换按钮左边留给主页导航 —— */
+/* —— 6. 目录固定在左侧（之前可能被覆盖） —— */
 #luliy-min-toc {
   position: fixed !important;
   top: 110px !important;
-  right: 40px !important;
-  left: auto !important;
+  left: 40px !important;
+  right: auto !important;
   width: 200px !important;
   text-align: left;
   z-index: 60 !important;
