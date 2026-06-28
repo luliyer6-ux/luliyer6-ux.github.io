@@ -1,4 +1,5 @@
 name: build Gmeek
+
 on:
   workflow_dispatch:
   issues:
@@ -10,26 +11,28 @@ jobs:
   build:
     name: Generate blog
     runs-on: ubuntu-24.04
-    if: >-
-      (github.event.repository.owner.id == github.event.sender.id || github.event_name == 'schedule') &&
-      !contains(toJSON(github.event.issue.labels), 'chronicle-data')
+    if: ${{ github.event.repository.owner.id == github.event.sender.id || github.event_name == 'schedule' }}
     permissions: write-all
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
+
       - name: Get config.json
         run: |
           echo "====== check config.josn file ======"
           cat config.json
           echo "====== check config.josn end  ======"
           sudo apt-get install jq
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.8
+
       - name: Clone source code
         run: |
           GMEEK_VERSION=$(jq -r ".GMEEK_VERSION" config.json)
@@ -37,10 +40,12 @@ jobs:
           cd /opt/Gmeek/
           lastTag=$(git describe --tags `git rev-list --tags --max-count=1`)
           if [ $GMEEK_VERSION == 'last' ]; then git checkout $lastTag; else git checkout $GMEEK_VERSION; fi;
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r /opt/Gmeek/requirements.txt
+
       - name: Generate new html
         run: |
           cp -r ./* /opt/Gmeek/
@@ -51,6 +56,7 @@ jobs:
           cp /opt/Gmeek/blogBase.json ${{ github.workspace }}
           cp ${{ github.workspace }}/enhance.css ${{ github.workspace }}/docs/enhance.css
           cp ${{ github.workspace }}/enhance.js ${{ github.workspace }}/docs/enhance.js
+
       - name: update html
         run: |
           git config --local user.email "$(jq -r ".email" config.json)"
