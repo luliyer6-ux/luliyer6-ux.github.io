@@ -5699,6 +5699,7 @@
   }
 
   function renderMinimalHome() {
+    document.body.classList.add('luliy-min-home-page');
     var wrap = document.createElement('div');
     wrap.id = 'luliy-min-home';
     var links = [
