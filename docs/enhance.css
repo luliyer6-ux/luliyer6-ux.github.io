@@ -5574,7 +5574,7 @@ html body.luliy-minimal #postBody th { font-weight: 700 !important; }
 body.luliy-minimal:not(.luliy-min-home-page) {
   background-color: rgb(230,225,212) !important;
   background-image:
-    linear-gradient(rgba(230,225,212,0.55), rgba(230,225,212,0.55)),
+    linear-gradient(rgba(230,225,212,0.01), rgba(230,225,212,0.01)),
     url('https://free.picui.cn/free/2026/06/28/6a4119ecea136.png') !important;
   background-size: cover !important;
   background-position: center top !important;
