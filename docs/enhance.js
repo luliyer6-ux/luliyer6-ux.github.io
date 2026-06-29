@@ -5651,9 +5651,29 @@
   root._luliySetSystem = setSystem;
   root._luliyGetSystem = getSystem;
 
+  /* 点击时在鼠标位置生成一团水墨晕开的效果，动画结束后自动移除 */
+  function initMinimalInkClick() {
+    if (initMinimalInkClick._bound) return;
+    initMinimalInkClick._bound = true;
+    document.addEventListener('click', function (e) {
+      var ink = document.createElement('span');
+      ink.className = 'luliy-ink-splash';
+      ink.style.left = e.clientX + 'px';
+      ink.style.top = e.clientY + 'px';
+      /* 每滴墨的大小、旋转角度略微随机，避免每次点出来都一个模子 */
+      var scale = 0.85 + Math.random() * 0.4;
+      var rot = Math.floor(Math.random() * 360);
+      ink.style.setProperty('--luliy-ink-scale', scale);
+      ink.style.setProperty('--luliy-ink-rot', rot + 'deg');
+      document.body.appendChild(ink);
+      setTimeout(function () { if (ink.parentNode) ink.parentNode.removeChild(ink); }, 900);
+    }, { passive: true });
+  }
+
   function initMinimalSystem() {
     document.body.classList.add('luliy-minimal');
     try { document.documentElement.style.zoom = '1'; } catch (e) {}
+    safe(initMinimalInkClick, 'inkClick');
 
     if (!isIndexPage()) buildMinimalNav();
     buildSystemToggle();
