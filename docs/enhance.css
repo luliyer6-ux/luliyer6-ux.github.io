@@ -4793,11 +4793,12 @@ body.luliy-minimal #content { background: transparent !important; }
 }
 .luliy-min-home-stage {
   position: relative;
-  width: 100%; max-width: 1400px;
-  margin: 0 auto;
+  width: 100%; height: 100%;
 }
 .luliy-min-home-img {
-  display: block; width: 100%; height: auto;
+  position: absolute; inset: 0;
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
   user-select: none; -webkit-user-drag: none;
 }
 .luliy-min-home-nav {
