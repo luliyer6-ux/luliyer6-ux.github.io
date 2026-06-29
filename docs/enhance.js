@@ -5679,6 +5679,7 @@
       { label: 'Home', href: '/' },
       { label: 'Archives', href: '/archive.html' },
       { label: 'Chronicle', href: '/chronicle.html' },
+      { label: 'Book', href: '/book.html' },
       { label: 'About', href: '/about.html' }
     ];
     nav.innerHTML = links.map(function (l) {
