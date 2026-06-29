@@ -4784,7 +4784,7 @@ body.luliy-minimal #content { background: transparent !important; }
 }
 #luliy-to-minimal:hover { opacity: 1; transform: scale(1.15); }
 
-/* ════════ 主页：楼梯图 + 隐形热区 ════════ */
+/* ════════ 主页：大图 + 右上角文字导航 ════════ */
 #luliy-min-home {
   position: fixed; inset: 0;
   background: var(--min-bg);
@@ -4818,6 +4818,7 @@ body.luliy-minimal #content { background: transparent !important; }
 @media (max-width: 640px) {
   .luliy-min-home-nav { top: 14px; right: 16px; font-size: 12px; }
 }
+
 
 /* ════════ 普通文章 / about：极简排版 ════════ */
 body.luliy-min-article #content {
