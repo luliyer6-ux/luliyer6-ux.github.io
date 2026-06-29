@@ -4784,195 +4784,39 @@ body.luliy-minimal #content { background: transparent !important; }
 }
 #luliy-to-minimal:hover { opacity: 1; transform: scale(1.15); }
 
-/* ════════════════════════════════════════════════════════════
-   主页 v2 —— 左侧栏导航 + 大图 Hero + 按年份分组的时间线文章列表
-   ════════════════════════════════════════════════════════════ */
+/* ════════ 主页：楼梯图 + 隐形热区 ════════ */
 #luliy-min-home {
-  display: flex;
-  min-height: 100vh;
-  align-items: stretch;
+  position: fixed; inset: 0;
   background: var(--min-bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50;
 }
-
-/* —— 左侧栏 —— */
-#luliy-min-side {
-  flex: 0 0 180px;
-  width: 180px;
-  position: sticky;
-  top: 0;
-  align-self: flex-start;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 36px 0 28px 36px;
-  border-right: 1px solid rgba(28,28,30,0.10);
-  box-sizing: border-box;
-}
-#luliy-min-side-top { margin-bottom: 44px; }
-#luliy-min-logo {
-  font-family: 'Noto Serif SC', Georgia, serif;
-  font-size: 22px;
-  color: var(--min-title);
-  letter-spacing: 0.5px;
-}
-#luliy-min-logo-dot { color: var(--min-muted); margin-top: 4px; }
-#luliy-min-side-nav { display: flex; flex-direction: column; gap: 18px; flex: 1; }
-#luliy-min-side-nav a {
-  font-family: var(--min-sans);
-  font-size: 14px;
-  color: var(--min-muted);
-  text-decoration: none;
-  transition: color 0.15s;
-}
-#luliy-min-side-nav a:hover { color: var(--min-title); }
-#luliy-min-side-nav a.is-active { color: var(--min-title); font-weight: 600; }
-#luliy-min-side-foot { margin-top: auto; padding-top: 24px; }
-#luliy-min-side-foot a {
-  font-size: 12px; color: var(--min-muted); text-decoration: none;
-}
-#luliy-min-side-foot a:hover { color: var(--min-title); }
-
-/* —— 右侧主区域 —— */
-#luliy-min-main { flex: 1; min-width: 0; }
-
-/* —— Hero 大图 —— */
-#luliy-min-hero {
+.luliy-min-home-stage {
   position: relative;
-  height: 70vh;
-  min-height: 420px;
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
+  width: 100%; max-width: 1400px;
+  margin: 0 auto;
 }
-#luliy-min-hero-inner {
-  position: relative;
+.luliy-min-home-img {
+  display: block; width: 100%; height: auto;
+  user-select: none; -webkit-user-drag: none;
+}
+.luliy-min-home-nav {
+  position: absolute;
+  top: 28px; right: 32px;
   z-index: 2;
-  padding: 0 64px;
-  max-width: 640px;
-}
-#luliy-min-hero h1 {
-  font-family: 'Noto Serif SC', Georgia, serif;
-  font-size: 46px;
-  line-height: 1.25;
-  font-weight: 500;
-  color: #2b2620;
-  margin: 0 0 18px;
-}
-#luliy-min-hero-sub {
   font-family: var(--min-sans);
   font-size: 14px;
-  color: #5c554a;
-  margin: 0 0 26px;
+  letter-spacing: 0.5px;
+  color: var(--min-muted);
 }
-#luliy-min-hero-explore {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--min-sans);
-  font-size: 13px; letter-spacing: 1px;
-  color: #2b2620;
+.luliy-min-home-nav a {
+  color: var(--min-title);
   text-decoration: none;
-  border-bottom: 1px solid #2b2620;
-  padding-bottom: 4px;
   transition: opacity 0.15s;
 }
-#luliy-min-hero-explore:hover { opacity: 0.6; }
-
-/* —— 文章时间线 —— */
-#luliy-min-feed { padding: 56px 64px 80px; max-width: 760px; }
-#luliy-min-feed-empty { color: var(--min-muted); font-size: 14px; }
-#luliy-min-timeline { position: relative; }
-.luliy-min-tl-year {
-  position: relative;
-  font-family: 'Noto Serif SC', Georgia, serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--min-title);
-  padding-left: 26px;
-  margin: 30px 0 14px;
-}
-.luliy-min-tl-year:first-child { margin-top: 0; }
-.luliy-min-tl-year-link {
-  display: block;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--min-muted);
-}
-.luliy-min-tl-year-link:hover { color: var(--min-title); }
-.luliy-min-tl-dot {
-  position: absolute;
-  left: 0; top: 50%;
-  width: 7px; height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
-  background: var(--min-title);
-}
-.luliy-min-tl-item {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  padding: 14px 0 14px 26px;
-  border-bottom: 1px solid rgba(28,28,30,0.08);
-  text-decoration: none;
-}
-.luliy-min-tl-item::before {
-  content: '';
-  position: absolute;
-  left: 3.5px; top: 0; bottom: 0;
-  width: 1px;
-  background: rgba(28,28,30,0.12);
-}
-.luliy-min-tl-item .luliy-min-tl-dot { background: var(--min-muted); width: 5px; height: 5px; margin-top: -2.5px; }
-.luliy-min-tl-body { flex: 1; min-width: 0; }
-.luliy-min-tl-cat {
-  font-family: var(--min-sans);
-  font-size: 11px;
-  letter-spacing: 1px;
-  color: var(--min-muted);
-  margin-bottom: 4px;
-}
-.luliy-min-tl-title {
-  font-family: 'Noto Serif SC', Georgia, serif;
-  font-size: 17px;
-  color: var(--min-text);
-}
-.luliy-min-tl-item:hover .luliy-min-tl-title { color: var(--min-title); }
-.luliy-min-tl-date {
-  flex-shrink: 0;
-  font-family: var(--min-sans);
-  font-size: 12px;
-  color: var(--min-muted);
-}
-#luliy-min-feed-more {
-  display: inline-block;
-  margin-top: 30px;
-  font-family: var(--min-sans);
-  font-size: 13px; letter-spacing: 1px;
-  color: var(--min-title);
-  text-decoration: none;
-  border-bottom: 1px solid var(--min-title);
-  padding-bottom: 3px;
-}
-#luliy-min-feed-more:hover { opacity: 0.6; }
-
-@media (max-width: 860px) {
-  #luliy-min-side {
-    position: static; height: auto;
-    flex-direction: row; align-items: center;
-    flex: 0 0 auto; width: auto;
-    padding: 18px 20px;
-    border-right: none;
-    border-bottom: 1px solid rgba(28,28,30,0.10);
-  }
-  #luliy-min-side-top { margin: 0 24px 0 0; }
-  #luliy-min-side-nav { flex-direction: row; gap: 16px; }
-  #luliy-min-side-foot { display: none; }
-  #luliy-min-home { flex-direction: column; }
-  #luliy-min-hero { height: 50vh; min-height: 320px; }
-  #luliy-min-hero-inner { padding: 0 24px; }
-  #luliy-min-hero h1 { font-size: 30px; }
-  #luliy-min-feed { padding: 36px 24px 60px; }
+.luliy-min-home-nav a:hover { opacity: 0.55; }
+@media (max-width: 640px) {
+  .luliy-min-home-nav { top: 14px; right: 16px; font-size: 12px; }
 }
 
 /* ════════ 普通文章 / about：极简排版 ════════ */
@@ -5426,8 +5270,21 @@ body.luliy-minimal .luliy-chron-year-tab.is-active::after {
 #luliy-min-toc a:hover,
 #luliy-min-toc .luliy-min-toc-h1 { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
 
-/* —— 7. 主页 v2 已经是正常滚动布局（侧边栏 + Hero + 时间线），
-        这里不再需要 position:fixed 居中铺满那一套，故移除。 —— */
+/* —— 7. 主页：背景全屏 + 图片居中 + 顶部文字导航（切换按钮左边） —— */
+#luliy-min-home {
+  position: fixed !important; inset: 0 !important;
+  background: rgb(230,225,212) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  z-index: 50 !important;
+}
+#luliy-min-home-nav {
+  position: fixed; top: 24px; right: 76px; z-index: 120;
+  font-family: var(--min-sans); font-size: 14px; letter-spacing: 0.5px;
+  color: #8c8c8c;
+}
+#luliy-min-home-nav a { color: #1c1c1e; text-decoration: none; }
+#luliy-min-home-nav a:hover { opacity: 0.55; }
+#luliy-min-home-nav .luliy-min-nav-sep { margin: 0 8px; color: #8c8c8c; }
 
 /* —— 8. 切换按钮：极简风、放右上角 —— */
 #luliy-system-toggle {
@@ -5441,6 +5298,8 @@ body.luliy-minimal .luliy-chron-year-tab.is-active::after {
   #luliy-min-toc { display: none !important; }
 }
 @media (max-width: 720px) {
+  #luliy-min-home-nav { right: 64px; font-size: 12px; }
+  #luliy-min-home-nav .luliy-min-nav-sep { margin: 0 5px; }
 }
 
 /* —— v2 补丁：标题/表头颜色 + 表格外框，更强覆盖 —— */
