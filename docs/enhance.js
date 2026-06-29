@@ -5638,7 +5638,7 @@
      · 极简系统下不加载任何赛博特效，走自己的黑白灰衬线排版。
      ============================================================ */
   var SYSTEM_KEY = 'luliy-system';
-  var MINIMAL_HOME_IMG = 'https://free.picui.cn/free/2026/06/27/6a3f70ae1d959.png';
+  var MINIMAL_HOME_IMG = 'https://free.picui.cn/free/2026/06/28/6a413d098581f.png';
 
   function getSystem() {
     try { return localStorage.getItem(SYSTEM_KEY) === 'minimal' ? 'minimal' : 'cyber'; }
@@ -5713,11 +5713,12 @@
     }).join('<span class="luliy-min-nav-sep">/</span>');
     wrap.innerHTML =
       '<div class="luliy-min-home-stage">' +
-        '<img class="luliy-min-home-img" src="' + MINIMAL_HOME_IMG + '" alt="" draggable="false">' +
+        '<img class="luliy-min-home-img" src="' + esc(MINIMAL_HOME_IMG) + '" alt="" draggable="false">' +
         '<nav class="luliy-min-home-nav">' + navHtml + '</nav>' +
       '</div>';
     document.body.appendChild(wrap);
   }
+
 
   function renderMinimalArticle() {
     document.body.classList.add('luliy-min-article');
@@ -5738,35 +5739,26 @@
       toc.innerHTML = html;
       document.body.appendChild(toc);
 
-      /* ★ 跟随页面滚动，高亮当前所在标题（scroll-spy） */
-      var tocLinks = Array.prototype.slice.call(toc.querySelectorAll('a'));
-      var headEls = Array.prototype.slice.call(heads);
-      function setCurrent(id) {
-        tocLinks.forEach(function (a) {
-          var match = a.getAttribute('href') === '#' + id;
-          a.classList.toggle('is-current', match);
+      /* 滚动时给当前所在标题对应的目录项加 is-active（加粗高亮） */
+      var tocLinks = toc.querySelectorAll('a');
+      function updateActiveToc() {
+        var activeIdx = 0;
+        var headsArr = Array.prototype.slice.call(heads);
+        for (var i = 0; i < headsArr.length; i++) {
+          if (headsArr[i].getBoundingClientRect().top - 120 <= 0) activeIdx = i;
+          else break;
+        }
+        tocLinks.forEach(function (a, i) {
+          a.classList.toggle('is-active', i === activeIdx);
         });
       }
-      if (window.IntersectionObserver) {
-        var io = new IntersectionObserver(function (entries) {
-          var visible = entries.filter(function (en) { return en.isIntersecting; });
-          if (visible.length) {
-            visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
-            setCurrent(visible[0].target.id);
-          }
-        }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
-        headEls.forEach(function (h) { io.observe(h); });
-      } else {
-        var onScroll = function () {
-          var cur = headEls[0];
-          headEls.forEach(function (h) {
-            if (h.getBoundingClientRect().top <= 120) cur = h;
-          });
-          if (cur) setCurrent(cur.id);
-        };
-        window.addEventListener('scroll', onScroll, { passive: true });
-        onScroll();
-      }
+      updateActiveToc();
+      var tocSpyTicking = false;
+      window.addEventListener('scroll', function () {
+        if (tocSpyTicking) return;
+        tocSpyTicking = true;
+        requestAnimationFrame(function () { updateActiveToc(); tocSpyTicking = false; });
+      }, { passive: true });
     }
   }
 
