@@ -47,13 +47,6 @@
     /* 副标题，来自用户上传的赛博朋克粒子页面，只在首页 brand 下方显示 */
     siteSubtitle: '\u0391\u03bc\u03c6\u03b9\u03c3\u03b2\u03ae\u03c4\u03b7\u03c3\u03b5. \u039a\u03b1\u03c4\u03b1\u03bd\u03cc\u03b7\u03c3\u03b5. \u0394\u03b7\u03bc\u03b9\u03bf\u03cd\u03c1\u03b3\u03b7\u03c3\u03b5.',
 
-    /* ★ 极简模式首页（左侧栏 + 大图 Hero + 时间线文章列表）文案，
-       随便改成你自己想要的话即可。 */
-    minHomeTitle: 'I will keep climbing.',
-    minHomeSubtitle: 'Every article is another step.',
-    minHomeExplore: 'EXPLORE',
-    minHomeMaxPosts: 8,   /* 首页时间线最多显示几篇文章，剩下的引到 Archives */
-
     /* ★ Loading splash image (shown briefly while the site loads) */
     /* ★ Loading splash：不再用图片，文字内容取自 siteName */
     splashMaxMs: 1500,   /* 显示这么久后自动淡出 */
@@ -5645,7 +5638,7 @@
      · 极简系统下不加载任何赛博特效，走自己的黑白灰衬线排版。
      ============================================================ */
   var SYSTEM_KEY = 'luliy-system';
-  var MINIMAL_HOME_IMG = 'https://free.picui.cn/free/2026/06/28/6a413d098581f.png';
+  var MINIMAL_HOME_IMG = 'https://free.picui.cn/free/2026/06/27/6a3f70ae1d959.png';
 
   function getSystem() {
     try { return localStorage.getItem(SYSTEM_KEY) === 'minimal' ? 'minimal' : 'cyber'; }
@@ -5709,103 +5702,22 @@
     document.body.classList.add('luliy-min-home-page');
     var wrap = document.createElement('div');
     wrap.id = 'luliy-min-home';
-
-    var navLinks = [
-      { href: '/',               label: 'Home' },
-      { href: '/archive.html',   label: 'Archives' },
-      { href: '/chronicle.html', label: 'Chronicle' },
+    var links = [
+      { href: '/about.html',     label: 'About' },
       { href: '/book.html',      label: 'Book' },
-      { href: '/about.html',     label: 'About' }
+      { href: '/archive.html',   label: 'Archives' },
+      { href: '/chronicle.html', label: 'Chronicle' }
     ];
-    var navHtml = navLinks.map(function (l, i) {
-      return '<a class="' + (i === 0 ? 'is-active' : '') + '" href="' + l.href + '">' + esc(l.label) + '</a>';
-    }).join('');
-
+    var navHtml = links.map(function (l) {
+      return '<a href="' + l.href + '">' + l.label + '</a>';
+    }).join('<span class="luliy-min-nav-sep">/</span>');
     wrap.innerHTML =
-      '<aside id="luliy-min-side">' +
-        '<div id="luliy-min-side-top">' +
-          '<div id="luliy-min-logo">' + esc(LULIY_OPTS.siteName) + '</div>' +
-          '<div id="luliy-min-logo-dot">\u00b7</div>' +
-        '</div>' +
-        '<nav id="luliy-min-side-nav">' + navHtml + '</nav>' +
-        '<div id="luliy-min-side-foot">' +
-          '<a href="https://github.com/luliyer6-ux/luliyer6-ux.github.io" target="_blank" rel="noopener">GitHub</a>' +
-        '</div>' +
-      '</aside>' +
-      '<main id="luliy-min-main">' +
-        '<section id="luliy-min-hero" style="background-image:url(\'' + esc(MINIMAL_HOME_IMG) + '\')">' +
-          '<div id="luliy-min-hero-inner">' +
-            '<h1>' + esc(LULIY_OPTS.minHomeTitle) + '</h1>' +
-            '<p id="luliy-min-hero-sub">' + esc(LULIY_OPTS.minHomeSubtitle) + '</p>' +
-            '<a id="luliy-min-hero-explore" href="#luliy-min-feed">' + esc(LULIY_OPTS.minHomeExplore) + ' \u2192</a>' +
-          '</div>' +
-        '</section>' +
-        '<section id="luliy-min-feed"><p id="luliy-min-feed-empty">\u52a0\u8f7d\u4e2d\u2026</p></section>' +
-      '</main>';
+      '<div class="luliy-min-home-stage">' +
+        '<img class="luliy-min-home-img" src="' + MINIMAL_HOME_IMG + '" alt="" draggable="false">' +
+        '<nav class="luliy-min-home-nav">' + navHtml + '</nav>' +
+      '</div>';
     document.body.appendChild(wrap);
-
-    fetchPosts().then(renderMinHomeFeed).catch(function () { renderMinHomeFeed([]); });
   }
-
-  /* 首页文章时间线：按年份分组，最多显示 LULIY_OPTS.minHomeMaxPosts 篇，
-     更早的年份只留一个跳到 Archives 的快捷标记。 */
-  function renderMinHomeFeed(posts) {
-    var feed = document.getElementById('luliy-min-feed');
-    if (!feed) return;
-    posts = (posts || []).slice().sort(function (a, b) {
-      return (b.created || '').localeCompare(a.created || '');
-    });
-
-    if (!posts.length) {
-      feed.innerHTML = '<p id="luliy-min-feed-empty">\u6682\u65e0\u6587\u7ae0</p>' +
-        '<a id="luliy-min-feed-more" href="/archive.html">VIEW ALL ARCHIVES \u2192</a>';
-      return;
-    }
-
-    var max = LULIY_OPTS.minHomeMaxPosts || 8;
-    var shown = posts.slice(0, max);
-    var shownYears = [];
-    shown.forEach(function (p) {
-      var y = (p.created || '').slice(0, 4);
-      if (y && shownYears.indexOf(y) === -1) shownYears.push(y);
-    });
-
-    var html = '<div id="luliy-min-timeline">';
-    var lastYear = null;
-    shown.forEach(function (p) {
-      var y = (p.created || '').slice(0, 4);
-      if (y && y !== lastYear) {
-        html += '<div class="luliy-min-tl-year"><span class="luliy-min-tl-dot"></span>' + esc(y) + '</div>';
-        lastYear = y;
-      }
-      var cat = (p.labels && p.labels[0]) ? p.labels[0].name : '';
-      var dateShort = (p.created || '').slice(5, 10);
-      html +=
-        '<a class="luliy-min-tl-item" href="' + esc(p.link) + '">' +
-          '<span class="luliy-min-tl-dot"></span>' +
-          '<div class="luliy-min-tl-body">' +
-            (cat ? '<div class="luliy-min-tl-cat">' + esc(cat.toUpperCase()) + '</div>' : '') +
-            '<div class="luliy-min-tl-title">' + esc(p.title) + '</div>' +
-          '</div>' +
-          '<div class="luliy-min-tl-date">' + esc(dateShort) + '</div>' +
-        '</a>';
-    });
-
-    /* 更早的年份：只放一个跳转标记，不在首页展开列表 */
-    var moreYears = [];
-    posts.slice(max).forEach(function (p) {
-      var y = (p.created || '').slice(0, 4);
-      if (y && shownYears.indexOf(y) === -1 && moreYears.indexOf(y) === -1) moreYears.push(y);
-    });
-    moreYears.forEach(function (y) {
-      html += '<a class="luliy-min-tl-year luliy-min-tl-year-link" href="/archive.html">' +
-        '<span class="luliy-min-tl-dot"></span>' + esc(y) + '</a>';
-    });
-    html += '</div>';
-    html += '<a id="luliy-min-feed-more" href="/archive.html">VIEW ALL ARCHIVES \u2192</a>';
-    feed.innerHTML = html;
-  }
-
 
   function renderMinimalArticle() {
     document.body.classList.add('luliy-min-article');
@@ -5826,26 +5738,35 @@
       toc.innerHTML = html;
       document.body.appendChild(toc);
 
-      /* 滚动时给当前所在标题对应的目录项加 is-active（加粗高亮） */
-      var tocLinks = toc.querySelectorAll('a');
-      function updateActiveToc() {
-        var activeIdx = 0;
-        var headsArr = Array.prototype.slice.call(heads);
-        for (var i = 0; i < headsArr.length; i++) {
-          if (headsArr[i].getBoundingClientRect().top - 120 <= 0) activeIdx = i;
-          else break;
-        }
-        tocLinks.forEach(function (a, i) {
-          a.classList.toggle('is-active', i === activeIdx);
+      /* ★ 跟随页面滚动，高亮当前所在标题（scroll-spy） */
+      var tocLinks = Array.prototype.slice.call(toc.querySelectorAll('a'));
+      var headEls = Array.prototype.slice.call(heads);
+      function setCurrent(id) {
+        tocLinks.forEach(function (a) {
+          var match = a.getAttribute('href') === '#' + id;
+          a.classList.toggle('is-current', match);
         });
       }
-      updateActiveToc();
-      var tocSpyTicking = false;
-      window.addEventListener('scroll', function () {
-        if (tocSpyTicking) return;
-        tocSpyTicking = true;
-        requestAnimationFrame(function () { updateActiveToc(); tocSpyTicking = false; });
-      }, { passive: true });
+      if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(function (entries) {
+          var visible = entries.filter(function (en) { return en.isIntersecting; });
+          if (visible.length) {
+            visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+            setCurrent(visible[0].target.id);
+          }
+        }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+        headEls.forEach(function (h) { io.observe(h); });
+      } else {
+        var onScroll = function () {
+          var cur = headEls[0];
+          headEls.forEach(function (h) {
+            if (h.getBoundingClientRect().top <= 120) cur = h;
+          });
+          if (cur) setCurrent(cur.id);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
     }
   }
 
