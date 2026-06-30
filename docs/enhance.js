@@ -5651,8 +5651,7 @@
   root._luliySetSystem = setSystem;
   root._luliyGetSystem = getSystem;
 
-  /* 点击时：①若干深浅不一的墨滴从点击处向外溅开，由大变小；
-     ②紧接着一笔毛笔笔触从左到右扫过点击位置，留下笔痕后淡出。 */
+  /* 点击时：若干深浅不一的墨滴从点击处向外溅开，由大变小。 */
   function initMinimalInkClick() {
     if (initMinimalInkClick._bound) return;
     initMinimalInkClick._bound = true;
@@ -5663,16 +5662,16 @@
       wrap.style.left = x + 'px';
       wrap.style.top = y + 'px';
 
-      /* 10~15 颗墨滴，随机角度/距离/大小/深浅/延迟 */
-      var dropCount = 10 + Math.floor(Math.random() * 6);
+      /* 18~26 颗墨滴，随机角度/距离/大小/深浅/延迟 */
+      var dropCount = 18 + Math.floor(Math.random() * 9);
       for (var i = 0; i < dropCount; i++) {
         var drop = document.createElement('span');
         drop.className = 'luliy-ink-drop';
         var angle = Math.random() * Math.PI * 2;
-        var dist = 10 + Math.random() * 46;
+        var dist = 16 + Math.random() * 70;
         var dx = Math.cos(angle) * dist;
         var dy = Math.sin(angle) * dist;
-        var size = 4 + Math.random() * 10;
+        var size = 8 + Math.random() * 20;
         var shade = 0.18 + Math.random() * 0.55;   /* 深浅不一 */
         var delay = Math.random() * 0.12;
         drop.style.setProperty('--luliy-dx', dx + 'px');
@@ -5686,16 +5685,8 @@
         wrap.appendChild(drop);
       }
 
-      /* 毛笔笔触：从点击点左侧扫到右侧，留下一道渐隐的笔痕 */
-      var brush = document.createElement('span');
-      brush.className = 'luliy-ink-brush';
-      var brushW = 70 + Math.random() * 50;
-      brush.style.width = brushW + 'px';
-      brush.style.marginLeft = (-brushW * 0.18) + 'px';
-      wrap.appendChild(brush);
-
       document.body.appendChild(wrap);
-      setTimeout(function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }, 1100);
+      setTimeout(function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }, 850);
     }, { passive: true });
   }
 
@@ -5782,9 +5773,9 @@
       heads.forEach(function (h, i) {
         if (!h.id) h.id = 'luliy-min-h-' + i;
         var lvl = h.tagName === 'H1' ? 'h1' : (h.tagName === 'H2' ? 'h2' : 'h3');
-        var prefix = lvl === 'h1' ? '#' : '\u2022';
+        var prefix = lvl === 'h1' ? '#' : '';
         html += '<a class="luliy-min-toc-' + lvl + '" href="#' + h.id + '">' +
-          prefix + ' ' + esc(h.textContent) + '</a>';
+          (prefix ? prefix + ' ' : '') + esc(h.textContent) + '</a>';
       });
       toc.innerHTML = html;
       document.body.appendChild(toc);

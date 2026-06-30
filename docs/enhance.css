@@ -4758,9 +4758,9 @@ body.luliy-minimal #content { background: transparent !important; }
   top: 56px; left: 40px; right: auto;
   z-index: 65;
   display: flex; flex-direction: row;
-  gap: 18px;
+  gap: 10px;
   font-family: var(--min-sans);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--min-muted);
@@ -4773,7 +4773,7 @@ body.luliy-minimal #content { background: transparent !important; }
   transition: opacity 0.15s;
 }
 #luliy-min-nav a:hover { opacity: 0.55; }
-#luliy-min-nav .luliy-min-nav-sep { display: none; }
+#luliy-min-nav .luliy-min-nav-sep { color: var(--min-muted); font-weight: 400; }
 
 /* —— 系统切换按钮（极简 → 赛博） —— */
 #luliy-system-toggle {
@@ -5045,7 +5045,7 @@ body.luliy-minimal .luliy-book-sub,
 body.luliy-minimal .luliy-shelf-empty { color: var(--min-muted) !important; }
 
 @media (max-width: 720px) {
-  #luliy-min-nav { left: 14px; top: 14px; gap: 10px; font-size: 12px; }
+  #luliy-min-nav { left: 14px; top: 14px; gap: 6px; font-size: 11px; }
   body.luliy-minimal .luliy-archives,
   body.luliy-minimal .luliy-chronicle,
   body.luliy-minimal .luliy-bookshelf { padding: 8px 20px 60px; }
@@ -5201,6 +5201,22 @@ body.luliy-min-article #postBody pre * {
   -webkit-text-fill-color: #1c1c1e !important;
   text-shadow: none !important;
   background: transparent !important;
+}
+/* mac 三点装饰：不受上面"pre 内全部强制透明背景"规则影响，
+   保留原本的红/黄/绿配色，否则三个点会变成看不见的黑底黑点 */
+body.luliy-min-article #postBody pre .mac-strip {
+  background: rgba(0,0,0,0.04) !important;
+  border-bottom: 1px solid rgba(28,28,30,0.10) !important;
+}
+body.luliy-min-article #postBody pre .mac-btn {
+  -webkit-text-fill-color: initial !important;
+}
+body.luliy-min-article #postBody pre .mac-btn-red    { background: #ff5f57 !important; }
+body.luliy-min-article #postBody pre .mac-btn-yellow { background: #ffbd2e !important; }
+body.luliy-min-article #postBody pre .mac-btn-green  { background: #28c840 !important; }
+body.luliy-min-article #postBody pre .mac-lang {
+  color: var(--min-muted) !important;
+  -webkit-text-fill-color: var(--min-muted) !important;
 }
 
 /* —— 3. 编年史表格：全屏背景下无底色、纯黑细线网格、文字纯黑 —— */
@@ -5663,8 +5679,7 @@ body.luliy-minimal #luliy-post-footer-bar {
 
 /* ════════════════════════════════════════════════════════════
    极简模式：点击水墨特效
-   ① 10~15 颗深浅不一的墨滴从点击处向外溅开，由大变小、逐渐淡出；
-   ② 一笔毛笔笔触从左到右扫过点击位置，留下渐隐的笔痕。
+   若干深浅不一的墨滴从点击处向外溅开，由大变小、逐渐淡出。
    纯 CSS 动画，JS 只负责按随机参数生成/销毁 DOM 节点（见 enhance.js
    的 initMinimalInkClick）。
    ════════════════════════════════════════════════════════════ */
@@ -5688,45 +5703,29 @@ body.luliy-minimal #luliy-post-footer-bar {
   0%   { opacity: var(--luliy-drop-op, 0.5); transform: translate(0, 0) scale(1.4); }
   100% { opacity: 0; transform: translate(var(--luliy-dx), var(--luliy-dy)) scale(0.15); }
 }
-.luliy-ink-brush {
-  position: absolute;
-  left: 0; top: -2px;
-  height: 5px;
-  border-radius: 3px;
-  background: linear-gradient(90deg,
-    rgba(28,28,30,0) 0%,
-    rgba(28,28,30,0.35) 18%,
-    rgba(28,28,30,0.5) 50%,
-    rgba(28,28,30,0.3) 78%,
-    rgba(28,28,30,0) 100%);
-  transform-origin: left center;
-  transform: scaleX(0);
-  opacity: 0;
-  animation: luliyInkBrush 0.55s ease-out 0.05s forwards, luliyInkBrushFade 0.5s ease-in 0.55s forwards;
-}
-@keyframes luliyInkBrush {
-  0%   { transform: scaleX(0); opacity: 0.8; }
-  100% { transform: scaleX(1); opacity: 0.8; }
-}
-@keyframes luliyInkBrushFade {
-  to { opacity: 0; }
-}
 
 /* ════════════════════════════════════════════════════════════
-   极简模式：文章 H1 / H2 标题下方的毛笔笔触装饰（浅灰、静态常驻，
+   极简模式：文章 H2~H6 标题下方的毛笔笔触装饰（浅灰、静态常驻，
    跟点击特效无关）。用渐变模拟一笔扫过的笔锋，左淡入、右淡出。
+   H1 不加这个装饰。
    ════════════════════════════════════════════════════════════ */
-body.luliy-min-article #postBody h1,
-body.luliy-min-article #postBody h2 {
+body.luliy-min-article #postBody h2,
+body.luliy-min-article #postBody h3,
+body.luliy-min-article #postBody h4,
+body.luliy-min-article #postBody h5,
+body.luliy-min-article #postBody h6 {
   position: relative;
   padding-bottom: 14px;
 }
-body.luliy-min-article #postBody h1::after,
-body.luliy-min-article #postBody h2::after {
+body.luliy-min-article #postBody h2::after,
+body.luliy-min-article #postBody h3::after,
+body.luliy-min-article #postBody h4::after,
+body.luliy-min-article #postBody h5::after,
+body.luliy-min-article #postBody h6::after {
   content: '';
   position: absolute;
   left: 0; bottom: 0;
-  width: 96px; height: 6px;
+  width: 64px; height: 5px;
   border-radius: 3px;
   background: linear-gradient(90deg,
     rgba(140,140,140,0) 0%,
@@ -5735,4 +5734,7 @@ body.luliy-min-article #postBody h2::after {
     rgba(140,140,140,0.5) 70%,
     rgba(140,140,140,0) 100%);
 }
-body.luliy-min-article #postBody h2::after { width: 64px; height: 5px; }
+body.luliy-min-article #postBody h3::after,
+body.luliy-min-article #postBody h4::after,
+body.luliy-min-article #postBody h5::after,
+body.luliy-min-article #postBody h6::after { width: 48px; height: 4px; }
