@@ -4685,6 +4685,7 @@ select, summary, label[for],
   cursor: url("data:image/png;base64,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") 23 7, pointer !important;
 }
 /* 极简模式：取消上面那套自定义光标，用系统默认箭头/手型 */
+html:has(body.luliy-minimal),
 body.luliy-minimal,
 body.luliy-minimal * {
   cursor: auto !important;
@@ -4754,20 +4755,21 @@ body.luliy-minimal #content { background: transparent !important; }
 /* —— 右侧常驻导航：Home / Archives / Chronicle / Book / About —— */
 #luliy-min-nav {
   position: fixed;
-  top: 44%; right: 200px;
-  transform: translateY(-50%);
-  z-index: 60;
-  display: flex; flex-direction: column;
-  gap: 14px;
+  top: 56px; left: 40px; right: auto;
+  z-index: 65;
+  display: flex; flex-direction: row;
+  gap: 18px;
   font-family: var(--min-sans);
   font-size: 14px;
+  font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--min-muted);
-  text-align: right;
+  text-align: left;
 }
 #luliy-min-nav a {
   color: var(--min-title);
   text-decoration: none;
+  font-weight: 700;
   transition: opacity 0.15s;
 }
 #luliy-min-nav a:hover { opacity: 0.55; }
@@ -5043,7 +5045,7 @@ body.luliy-minimal .luliy-book-sub,
 body.luliy-minimal .luliy-shelf-empty { color: var(--min-muted) !important; }
 
 @media (max-width: 720px) {
-  #luliy-min-nav { right: 14px; gap: 10px; font-size: 12px; }
+  #luliy-min-nav { left: 14px; top: 14px; gap: 10px; font-size: 12px; }
   body.luliy-minimal .luliy-archives,
   body.luliy-minimal .luliy-chronicle,
   body.luliy-minimal .luliy-bookshelf { padding: 8px 20px 60px; }
@@ -5660,28 +5662,77 @@ body.luliy-minimal #luliy-post-footer-bar {
 }
 
 /* ════════════════════════════════════════════════════════════
-   极简模式：点击水墨晕开特效
-   用一张内嵌的水墨团 SVG（毛笔点墨效果，带不规则飞白边缘），
-   点击瞬间出现在鼠标位置，0.9s 内放大 + 旋转 + 淡出，纯 CSS 动画。
+   极简模式：点击水墨特效
+   ① 10~15 颗深浅不一的墨滴从点击处向外溅开，由大变小、逐渐淡出；
+   ② 一笔毛笔笔触从左到右扫过点击位置，留下渐隐的笔痕。
+   纯 CSS 动画，JS 只负责按随机参数生成/销毁 DOM 节点（见 enhance.js
+   的 initMinimalInkClick）。
    ════════════════════════════════════════════════════════════ */
-.luliy-ink-splash {
+.luliy-ink-wrap {
   position: fixed;
   left: 0; top: 0;
-  width: 90px; height: 90px;
-  margin-left: -45px; margin-top: -45px;
+  width: 0; height: 0;
   pointer-events: none;
   z-index: 9999;
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='%231c1c1e'%3E%3Cpath d='M100 18c10 0 16 9 24 14 9 6 22 5 28 14 6 9 1 22 5 32 4 10 16 16 16 27s-12 17-16 27c-4 10 1 23-5 32-6 9-19 8-28 14-8 5-14 14-24 14s-16-9-24-14c-9-6-22-5-28-14-6-9-1-22-5-32-4-10-16-16-16-27s12-17 16-27c4-10-1-23 5-32 6-9 19-8 28-14 8-5 14-14 24-14z'/%3E%3Ccircle cx='150' cy='55' r='7'/%3E%3Ccircle cx='160' cy='72' r='4'/%3E%3Ccircle cx='42' cy='150' r='5'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
+}
+.luliy-ink-drop {
+  position: absolute;
+  left: 0; top: 0;
+  border-radius: 50%;
+  background: #1c1c1e;
   opacity: 0;
-  transform: scale(calc(var(--luliy-ink-scale, 1) * 0.2)) rotate(var(--luliy-ink-rot, 0deg));
-  animation: luliyInkSplash 0.9s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+  transform: translate(0, 0) scale(1.4);
+  animation: luliyInkDrop 0.7s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
 }
-@keyframes luliyInkSplash {
-  0%   { opacity: 0.55; transform: scale(calc(var(--luliy-ink-scale, 1) * 0.15)) rotate(var(--luliy-ink-rot, 0deg)); }
-  35%  { opacity: 0.45; }
-  100% { opacity: 0; transform: scale(var(--luliy-ink-scale, 1)) rotate(var(--luliy-ink-rot, 0deg)); }
+@keyframes luliyInkDrop {
+  0%   { opacity: var(--luliy-drop-op, 0.5); transform: translate(0, 0) scale(1.4); }
+  100% { opacity: 0; transform: translate(var(--luliy-dx), var(--luliy-dy)) scale(0.15); }
 }
-/* 极简模式才有水墨风，赛博系统下不需要这个效果（也不会触发，因为
-   initMinimalInkClick 只在 initMinimalSystem 里才会被调用） */
+.luliy-ink-brush {
+  position: absolute;
+  left: 0; top: -2px;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(90deg,
+    rgba(28,28,30,0) 0%,
+    rgba(28,28,30,0.35) 18%,
+    rgba(28,28,30,0.5) 50%,
+    rgba(28,28,30,0.3) 78%,
+    rgba(28,28,30,0) 100%);
+  transform-origin: left center;
+  transform: scaleX(0);
+  opacity: 0;
+  animation: luliyInkBrush 0.55s ease-out 0.05s forwards, luliyInkBrushFade 0.5s ease-in 0.55s forwards;
+}
+@keyframes luliyInkBrush {
+  0%   { transform: scaleX(0); opacity: 0.8; }
+  100% { transform: scaleX(1); opacity: 0.8; }
+}
+@keyframes luliyInkBrushFade {
+  to { opacity: 0; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   极简模式：文章 H1 / H2 标题下方的毛笔笔触装饰（浅灰、静态常驻，
+   跟点击特效无关）。用渐变模拟一笔扫过的笔锋，左淡入、右淡出。
+   ════════════════════════════════════════════════════════════ */
+body.luliy-min-article #postBody h1,
+body.luliy-min-article #postBody h2 {
+  position: relative;
+  padding-bottom: 14px;
+}
+body.luliy-min-article #postBody h1::after,
+body.luliy-min-article #postBody h2::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 96px; height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg,
+    rgba(140,140,140,0) 0%,
+    rgba(140,140,140,0.55) 12%,
+    rgba(140,140,140,0.32) 45%,
+    rgba(140,140,140,0.5) 70%,
+    rgba(140,140,140,0) 100%);
+}
+body.luliy-min-article #postBody h2::after { width: 64px; height: 5px; }

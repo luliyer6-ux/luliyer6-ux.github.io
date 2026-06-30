@@ -5651,22 +5651,51 @@
   root._luliySetSystem = setSystem;
   root._luliyGetSystem = getSystem;
 
-  /* 点击时在鼠标位置生成一团水墨晕开的效果，动画结束后自动移除 */
+  /* 点击时：①若干深浅不一的墨滴从点击处向外溅开，由大变小；
+     ②紧接着一笔毛笔笔触从左到右扫过点击位置，留下笔痕后淡出。 */
   function initMinimalInkClick() {
     if (initMinimalInkClick._bound) return;
     initMinimalInkClick._bound = true;
     document.addEventListener('click', function (e) {
-      var ink = document.createElement('span');
-      ink.className = 'luliy-ink-splash';
-      ink.style.left = e.clientX + 'px';
-      ink.style.top = e.clientY + 'px';
-      /* 每滴墨的大小、旋转角度略微随机，避免每次点出来都一个模子 */
-      var scale = 0.85 + Math.random() * 0.4;
-      var rot = Math.floor(Math.random() * 360);
-      ink.style.setProperty('--luliy-ink-scale', scale);
-      ink.style.setProperty('--luliy-ink-rot', rot + 'deg');
-      document.body.appendChild(ink);
-      setTimeout(function () { if (ink.parentNode) ink.parentNode.removeChild(ink); }, 900);
+      var x = e.clientX, y = e.clientY;
+      var wrap = document.createElement('div');
+      wrap.className = 'luliy-ink-wrap';
+      wrap.style.left = x + 'px';
+      wrap.style.top = y + 'px';
+
+      /* 10~15 颗墨滴，随机角度/距离/大小/深浅/延迟 */
+      var dropCount = 10 + Math.floor(Math.random() * 6);
+      for (var i = 0; i < dropCount; i++) {
+        var drop = document.createElement('span');
+        drop.className = 'luliy-ink-drop';
+        var angle = Math.random() * Math.PI * 2;
+        var dist = 10 + Math.random() * 46;
+        var dx = Math.cos(angle) * dist;
+        var dy = Math.sin(angle) * dist;
+        var size = 4 + Math.random() * 10;
+        var shade = 0.18 + Math.random() * 0.55;   /* 深浅不一 */
+        var delay = Math.random() * 0.12;
+        drop.style.setProperty('--luliy-dx', dx + 'px');
+        drop.style.setProperty('--luliy-dy', dy + 'px');
+        drop.style.width = size + 'px';
+        drop.style.height = size + 'px';
+        drop.style.marginLeft = (-size / 2) + 'px';
+        drop.style.marginTop = (-size / 2) + 'px';
+        drop.style.setProperty('--luliy-drop-op', shade);
+        drop.style.animationDelay = delay + 's';
+        wrap.appendChild(drop);
+      }
+
+      /* 毛笔笔触：从点击点左侧扫到右侧，留下一道渐隐的笔痕 */
+      var brush = document.createElement('span');
+      brush.className = 'luliy-ink-brush';
+      var brushW = 70 + Math.random() * 50;
+      brush.style.width = brushW + 'px';
+      brush.style.marginLeft = (-brushW * 0.18) + 'px';
+      wrap.appendChild(brush);
+
+      document.body.appendChild(wrap);
+      setTimeout(function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }, 1100);
     }, { passive: true });
   }
 
