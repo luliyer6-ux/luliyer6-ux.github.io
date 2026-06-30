@@ -5658,3 +5658,30 @@ body.luliy-minimal #luliy-post-footer-bar {
   #luliy-top-link, #luliy-to-minimal { font-size: 11px; }
   #luliy-to-minimal { padding: 3px 8px; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   极简模式：点击水墨晕开特效
+   用一张内嵌的水墨团 SVG（毛笔点墨效果，带不规则飞白边缘），
+   点击瞬间出现在鼠标位置，0.9s 内放大 + 旋转 + 淡出，纯 CSS 动画。
+   ════════════════════════════════════════════════════════════ */
+.luliy-ink-splash {
+  position: fixed;
+  left: 0; top: 0;
+  width: 90px; height: 90px;
+  margin-left: -45px; margin-top: -45px;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='%231c1c1e'%3E%3Cpath d='M100 18c10 0 16 9 24 14 9 6 22 5 28 14 6 9 1 22 5 32 4 10 16 16 16 27s-12 17-16 27c-4 10 1 23-5 32-6 9-19 8-28 14-8 5-14 14-24 14s-16-9-24-14c-9-6-22-5-28-14-6-9-1-22-5-32-4-10-16-16-16-27s12-17 16-27c4-10-1-23 5-32 6-9 19-8 28-14 8-5 14-14 24-14z'/%3E%3Ccircle cx='150' cy='55' r='7'/%3E%3Ccircle cx='160' cy='72' r='4'/%3E%3Ccircle cx='42' cy='150' r='5'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(calc(var(--luliy-ink-scale, 1) * 0.2)) rotate(var(--luliy-ink-rot, 0deg));
+  animation: luliyInkSplash 0.9s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+}
+@keyframes luliyInkSplash {
+  0%   { opacity: 0.55; transform: scale(calc(var(--luliy-ink-scale, 1) * 0.15)) rotate(var(--luliy-ink-rot, 0deg)); }
+  35%  { opacity: 0.45; }
+  100% { opacity: 0; transform: scale(var(--luliy-ink-scale, 1)) rotate(var(--luliy-ink-rot, 0deg)); }
+}
+/* 极简模式才有水墨风，赛博系统下不需要这个效果（也不会触发，因为
+   initMinimalInkClick 只在 initMinimalSystem 里才会被调用） */
