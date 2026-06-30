@@ -5773,9 +5773,8 @@
       heads.forEach(function (h, i) {
         if (!h.id) h.id = 'luliy-min-h-' + i;
         var lvl = h.tagName === 'H1' ? 'h1' : (h.tagName === 'H2' ? 'h2' : 'h3');
-        var prefix = lvl === 'h1' ? '#' : '';
         html += '<a class="luliy-min-toc-' + lvl + '" href="#' + h.id + '">' +
-          (prefix ? prefix + ' ' : '') + esc(h.textContent) + '</a>';
+          esc(h.textContent) + '</a>';
       });
       toc.innerHTML = html;
       document.body.appendChild(toc);
@@ -5790,7 +5789,7 @@
           else break;
         }
         tocLinks.forEach(function (a, i) {
-          a.classList.toggle('is-active', i === activeIdx);
+          a.classList.toggle('is-current', i === activeIdx);
         });
       }
       updateActiveToc();

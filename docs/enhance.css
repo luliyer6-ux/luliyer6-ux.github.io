@@ -4758,7 +4758,7 @@ body.luliy-minimal #content { background: transparent !important; }
   top: 56px; left: 40px; right: auto;
   z-index: 65;
   display: flex; flex-direction: row;
-  gap: 10px;
+  gap: 5px;
   font-family: var(--min-sans);
   font-size: 12px;
   font-weight: 700;
