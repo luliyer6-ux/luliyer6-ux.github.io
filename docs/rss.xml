@@ -1,47 +1,83 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>V</title><link>https://luliyer6-ux.github.io</link><description>我</description><copyright>V</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://avatars.githubusercontent.com/u/177055996?u=cb497e1edb10d059b285288c93ff32dab53af1c3&amp;v=4&amp;size=64</url><title>avatar</title><link>https://luliyer6-ux.github.io</link></image><lastBuildDate>Thu, 02 Jul 2026 06:10:19 +0000</lastBuildDate><managingEditor>V</managingEditor><ttl>60</ttl><webMaster>V</webMaster><item><title>chronicle-data</title><link>https://luliyer6-ux.github.io/post/chronicle-data.html</link><description>&lt;!-- chronicle:data:start --&gt;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>V</title><link>https://luliyer6-ux.github.io</link><description>我</description><copyright>V</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://avatars.githubusercontent.com/u/177055996?u=cb497e1edb10d059b285288c93ff32dab53af1c3&amp;v=4&amp;size=64</url><title>avatar</title><link>https://luliyer6-ux.github.io</link></image><lastBuildDate>Thu, 02 Jul 2026 06:12:09 +0000</lastBuildDate><managingEditor>V</managingEditor><ttl>60</ttl><webMaster>V</webMaster><item><title>chronicle-data</title><link>https://luliyer6-ux.github.io/post/chronicle-data.html</link><description>&lt;!-- chronicle:data:start --&gt;
 {
-  'years': ['2026', '2025', '2024'],
+  'years': ['2026'],
   'categories': [
-    { 'key': 'travel', 'label': '出游' },
-    { 'key': 'media', 'label': '书影游' },
-    { 'key': 'posters', 'label': '海报墙' }
+    {'key': 'event', 'label': '事件'},
+    {'key': 'media', 'label': '书视事'},
+    {'key': 'posters', 'label': '海报墙'}
   ],
   'data': {
     '2026': {
-      'travel': [
-        { 'month': '1月', 'city': '东京', 'items': [
-          { 'title': '浅草寺初诣' },
-          { 'title': '新宿御苑赏梅' }
-        ]},
-        { 'month': '1月', 'city': '镰仓', 'items': [
-          { 'title': '高德院大佛', 'url': 'https://luliyer6-ux.github.io' }
-        ]},
-        { 'month': '3月', 'city': '京都', 'items': [
-          { 'title': '清水寺', 'url': 'https://luliyer6-ux.github.io' },
-          { 'title': '伏见稻荷大社' },
-          { 'title': '夜樱·哲学之道' }
-        ]},
-        { 'month': '5月', 'city': '札幌', 'items': [
-          { 'title': '薰衣草田预踩点' }
-        ]}
+      'event': [
+        {
+          'month': '1月',
+          'city': '上海',
+          'items': [
+            {'title': '跨年烟花活动', 'url': ''},
+            {'title': '朋友聚会', 'url': ''}
+          ]
+        },
+        {
+          'month': '3月',
+          'city': '杭州',
+          'items': [
+            {'title': '西湖春游', 'url': ''},
+            {'title': '参加读书分享会', 'url': 'https://example.com/reading-club'}
+          ]
+        },
+        {
+          'month': '6月',
+          'city': '北京',
+          'items': [
+            {'title': '毕业典礼', 'url': ''}
+          ]
+        }
       ],
       'media': [
-        { 'month': '1月',
-          'books': [{ 'title': '百年孤独' }, { 'title': '解忧杂货店' }],
-          'watch': [{ 'title': '爱、死亡与机器人 S4' }],
-          'shows': [],
-          'games': [{ 'title': '塞尔达传说：王国之泪' }]
+        {
+          'month': '1月',
+          'book': '《百年孤独》, 《小王子》',
+          'movie': '《星际穿越》',
+          'show': '苹果发布会',
+          'game': '线上编程训练营'
         },
-        { 'month': '2月',
-          'books': [{ 'title': '三体' }],
-          'watch': [{ 'title': '鬼灭之刃 锻刀村篇' }, { 'title': '进击的巨人 完结篇' }],
-          'shows': [{ 'title': '舞台剧《罗密欧与朱丽叶》' }],
-          'games': []
+        {
+          'month': '4月',
+          'book': '《人类简史》',
+          'movie': '《奥本海默》, 《沙丘2》',
+          'show': '',
+          'game': 'TED演讲：AI的未来'
         },
-        { 'month': '3月',
-          'books': [],
-          'watch': [{ 'title': '你的名字。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/post/chronicle-data.html</guid><pubDate>Sun, 28 Jun 2026 12:14:05 +0000</pubDate></item><item><title>标题</title><link>https://luliyer6-ux.github.io/post/biao-ti.html</link><description># 1
+        {
+          'month': '8月',
+          'book': '',
+          'movie': '《瞬息全宇宙》',
+          'show': '巴黎奥运会',
+          'game': '参加马拉松训练营'
+        }
+      ],
+      'posters': [
+        {
+          'image': 'https://picsum.photos/seed/poster1/600/800',
+          'title': '春日随笔',
+          'url': ''
+        },
+        {
+          'image': 'https://picsum.photos/seed/poster2/600/800',
+          'title': '旅行手记 · 杭州',
+          'url': 'https://example.com/hangzhou-trip'
+        },
+        {
+          'image': 'https://picsum.photos/seed/poster3/600/800',
+          'title': '年度总结海报',
+          'url': ''
+        }
+      ]
+    }
+  }
+}
+&lt;!-- chronicle:data:end --&gt;。</description><guid isPermaLink="true">https://luliyer6-ux.github.io/post/chronicle-data.html</guid><pubDate>Sun, 28 Jun 2026 12:14:05 +0000</pubDate></item><item><title>标题</title><link>https://luliyer6-ux.github.io/post/biao-ti.html</link><description># 1
 大声的
 ## 2
 大师按时
