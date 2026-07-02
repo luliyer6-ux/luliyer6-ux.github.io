@@ -5844,10 +5844,74 @@
     }
   }
 
+  /* 极简系统 · 专注模式（Focus Mode）
+     仅文章页可用：双击正文区域，或按 F 键，进入/退出专注模式。
+     专注模式套用独立的编辑部/学术期刊排版（象牙白背景/近黑正文/
+     陶土色强调色/衬线正文/无阴影无圆角），并隐藏目录、导航等干扰元素，
+     样式定义见 enhance.css 的 .luliy-focus-mode 区块。
+     注：双击是浏览器选词手势——双击文字必然会先选中一个词。为避免
+     切换专注模式后留下刺眼的高亮选区，切换后会主动清空当前选区。 */
+  function initMinimalFocusMode() {
+    if (initMinimalFocusMode._bound) return;
+    initMinimalFocusMode._bound = true;
+
+    function hasArticle() {
+      return !!document.getElementById('postBody') &&
+        document.body.classList.contains('luliy-min-article');
+    }
+    function inEditableOrControl(el) {
+      if (!el || !el.closest) return false;
+      return !!el.closest(
+        'a, button, input, textarea, select, [contenteditable], ' +
+        '#luliy-min-nav, #luliy-min-toc, #luliy-system-toggle, #luliy-focus-hint'
+      );
+    }
+    function showFocusHint() {
+      if (document.getElementById('luliy-focus-hint')) return;
+      var hint = document.createElement('div');
+      hint.id = 'luliy-focus-hint';
+      hint.textContent = 'F \u6216\u53cc\u51fb\u00b7\u9000\u51fa\u4e13\u6ce8\u6a21\u5f0f'; /* F 或双击·退出专注模式 */
+      document.body.appendChild(hint);
+      setTimeout(function () {
+        hint.classList.add('is-out');
+        setTimeout(function () { if (hint.parentNode) hint.parentNode.removeChild(hint); }, 400);
+      }, 2200);
+    }
+    function toggleFocus() {
+      if (!hasArticle()) return;
+      var on = document.body.classList.toggle('luliy-focus-mode');
+      try { if (typeof playSfx === 'function') playSfx('theme'); } catch (e) {}
+      var sel = window.getSelection && window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+      if (on) showFocusHint();
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target;
+      var tag = t && t.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+        (t && t.isContentEditable)) return;
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFocus();
+      } else if (e.key === 'Escape' && document.body.classList.contains('luliy-focus-mode')) {
+        document.body.classList.remove('luliy-focus-mode');
+      }
+    });
+
+    document.addEventListener('dblclick', function (e) {
+      if (!hasArticle()) return;
+      if (inEditableOrControl(e.target)) return;
+      toggleFocus();
+    });
+  }
+
   ready(function () {
     /* ★ 极简系统拦截：在任何赛博初始化之前判断。命中则走极简分支并 return。 */
     if (getSystem() === 'minimal') {
       safe(initMinimalSystem, 'minimalSystem');
+      safe(initMinimalFocusMode, 'minimalFocusMode');
       return;
     }
 
