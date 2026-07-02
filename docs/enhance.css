@@ -39,6 +39,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
 @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+/* 专注模式（Focus Mode）编辑部风排版专用字体 —— 仅在 .luliy-focus-mode 下引用，
+   衬线正文用 Source Serif 4（英文/数字），中文回退到 Noto Serif SC。 */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600&display=swap');
 
 
 /* ══════════════════════════════════════════════════════════
@@ -4925,6 +4928,159 @@ body.luliy-min-article .luliy-readmeta {
 @media (max-width: 1080px) {
   #luliy-min-toc { display: none; }   /* 窄屏不显示边注目录 */
   body.luliy-min-article #content { padding: 0 24px 80px; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   极简系统 · 专注模式 Focus Mode
+   触发：文章页内双击正文，或按 F 键（Esc 退出）。
+   编辑部 / 学术期刊排版规范：象牙白底 + 近黑正文 + 单一陶土色强调，
+   衬线正文 + 无衬线 UI + 等宽大写元信息，居中 720px 主列，1.65 行高，
+   无阴影 / 无渐变 / 无圆角，1px 浅灰硬边框，大量留白，无背景图/纹理。
+   仅在 body.luliy-minimal.luliy-focus-mode 下生效，不影响其他状态。
+   ════════════════════════════════════════════════════════════ */
+body.luliy-minimal.luliy-focus-mode {
+  --focus-bg:      #faf9f5;   /* 暖象牙白，禁止纯白 */
+  --focus-text:    #141413;   /* 近黑正文 */
+  --focus-accent:  #d97757;   /* 唯一强调色：陶土橙，仅用于链接/强调 */
+  --focus-border:  #d1cfc5;   /* 1px 浅灰硬边框 */
+  --focus-serif:   'Source Serif 4', 'Lora', 'Noto Serif SC', Georgia, 'Times New Roman', serif;
+  --focus-sans:    'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --focus-mono:    'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Courier New', monospace;
+
+  background: var(--focus-bg) !important;
+  background-image: none !important;
+}
+/* 隐藏一切会分散注意力的界面：右侧导航、悬浮目录、系统切换按钮 */
+body.luliy-minimal.luliy-focus-mode #luliy-min-nav,
+body.luliy-minimal.luliy-focus-mode #luliy-min-toc,
+body.luliy-minimal.luliy-focus-mode #luliy-system-toggle {
+  display: none !important;
+}
+/* 扁平化：全局去阴影 / 去渐变 / 去圆角，只保留 1px 硬边框 */
+body.luliy-minimal.luliy-focus-mode #content,
+body.luliy-minimal.luliy-focus-mode #content *,
+body.luliy-minimal.luliy-focus-mode #postBody,
+body.luliy-minimal.luliy-focus-mode #postBody * {
+  box-shadow: none !important;
+  background-image: none !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+/* 正文主列：居中，720px，衬线，1.65 行高 */
+body.luliy-minimal.luliy-focus-mode #content {
+  max-width: 720px !important;
+  margin: 0 auto !important;
+  padding: 96px 24px 160px !important;
+  background: var(--focus-bg) !important;
+}
+body.luliy-minimal.luliy-focus-mode #postBody {
+  max-width: 720px !important;
+  margin: 0 !important;
+  font-family: var(--focus-serif);
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--focus-text);
+}
+body.luliy-minimal.luliy-focus-mode #postBody h1,
+body.luliy-minimal.luliy-focus-mode #postBody h2,
+body.luliy-minimal.luliy-focus-mode #postBody h3,
+body.luliy-minimal.luliy-focus-mode #postBody h4 {
+  font-family: var(--focus-serif);
+  color: var(--focus-text);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+body.luliy-minimal.luliy-focus-mode #postBody h1 {
+  font-size: 36px;
+  line-height: 1.25;
+  margin: 0 0 40px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--focus-border);
+}
+body.luliy-minimal.luliy-focus-mode #postBody h2 {
+  font-size: 24px; margin: 64px 0 20px;
+}
+body.luliy-minimal.luliy-focus-mode #postBody h3 {
+  font-size: 19px; margin: 44px 0 14px;
+}
+body.luliy-minimal.luliy-focus-mode #postBody h4 {
+  font-size: 17px; margin: 32px 0 12px; padding-left: 0;
+}
+body.luliy-minimal.luliy-focus-mode #postBody h4::before { content: none; }
+body.luliy-minimal.luliy-focus-mode #postBody p {
+  margin: 0 0 28px;
+  color: var(--focus-text);
+}
+/* 唯一强调色：只用在链接上 */
+body.luliy-minimal.luliy-focus-mode #postBody a {
+  color: var(--focus-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+body.luliy-minimal.luliy-focus-mode #postBody strong,
+body.luliy-minimal.luliy-focus-mode #postBody b {
+  color: var(--focus-text);
+  font-weight: 600;
+}
+body.luliy-minimal.luliy-focus-mode #postBody em,
+body.luliy-minimal.luliy-focus-mode #postBody i {
+  color: var(--focus-accent);
+  font-style: italic;
+}
+/* 图片：无圆角、无阴影，细边框代替 */
+body.luliy-minimal.luliy-focus-mode #postBody img {
+  max-width: 100%;
+  border: 1px solid var(--focus-border);
+}
+/* 代码块：扁平、单色，等宽字体 */
+body.luliy-minimal.luliy-focus-mode #postBody pre,
+body.luliy-minimal.luliy-focus-mode #postBody code {
+  font-family: var(--focus-mono);
+  background: #f2f0e9;
+  border: 1px solid var(--focus-border);
+}
+body.luliy-minimal.luliy-focus-mode #postBody blockquote {
+  border-left: 2px solid var(--focus-border);
+  border-radius: 0;
+  padding-left: 20px;
+  color: var(--focus-text);
+  opacity: 0.75;
+  background: transparent;
+}
+/* 元信息（日期/分类）：等宽大写字体，宽字距，用作细节而非重点 */
+body.luliy-minimal.luliy-focus-mode #postBody .luliy-readmeta,
+body.luliy-minimal.luliy-focus-mode .luliy-readmeta {
+  font-family: var(--focus-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  color: var(--focus-text);
+  opacity: 0.55;
+  margin-bottom: 48px;
+}
+/* 退出提示（居中底部小字，2.2s 后自动淡出） */
+#luliy-focus-hint {
+  position: fixed;
+  left: 50%; bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 200;
+  font-family: var(--focus-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #141413;
+  background: #faf9f5;
+  border: 1px solid #d1cfc5;
+  border-radius: 0;
+  padding: 8px 16px;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+#luliy-focus-hint.is-out { opacity: 0; }
+@media (max-width: 640px) {
+  body.luliy-minimal.luliy-focus-mode #content { padding: 72px 20px 120px !important; }
+  body.luliy-minimal.luliy-focus-mode #postBody h1 { font-size: 28px; }
 }
 
 /* ════════ Archives / Chronicle / Book 的极简皮肤 ════════
