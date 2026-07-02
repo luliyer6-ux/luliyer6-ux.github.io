@@ -135,6 +135,48 @@
     });
   }
 
+  /* ---- Safe localStorage wrappers ---------------------------
+     localStorage.setItem/getItem can throw (Safari private mode,
+     quota exceeded, storage disabled by the user/browser policy,
+     etc). Previously ~30 call sites called localStorage directly
+     with no try/catch — if one threw inside a click/slider handler
+     (not inside an init function wrapped by safe()), that handler
+     would silently stop working with no visible error. All
+     localStorage access now goes through these two so a storage
+     failure never breaks a feature — it just no-ops / falls back
+     to null, matching the existing "missing key" behaviour. */
+  function _lsGet(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function _lsSet(key, val) {
+    try { window.localStorage.setItem(key, val); return true; } catch (e) { return false; }
+  }
+
+  /* ---- Shared resize dispatcher ------------------------------
+     There were 7 separate `window.addEventListener('resize', ...)`
+     calls scattered across modules (nav positioning, sakura canvas
+     sizing, hero-scroll measurement, etc). `resize` fires many times
+     per second during a manual window drag, so all 7 handlers were
+     each running independently on every tick — real layout-thrash
+     risk. Modules now register via _luliyOnResize(fn) instead of
+     adding their own listener; there is exactly one native listener,
+     and all registered callbacks run together, batched to one
+     requestAnimationFrame per resize tick. */
+  var _resizeCallbacks = [];
+  var _resizeRAF = null;
+  function _luliyOnResize(fn) {
+    _resizeCallbacks.push(fn);
+  }
+  window.addEventListener('resize', function () {
+    if (_resizeRAF) return;
+    _resizeRAF = requestAnimationFrame(function () {
+      _resizeRAF = null;
+      for (var i = 0; i < _resizeCallbacks.length; i++) {
+        try { _resizeCallbacks[i](); } catch (e) {}
+      }
+    });
+  }, { passive: true });
+
   /* zoom 坐标校正（见下）——供所有用鼠标坐标做 fixed 定位的效果使用 */
 
   /* ★ 需求②：点击效果全局跟鼠标——zoom 坐标校正。
@@ -176,7 +218,7 @@
     if (_luliyResolveMode() === mode) return;
     /* Directly flip the attribute + Gmeek's storage key — no reload. */
     htmlEl.setAttribute('data-color-mode', mode);
-    try { localStorage.setItem('meek_theme', mode); } catch (e) {}
+    try { _lsSet('meek_theme', mode); } catch (e) {}
     /* Keep Gmeek's own <body> class in sync if it uses one. */
     try {
       document.body.setAttribute('data-color-mode', mode);
@@ -272,10 +314,10 @@
 
     /* Position: restored from localStorage or default top-left */
     function loadPos() {
-      try { return JSON.parse(localStorage.getItem(APOS) || 'null'); } catch(e){ return null; }
+      try { return JSON.parse(_lsGet(APOS) || 'null'); } catch(e){ return null; }
     }
     function savePos(x, y) {
-      try { localStorage.setItem(APOS, JSON.stringify({x:x, y:y})); } catch(e){}
+      try { _lsSet(APOS, JSON.stringify({x:x, y:y})); } catch(e){}
     }
 
     /* Track list (default + user-added) */
@@ -285,13 +327,13 @@
         { name: cfg.name||'echos', artist: cfg.artist||'Luliy', url: cfg.url, cover: cfg.cover||'' }
       ];
       try {
-        var extra = JSON.parse(localStorage.getItem(ALIST) || '[]');
+        var extra = JSON.parse(_lsGet(ALIST) || '[]');
         if (Array.isArray(extra)) return base.concat(extra);
       } catch(e) {}
       return base;
     }
     function saveTracks(extraList) {
-      try { localStorage.setItem(ALIST, JSON.stringify(extraList)); } catch(e) {}
+      try { _lsSet(ALIST, JSON.stringify(extraList)); } catch(e) {}
     }
 
     /* Wrapper that takes full position control */
@@ -381,7 +423,7 @@
       try {
         var tracks = loadTracks();
         var saved = null;
-        try { saved = JSON.parse(localStorage.getItem(AKEY) || 'null'); } catch(e){}
+        try { saved = JSON.parse(_lsGet(AKEY) || 'null'); } catch(e){}
         var isDark = document.documentElement.getAttribute('data-color-mode') === 'dark';
 
         var ap = new window.APlayer({
@@ -405,7 +447,7 @@
         /* ── Cross-page resume ────────────────────────────── */
         var au = ap.audio;
         function persist() {
-          try { localStorage.setItem(AKEY, JSON.stringify({
+          try { _lsSet(AKEY, JSON.stringify({
             pos: au && au.currentTime || 0,
             playing: au ? !au.paused : false, t: Date.now()
           })); } catch(e){}
@@ -455,7 +497,7 @@
             url = url.trim(); if (!url) return;
             var name = window.prompt('歌曲名称（可选）：') || '自定义';
             try {
-              var list = JSON.parse(localStorage.getItem(ALIST) || '[]');
+              var list = JSON.parse(_lsGet(ALIST) || '[]');
               if (!Array.isArray(list)) list = [];
               var track = { name: name, artist: 'Luliy', url: url, cover: cfg.cover || '' };
               list.push(track);
@@ -477,7 +519,7 @@
               var idx = ap.list.index;
               if (idx < BASE_COUNT) { window.alert('默认曲目不可删除'); return; }
               ap.list.remove(idx);
-              var list = JSON.parse(localStorage.getItem(ALIST) || '[]');
+              var list = JSON.parse(_lsGet(ALIST) || '[]');
               var extraIdx = idx - BASE_COUNT;
               if (extraIdx >= 0 && extraIdx < list.length) {
                 list.splice(extraIdx, 1);
@@ -609,7 +651,7 @@
                比按钮大得多，按钮原地不隐藏的话会糊在展开后面板的
                左上角。展开时把按钮隐藏，收起后再让它重新出现。 */
             apFab.classList.toggle('is-hidden-while-open', apOpen);
-            try { localStorage.setItem(APOPEN, apOpen ? '1' : '0'); } catch (e) {}
+            try { _lsSet(APOPEN, apOpen ? '1' : '0'); } catch (e) {}
           }
           apFab.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -630,7 +672,7 @@
 
           /* 默认收起；只有用户上次主动展开过才恢复展开状态 */
           var wasOpen = false;
-          try { wasOpen = localStorage.getItem(APOPEN) === '1'; } catch (e) {}
+          try { wasOpen = _lsGet(APOPEN) === '1'; } catch (e) {}
           setApOpen(wasOpen);
         }
 
@@ -746,7 +788,7 @@
       'luliy-pbwidth':   '400'     /* postBody width delta px (default = 最大) */
     };
     Object.keys(defs).forEach(function (k) {
-      if (localStorage.getItem(k) === null) localStorage.setItem(k, defs[k]);
+      if (_lsGet(k) === null) _lsSet(k, defs[k]);
     });
   }
 
@@ -880,7 +922,7 @@
     return _actx;
   }
   function playSfx(type) {
-    if (localStorage.getItem('luliy-sfx') === '0') return;
+    if (_lsGet('luliy-sfx') === '0') return;
     var ctx = getACtx(); if (!ctx) return;
     try {
       if (type === 'click') {
@@ -947,15 +989,15 @@
   var _cyberCanvas = null;
 
   function getCyberSpeed() {
-    var v = parseFloat(localStorage.getItem('luliy-cyber-speed'));
+    var v = parseFloat(_lsGet('luliy-cyber-speed'));
     return (isNaN(v) || v <= 0) ? 1 : Math.min(3, Math.max(0.2, v));
   }
   function getCyberDir() {
-    var v = localStorage.getItem('luliy-cyber-dir');
+    var v = _lsGet('luliy-cyber-dir');
     return (v === 'diverge' || v === 'free') ? v : 'converge';   /* converge | diverge | free */
   }
   function getCyberStyle() {
-    var v = localStorage.getItem('luliy-cyber-style');
+    var v = _lsGet('luliy-cyber-style');
     return (v === 'city') ? 'city' : 'classic';   /* classic | city（新版多层视差城市，引力物理） */
   }
 
@@ -967,7 +1009,7 @@
   }
 
   function initCyberParticles() {
-    if (localStorage.getItem('luliy-cyber') === '0') return;
+    if (_lsGet('luliy-cyber') === '0') return;
     if (prefersReduce && prefersReduce()) return;
     if (document.getElementById('luliy-cyber-canvas')) return;
 
@@ -1477,7 +1519,7 @@
         else rebuildCity();
       }, 150);
     }
-    window.addEventListener('resize', onResize, { passive: true });
+    _luliyOnResize(onResize);
     /* 标题位置可能因布局变化（比如展开抽屉、切换深浅模式）而移动，定时校正一下 */
     var targetTimer = setInterval(updateTarget, 1500);
 
@@ -1740,7 +1782,7 @@
         zoneBottom = Math.max(90, r.bottom + 16);
       }
       measureZone();
-      window.addEventListener('resize', measureZone, { passive: true });
+      _luliyOnResize(measureZone);
 
       function scrollOpacity() {
         var sy = window.scrollY || window.pageYOffset || 0;
@@ -1875,11 +1917,11 @@
   function applyReadingPrefs() {
     var pbody = document.getElementById('postBody');
     if (!pbody) return;
-    var px = parseInt(localStorage.getItem('luliy-fontsize') || '18', 10) || 18;
+    var px = parseInt(_lsGet('luliy-fontsize') || '18', 10) || 18;
     px = Math.min(24, Math.max(14, px));
     pbody.style.setProperty('font-size', px + 'px', 'important');
     /* Font mode: '0'=default(楷体), '1'=黑体, '2'=苍耳今楷 */
-    var fm = localStorage.getItem('luliy-sans') || '0';
+    var fm = _lsGet('luliy-sans') || '0';
     document.body.classList.toggle('luliy-sans',   fm === '1');
     document.body.classList.toggle('luliy-canger', fm === '2');
   }
@@ -1890,7 +1932,7 @@
   function applyBgBlur() { /* no-op: background blur feature removed */ }
   function applyPbWidth() {
     /* 默认最大宽度 400；用户若手动调过则用其值 */
-    var raw = localStorage.getItem('luliy-pbwidth');
+    var raw = _lsGet('luliy-pbwidth');
     var d = (raw === null) ? 400 : (parseInt(raw, 10) || 0);
     d = Math.min(400, Math.max(0, d));   /* 0..400px extra width, each side */
     document.documentElement.style.setProperty('--luliy-pb-extra', d + 'px');
@@ -1902,19 +1944,19 @@
      写入 CSS 变量 --luliy-glass-blur / -opacity / -hue，
      .luliy-card、文章面板、标签云容器都读这三个变量。 */
   function applyGlassVars() {
-    var blur = parseFloat(localStorage.getItem('luliy-glass-blur'));
+    var blur = parseFloat(_lsGet('luliy-glass-blur'));
     if (isNaN(blur)) blur = 22;
     blur = Math.min(50, Math.max(0, blur));
 
-    var op = parseFloat(localStorage.getItem('luliy-glass-opacity'));
+    var op = parseFloat(_lsGet('luliy-glass-opacity'));
     if (isNaN(op)) op = 0.5;
     op = Math.min(0.95, Math.max(0.1, op));
 
-    var hue = parseFloat(localStorage.getItem('luliy-glass-hue'));
+    var hue = parseFloat(_lsGet('luliy-glass-hue'));
     if (isNaN(hue)) hue = 250;
     hue = ((hue % 360) + 360) % 360;
 
-    var artOp = parseFloat(localStorage.getItem('luliy-article-opacity'));
+    var artOp = parseFloat(_lsGet('luliy-article-opacity'));
     if (isNaN(artOp)) artOp = 0.5;
     artOp = Math.min(0.95, Math.max(0.1, artOp));
 
@@ -1928,11 +1970,11 @@
 
   /* ---- 主页卡片宽 / 高（可调节） -------------------------- */
   function applyCatSize() {
-    var w = parseFloat(localStorage.getItem('luliy-cat-w'));
+    var w = parseFloat(_lsGet('luliy-cat-w'));
     if (isNaN(w)) w = 1700;
     w = Math.min(2000, Math.max(900, w));
 
-    var h = parseFloat(localStorage.getItem('luliy-cat-h'));
+    var h = parseFloat(_lsGet('luliy-cat-h'));
     if (isNaN(h)) h = 338;
     h = Math.min(500, Math.max(220, h));
 
@@ -2012,7 +2054,7 @@
     var s = null;
     for (var i = 0; i < SINKS.length; i++) { if (SINKS[i].id === id) { s = SINKS[i]; break; } }
     if (!s) s = SINKS[0];   /* 找不到就回退到默认（赛博朋克） */
-    localStorage.setItem('luliy-sink', s.id);
+    _lsSet('luliy-sink', s.id);
     document.body.setAttribute('data-luliy-theme', s.theme);
     document.documentElement.style.setProperty('--card-c1', s.cardPalette[0]);
     document.documentElement.style.setProperty('--card-c2', s.cardPalette[1]);
@@ -2040,7 +2082,7 @@
      若日后想恢复双模式，把下面这行删掉、解开注释即可。） */
   function getNavMode() {
     return 'drawer';
-    /* var saved = localStorage.getItem(NAV_MODE_KEY);
+    /* var saved = _lsGet(NAV_MODE_KEY);
     if (saved === 'hero' || saved === 'drawer') return saved;
     return (window.innerWidth <= 768) ? 'drawer' : 'hero'; */
   }
@@ -2277,7 +2319,7 @@
     var sinks = root._luliySINKS || [];
     var grid = document.createElement('div');
     grid.className = 'lds-theme-grid';
-    var curSink = localStorage.getItem('luliy-sink') || 'cyberpunk';
+    var curSink = _lsGet('luliy-sink') || 'cyberpunk';
     sinks.forEach(function (s) {
       var cell = document.createElement('button');
       cell.type = 'button';
@@ -2428,7 +2470,7 @@
         thinkerLink.style.left = (r.right + 10) + 'px';
       }
       positionThinkerIcon();
-      window.addEventListener('resize', positionThinkerIcon, { passive: true });
+      _luliyOnResize(positionThinkerIcon);
       /* 字体加载完成后宽度可能变化，再校正一次 */
       if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(positionThinkerIcon).catch(function () {});
@@ -2452,7 +2494,7 @@
           toMin.style.left = (r.right + 8) + 'px';
         }
         positionToMin();
-        window.addEventListener('resize', positionToMin, { passive: true });
+        _luliyOnResize(positionToMin);
         if (document.fonts && document.fonts.ready) {
           document.fonts.ready.then(positionToMin).catch(function () {});
         }
@@ -2477,7 +2519,7 @@
     /* ── 双导航模式切换实现 ── */
     root._luliyToggleNavMode = function () {
       var next = (getNavMode() === 'hero') ? 'drawer' : 'hero';
-      localStorage.setItem(NAV_MODE_KEY, next);
+      _lsSet(NAV_MODE_KEY, next);
       applyNavMode(next);
       refreshModeBtn();
       if (next === 'hero') {
@@ -2492,10 +2534,10 @@
     applyNavMode(getNavMode());
 
     /* 窗口缩放跨过 768 断点时，若用户从未手动选择，则跟随宽度更新默认 */
-    window.addEventListener('resize', function () {
-      if (localStorage.getItem(NAV_MODE_KEY)) return;   /* 用户已手选，不自动改 */
+    _luliyOnResize(function () {
+      if (_lsGet(NAV_MODE_KEY)) return;   /* 用户已手选，不自动改 */
       applyNavMode(getNavMode());
-    }, { passive: true });
+    });
   }
 
   /* ---- Nav transparency on scroll (article pages) --------- */
@@ -2513,8 +2555,8 @@
     ctrlBtn.id = 'luliy-ctrl-btn';
     ctrlBtn.type = 'button';
     function refreshBtnLabel() {
-      var sfx    = localStorage.getItem('luliy-sfx')    !== '0';
-      var sakura = localStorage.getItem('luliy-sakura') !== '0';
+      var sfx    = _lsGet('luliy-sfx')    !== '0';
+      var sakura = _lsGet('luliy-sakura') !== '0';
       ctrlBtn.textContent = (sfx ? '\uD83D\uDD0A' : '\uD83D\uDD07') + ' \u2728 ' + (sakura ? '\uD83C\uDF38' : '\u00D7');
     }
     refreshBtnLabel();
@@ -2578,12 +2620,12 @@
     }
 
     /* SFX */
-    var sfxOn  = localStorage.getItem('luliy-sfx') !== '0';
+    var sfxOn  = _lsGet('luliy-sfx') !== '0';
     var sfxRow = mkRow(sfxOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', '\u97f3\u6548', sfxOn ? '\u5f00\u542f' : '\u5173\u95ed');
     sfxRow.addEventListener('click', function (e) {
       e.stopPropagation();
-      var on = localStorage.getItem('luliy-sfx') !== '0';
-      localStorage.setItem('luliy-sfx', on ? '0' : '1');
+      var on = _lsGet('luliy-sfx') !== '0';
+      _lsSet('luliy-sfx', on ? '0' : '1');
       sfxRow._ico.textContent = !on ? '\uD83D\uDD0A' : '\uD83D\uDD07';
       sfxRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
       refreshBtnLabel();
@@ -2619,10 +2661,10 @@
        状态存 localStorage('luliy-nav-fade')，默认开启('1')。
        关闭后 initHeroScrollFade 不再绑定透明度，导航栏始终完全不透明。 */
     var FADE_KEY = 'luliy-nav-fade';
-    function isFadeEnabled() { return localStorage.getItem(FADE_KEY) !== '0'; }
+    function isFadeEnabled() { return _lsGet(FADE_KEY) !== '0'; }
     /* 切换函数——供按钮点击和初始化共用 */
     function applyFadeState(enabled) {
-      localStorage.setItem(FADE_KEY, enabled ? '1' : '0');
+      _lsSet(FADE_KEY, enabled ? '1' : '0');
       var shell = document.getElementById('luliy-nav-rebuilt');
       if (shell) {
         if (enabled) {
@@ -2659,7 +2701,7 @@
     refreshFadeRow();
     fadeRow.addEventListener('click', function () {
       var next = !isFadeEnabled();
-      localStorage.setItem(FADE_KEY, next ? '1' : '0');
+      _lsSet(FADE_KEY, next ? '1' : '0');
       refreshFadeRow();
       playSfx && playSfx('click');
     });
@@ -2717,7 +2759,7 @@
       var after = htmlEl.getAttribute('data-color-mode') || '';
       if (after !== mode) {
         htmlEl.setAttribute('data-color-mode', mode);
-        try { localStorage.setItem('meek_theme', mode); } catch (e) {}
+        try { _lsSet('meek_theme', mode); } catch (e) {}
       }
       /* Ripple from viewport centre */
       if (root._luliyThemeRipple) root._luliyThemeRipple(
@@ -2752,7 +2794,7 @@
     } catch (e) {}
 
     function syncThemeRows() {
-      var cur = localStorage.getItem('luliy-sink') || 'cyberpunk';
+      var cur = _lsGet('luliy-sink') || 'cyberpunk';
       panel.querySelectorAll('[data-sink]').forEach(function (r) {
         var active = r.getAttribute('data-sink') === cur;
         r.classList.toggle('is-active', active);
@@ -2775,12 +2817,12 @@
     panel.appendChild(mkSep());
 
     /* Sakura */
-    var sakuraOn  = localStorage.getItem('luliy-sakura') !== '0';
+    var sakuraOn  = _lsGet('luliy-sakura') !== '0';
     var sakuraRow = mkRow('\uD83C\uDF38', '\u6a31\u82b1\u6548\u679c', sakuraOn ? '\u5f00\u542f' : '\u5173\u95ed');
     sakuraRow.addEventListener('click', function (e) {
       e.stopPropagation();
-      var on = localStorage.getItem('luliy-sakura') !== '0';
-      localStorage.setItem('luliy-sakura', on ? '0' : '1');
+      var on = _lsGet('luliy-sakura') !== '0';
+      _lsSet('luliy-sakura', on ? '0' : '1');
       sakuraRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
       refreshBtnLabel();
       if (on) stopSakura();
@@ -2790,12 +2832,12 @@
     panel.appendChild(sakuraRow);
 
     /* Cyberpunk particles — 总开关 */
-    var cyberOn  = localStorage.getItem('luliy-cyber') !== '0';
+    var cyberOn  = _lsGet('luliy-cyber') !== '0';
     var cyberRow = mkRow('\u2728', '\u8d5b\u535a\u7c92\u5b50', cyberOn ? '\u5f00\u542f' : '\u5173\u95ed');
     cyberRow.addEventListener('click', function (e) {
       e.stopPropagation();
-      var on = localStorage.getItem('luliy-cyber') !== '0';
-      localStorage.setItem('luliy-cyber', on ? '0' : '1');
+      var on = _lsGet('luliy-cyber') !== '0';
+      _lsSet('luliy-cyber', on ? '0' : '1');
       cyberRow._bdg.textContent = !on ? '\u5f00\u542f' : '\u5173\u95ed';
       if (on) { if (root._luliyStopCyberParticles) root._luliyStopCyberParticles(); }
       else { if (root._luliyInitCyberParticles) root._luliyInitCyberParticles(); }
@@ -2807,16 +2849,16 @@
     var cyberSpeedSlider = mkSlider({
       emoji: '\u26a1', label: '\u7c92\u5b50\u901f\u5ea6',
       min: 0.2, max: 3, step: 0.2,
-      value: parseFloat(localStorage.getItem('luliy-cyber-speed')) || 1,
+      value: parseFloat(_lsGet('luliy-cyber-speed')) || 1,
       format: function (v) { return v.toFixed(1) + 'x'; },
-      onInput: function (v) { localStorage.setItem('luliy-cyber-speed', String(v)); }
+      onInput: function (v) { _lsSet('luliy-cyber-speed', String(v)); }
     });
     panel.appendChild(cyberSpeedSlider);
 
     /* Cyberpunk particles — 方向（汇聚 / 发散 / 自由漂浮，循环切换） */
     var _dirLabels = { converge: '\u6c47\u805a\u6807\u9898', diverge: '\u53d1\u6563\u6269\u6563', free: '\u81ea\u7531\u98d8\u6d6e' };
     function curDir() {
-      var v = localStorage.getItem('luliy-cyber-dir');
+      var v = _lsGet('luliy-cyber-dir');
       return (v === 'diverge' || v === 'free') ? v : 'converge';
     }
     var cyberDirRow = mkRow('\uD83E\uDDED', '\u7c92\u5b50\u65b9\u5411', _dirLabels[curDir()]);
@@ -2824,7 +2866,7 @@
       e.stopPropagation();
       var order = ['converge', 'diverge', 'free'];
       var next = order[(order.indexOf(curDir()) + 1) % order.length];
-      localStorage.setItem('luliy-cyber-dir', next);
+      _lsSet('luliy-cyber-dir', next);
       cyberDirRow._bdg.textContent = _dirLabels[next];
       playSfx('click');
     });
@@ -2836,13 +2878,13 @@
        不做"实时融合"，更稳妥也更简单。 */
     var _styleLabels = { classic: '\u7ecf\u5178', city: '\u57ce\u5e02\uff08\u65b0\uff09' };
     function curCyberStyle() {
-      return localStorage.getItem('luliy-cyber-style') === 'city' ? 'city' : 'classic';
+      return _lsGet('luliy-cyber-style') === 'city' ? 'city' : 'classic';
     }
     var cyberStyleRow = mkRow('\uD83C\uDFD9\uFE0F', '\u7c92\u5b50\u98ce\u683c', _styleLabels[curCyberStyle()]);
     cyberStyleRow.addEventListener('click', function (e) {
       e.stopPropagation();
       var next = curCyberStyle() === 'city' ? 'classic' : 'city';
-      localStorage.setItem('luliy-cyber-style', next);
+      _lsSet('luliy-cyber-style', next);
       cyberStyleRow._bdg.textContent = _styleLabels[next];
       if (root._luliyStopCyberParticles) root._luliyStopCyberParticles();
       if (root._luliyInitCyberParticles) root._luliyInitCyberParticles();
@@ -2857,10 +2899,10 @@
     var glassBlurSlider = mkSlider({
       emoji: '\uD83C\uDF2B\uFE0F', label: '\u6a21\u7cca\u7a0b\u5ea6',   /* 🌫️ 模糊程度 */
       min: 0, max: 50, step: 2,
-      value: parseFloat(localStorage.getItem('luliy-glass-blur')) || 22,
+      value: parseFloat(_lsGet('luliy-glass-blur')) || 22,
       format: function (v) { return v + 'px'; },
       onInput: function (v) {
-        localStorage.setItem('luliy-glass-blur', String(v));
+        _lsSet('luliy-glass-blur', String(v));
         applyGlassVars();
       }
     });
@@ -2869,10 +2911,10 @@
     var glassOpacitySlider = mkSlider({
       emoji: '\uD83D\uDD73\uFE0F', label: '\u900f\u660e\u5ea6',   /* 🕳️ 透明度（这里指不透明度，数值越大越实） */
       min: 0.1, max: 0.95, step: 0.05,
-      value: parseFloat(localStorage.getItem('luliy-glass-opacity')) || 0.5,
+      value: parseFloat(_lsGet('luliy-glass-opacity')) || 0.5,
       format: function (v) { return Math.round(v * 100) + '%'; },
       onInput: function (v) {
-        localStorage.setItem('luliy-glass-opacity', String(v));
+        _lsSet('luliy-glass-opacity', String(v));
         applyGlassVars();
       }
     });
@@ -2881,10 +2923,10 @@
     var glassHueSlider = mkSlider({
       emoji: '\uD83C\uDFA8', label: '\u8272\u8c03',   /* 🎨 色调 */
       min: 0, max: 360, step: 10,
-      value: parseFloat(localStorage.getItem('luliy-glass-hue')) || 250,
+      value: parseFloat(_lsGet('luliy-glass-hue')) || 250,
       format: function (v) { return v + '\u00b0'; },
       onInput: function (v) {
-        localStorage.setItem('luliy-glass-hue', String(v));
+        _lsSet('luliy-glass-hue', String(v));
         applyGlassVars();
       }
     });
@@ -2893,10 +2935,10 @@
     var articleOpacitySlider = mkSlider({
       emoji: '\uD83D\uDCC4', label: '\u6587\u7ae0\u9762\u677f\u900f\u660e\u5ea6',   /* 📄 文章面板透明度（独立于上面的玻璃透明度，单独控制阅读面板） */
       min: 0.1, max: 0.95, step: 0.05,
-      value: parseFloat(localStorage.getItem('luliy-article-opacity')) || 0.5,
+      value: parseFloat(_lsGet('luliy-article-opacity')) || 0.5,
       format: function (v) { return Math.round(v * 100) + '%'; },
       onInput: function (v) {
-        localStorage.setItem('luliy-article-opacity', String(v));
+        _lsSet('luliy-article-opacity', String(v));
         applyGlassVars();
       }
     });
@@ -2909,10 +2951,10 @@
     var catWSlider = mkSlider({
       emoji: '\u2194\uFE0F', label: '\u5361\u7247\u5bbd\u5ea6',   /* ↔️ 卡片宽度 */
       min: 900, max: 2000, step: 50,
-      value: parseFloat(localStorage.getItem('luliy-cat-w')) || 1700,
+      value: parseFloat(_lsGet('luliy-cat-w')) || 1700,
       format: function (v) { return v + 'px'; },
       onInput: function (v) {
-        localStorage.setItem('luliy-cat-w', String(v));
+        _lsSet('luliy-cat-w', String(v));
         applyCatSize();
       }
     });
@@ -2921,10 +2963,10 @@
     var catHSlider = mkSlider({
       emoji: '\u2195\uFE0F', label: '\u5361\u7247\u9ad8\u5ea6',   /* ↕️ 卡片高度 */
       min: 220, max: 500, step: 10,
-      value: parseFloat(localStorage.getItem('luliy-cat-h')) || 338,
+      value: parseFloat(_lsGet('luliy-cat-h')) || 338,
       format: function (v) { return v + 'px'; },
       onInput: function (v) {
-        localStorage.setItem('luliy-cat-h', String(v));
+        _lsSet('luliy-cat-h', String(v));
         applyCatSize();
       }
     });
@@ -2950,7 +2992,7 @@
       e.stopPropagation();
       var styleChanged = curCyberStyle() !== 'classic';
       Object.keys(APPEARANCE_DEFAULTS).forEach(function (k) {
-        localStorage.setItem(k, APPEARANCE_DEFAULTS[k]);
+        _lsSet(k, APPEARANCE_DEFAULTS[k]);
       });
       /* 同步滑块的视觉显示：改 value 再派发 input 事件，
          会自动触发各自的 onInput（写 localStorage + 实时生效），
@@ -3007,10 +3049,10 @@
       fsRow.appendChild(fsLbl); fsRow.appendChild(fsCtrls);
       panel.appendChild(fsRow);
 
-      function curFs() { return parseInt(localStorage.getItem('luliy-fontsize') || '18', 10) || 18; }
+      function curFs() { return parseInt(_lsGet('luliy-fontsize') || '18', 10) || 18; }
       function setFs(px) {
         px = Math.min(24, Math.max(14, px));
-        localStorage.setItem('luliy-fontsize', String(px));
+        _lsSet('luliy-fontsize', String(px));
         applyReadingPrefs();
         fsVal.textContent = px + 'px';
       }
@@ -3020,12 +3062,12 @@
 
       /* Font style: cycle default → 黑体 → 苍耳今楷 */
       var _fontLabels = {'0':'\u9ed8\u8ba4','1':'\u9ed1\u4f53','2':'\u82cd\u8033\u6977'};
-      var sansRow = mkRow('\u270d', '\u5b57\u4f53', _fontLabels[localStorage.getItem('luliy-sans')||'0']);
+      var sansRow = mkRow('\u270d', '\u5b57\u4f53', _fontLabels[_lsGet('luliy-sans')||'0']);
       sansRow.addEventListener('click', function (e) {
         e.stopPropagation();
-        var cur = localStorage.getItem('luliy-sans') || '0';
+        var cur = _lsGet('luliy-sans') || '0';
         var next = cur === '0' ? '1' : cur === '1' ? '2' : '0';
-        localStorage.setItem('luliy-sans', next);
+        _lsSet('luliy-sans', next);
         sansRow._bdg.textContent = _fontLabels[next];
         applyReadingPrefs();
         playSfx('click');
@@ -3036,10 +3078,10 @@
       var pwSlider = mkSlider({
         emoji: '\u2194\uFE0F', label: '\u9605\u8bfb\u5bbd\u5ea6',   /* ↔️ 阅读宽度 */
         min: 0, max: 400, step: 20,
-        value: parseInt(localStorage.getItem('luliy-pbwidth') || '0', 10) || 0,
+        value: parseInt(_lsGet('luliy-pbwidth') || '0', 10) || 0,
         format: function (v) { return '+' + v; },
         onInput: function (v) {
-          localStorage.setItem('luliy-pbwidth', String(v));
+          _lsSet('luliy-pbwidth', String(v));
           if (root._luliyApplyPbWidth) root._luliyApplyPbWidth();
         }
       });
@@ -3058,7 +3100,7 @@
       var order = ['grid', 'list', 'timeline'];
       var cur = order.indexOf(getCardView());
       var next = order[(cur + 1) % order.length];
-      localStorage.setItem('luliy-cardview', next);
+      _lsSet('luliy-cardview', next);
       cardViewRow._bdg.textContent = _cvLabels[next];
       if (root._luliyRerenderCards) root._luliyRerenderCards();
       else applyCardView();
@@ -3068,12 +3110,12 @@
 
     /* Reduce-motion override */
     var reduceRow = mkRow('\uD83C\uDF00', '\u51cf\u5f31\u52a8\u6548',
-      localStorage.getItem('luliy-reduce') === '1' ? '\u5f00\u542f' : '\u5173\u95ed');
+      _lsGet('luliy-reduce') === '1' ? '\u5f00\u542f' : '\u5173\u95ed');
     reduceRow.addEventListener('click', function (e) {
       e.stopPropagation();
-      var on = localStorage.getItem('luliy-reduce') === '1';
+      var on = _lsGet('luliy-reduce') === '1';
       var turningOn = !on;
-      localStorage.setItem('luliy-reduce', turningOn ? '1' : '0');
+      _lsSet('luliy-reduce', turningOn ? '1' : '0');
       reduceRow._bdg.textContent = turningOn ? '\u5f00\u542f' : '\u5173\u95ed';
       applyReduceMotion();
       /* ★ 不只是切 CSS class（那只能停掉 CSS 动画），
@@ -3111,7 +3153,7 @@
     ctrlWrap.appendChild(panel);
     bar.appendChild(ctrlWrap);
     document.body.appendChild(bar);
-    applySink(localStorage.getItem('luliy-sink') || 'cyberpunk');
+    applySink(_lsGet('luliy-sink') || 'cyberpunk');
   }
 
   /* ---- 14  Home card rebuild ------------------------------ */
@@ -3174,7 +3216,7 @@
     var PER_PAGE = 10;
     var TAB_KEY = 'luliy-archive-tab';
     var state = {
-      tab: (localStorage.getItem(TAB_KEY) === 'other') ? 'other' : 'weekly',
+      tab: (_lsGet(TAB_KEY) === 'other') ? 'other' : 'weekly',
       pageWeekly: 1,
       pageOther: 1,
       weekly: [],
@@ -3218,7 +3260,7 @@
           var t = btn.getAttribute('data-tab');
           if (t === state.tab) return;
           state.tab = t;
-          localStorage.setItem(TAB_KEY, t);
+          _lsSet(TAB_KEY, t);
           renderArchiveBody();
         });
       });
@@ -3364,8 +3406,8 @@
       var years = data.years;
       var cats = data.categories || [];
 
-      var savedYear = localStorage.getItem(YEAR_KEY);
-      var savedCat = localStorage.getItem(CAT_KEY);
+      var savedYear = _lsGet(YEAR_KEY);
+      var savedCat = _lsGet(CAT_KEY);
       var curYear = (years.indexOf(savedYear) !== -1) ? savedYear : years[0];
       var catKeys = cats.map(function (c) { return c.key; });
       var curCat = (catKeys.indexOf(savedCat) !== -1) ? savedCat : (cats[0] && cats[0].key);
@@ -3388,7 +3430,7 @@
         b.addEventListener('click', function () {
           if (y === curYear) return;
           curYear = y;
-          localStorage.setItem(YEAR_KEY, y);
+          _lsSet(YEAR_KEY, y);
           syncTabs(); renderBody();
         });
         yearsBox.appendChild(b);
@@ -3404,7 +3446,7 @@
         b.addEventListener('click', function () {
           if (c.key === curCat) return;
           curCat = c.key;
-          localStorage.setItem(CAT_KEY, c.key);
+          _lsSet(CAT_KEY, c.key);
           syncTabs(); renderBody();
         });
         catsBox.appendChild(b);
@@ -4213,7 +4255,7 @@
   };
 
   function initSakura() {
-    if (localStorage.getItem('luliy-sakura') === '0') return;
+    if (_lsGet('luliy-sakura') === '0') return;
     if (document.getElementById('luliy-sakura-canvas')) return;
     var canvas = document.createElement('canvas');
     canvas.id = 'luliy-sakura-canvas';
@@ -4240,10 +4282,10 @@
     _sakuraRAF = requestAnimationFrame(tick);
 
     if (!initSakura._resizeBound) {
-      window.addEventListener('resize', function () {
+      _luliyOnResize(function () {
         var c = document.getElementById('luliy-sakura-canvas');
         if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
-      }, { passive: true });
+      });
       initSakura._resizeBound = true;
     }
   }
@@ -4293,11 +4335,11 @@
     var W, H;
     function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
     resize();
-    window.addEventListener('resize', resize, { passive: true });
+    _luliyOnResize(resize);
 
     /* Particles — gated by the toggle; right-heavy distribution.
        Meteors stay on regardless (they're the global "流星" effect). */
-    var particlesEnabled = (localStorage.getItem('luliy-particles') !== '0');
+    var particlesEnabled = (_lsGet('luliy-particles') !== '0');
     var particles = [];
     var pCount = particlesEnabled ? cfg.pCount : 0;
     for (var i = 0; i < pCount; i++) {
@@ -4928,7 +4970,7 @@
   /* ---- Card view (grid / list) ---------------------------- */
   var CARD_VIEWS = ['grid', 'list', 'timeline'];
   function getCardView() {
-    var v = localStorage.getItem('luliy-cardview');
+    var v = _lsGet('luliy-cardview');
     return CARD_VIEWS.indexOf(v) >= 0 ? v : 'grid';
   }
   function applyCardView(forcedView) {
@@ -4949,7 +4991,7 @@
 
   /* ---- Reduce motion ------------------------------------- */
   function prefersReduce() {
-    if (localStorage.getItem('luliy-reduce') === '1') return true;
+    if (_lsGet('luliy-reduce') === '1') return true;
     try {
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } catch (e) { return false; }
@@ -5371,7 +5413,7 @@
       else {
         var next = cur === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-color-mode', next);
-        try { localStorage.setItem('meek_theme', next); } catch(e) {}
+        try { _lsSet('meek_theme', next); } catch(e) {}
       }
       if (playSfx) playSfx('theme');
     }
@@ -5419,7 +5461,7 @@
     });
 
     /* 在页面上显示一个快捷键提示（仅首次访问，3 秒后自动消失） */
-    if (!localStorage.getItem('luliy-kb-hint')) {
+    if (!_lsGet('luliy-kb-hint')) {
       setTimeout(function () {
         var toast = document.createElement('div');
         toast.id = 'luliy-kb-toast';
@@ -5436,7 +5478,7 @@
           toast.classList.remove('is-visible');
           setTimeout(function () { toast.remove(); }, 400);
         }, 3500);
-        localStorage.setItem('luliy-kb-hint', '1');
+        _lsSet('luliy-kb-hint', '1');
       }, 2000);
     }
   }
@@ -5552,7 +5594,7 @@
   (function () {
     function boot() {
       if (!document.body) return;
-      applySink(localStorage.getItem('luliy-sink') || 'cyberpunk');
+      applySink(_lsGet('luliy-sink') || 'cyberpunk');
     }
     if (document.body) boot();
     else document.addEventListener('DOMContentLoaded', boot);
@@ -5619,7 +5661,7 @@
   })();
 
   /* Sakura petals */
-  if (localStorage.getItem('luliy-sakura') !== '0') {
+  if (_lsGet('luliy-sakura') !== '0') {
     if (document.body) initSakura();
     else document.addEventListener('DOMContentLoaded', initSakura);
   }
@@ -5641,11 +5683,11 @@
   var MINIMAL_HOME_IMG = 'https://free.picui.cn/free/2026/06/28/6a413d098581f.png';
 
   function getSystem() {
-    try { return localStorage.getItem(SYSTEM_KEY) === 'minimal' ? 'minimal' : 'cyber'; }
+    try { return _lsGet(SYSTEM_KEY) === 'minimal' ? 'minimal' : 'cyber'; }
     catch (e) { return 'cyber'; }
   }
   function setSystem(sys) {
-    try { localStorage.setItem(SYSTEM_KEY, sys); } catch (e) {}
+    try { _lsSet(SYSTEM_KEY, sys); } catch (e) {}
     location.reload();
   }
   root._luliySetSystem = setSystem;
@@ -5802,10 +5844,74 @@
     }
   }
 
+  /* 极简系统 · 专注模式（Focus Mode）
+     仅文章页可用：双击正文区域，或按 F 键，进入/退出专注模式。
+     专注模式套用独立的编辑部/学术期刊排版（象牙白背景/近黑正文/
+     陶土色强调色/衬线正文/无阴影无圆角），并隐藏目录、导航等干扰元素，
+     样式定义见 enhance.css 的 .luliy-focus-mode 区块。
+     注：双击是浏览器选词手势——双击文字必然会先选中一个词。为避免
+     切换专注模式后留下刺眼的高亮选区，切换后会主动清空当前选区。 */
+  function initMinimalFocusMode() {
+    if (initMinimalFocusMode._bound) return;
+    initMinimalFocusMode._bound = true;
+
+    function hasArticle() {
+      return !!document.getElementById('postBody') &&
+        document.body.classList.contains('luliy-min-article');
+    }
+    function inEditableOrControl(el) {
+      if (!el || !el.closest) return false;
+      return !!el.closest(
+        'a, button, input, textarea, select, [contenteditable], ' +
+        '#luliy-min-nav, #luliy-min-toc, #luliy-system-toggle, #luliy-focus-hint'
+      );
+    }
+    function showFocusHint() {
+      if (document.getElementById('luliy-focus-hint')) return;
+      var hint = document.createElement('div');
+      hint.id = 'luliy-focus-hint';
+      hint.textContent = 'F \u6216\u53cc\u51fb\u00b7\u9000\u51fa\u4e13\u6ce8\u6a21\u5f0f'; /* F 或双击·退出专注模式 */
+      document.body.appendChild(hint);
+      setTimeout(function () {
+        hint.classList.add('is-out');
+        setTimeout(function () { if (hint.parentNode) hint.parentNode.removeChild(hint); }, 400);
+      }, 2200);
+    }
+    function toggleFocus() {
+      if (!hasArticle()) return;
+      var on = document.body.classList.toggle('luliy-focus-mode');
+      try { if (typeof playSfx === 'function') playSfx('theme'); } catch (e) {}
+      var sel = window.getSelection && window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+      if (on) showFocusHint();
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target;
+      var tag = t && t.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+        (t && t.isContentEditable)) return;
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFocus();
+      } else if (e.key === 'Escape' && document.body.classList.contains('luliy-focus-mode')) {
+        document.body.classList.remove('luliy-focus-mode');
+      }
+    });
+
+    document.addEventListener('dblclick', function (e) {
+      if (!hasArticle()) return;
+      if (inEditableOrControl(e.target)) return;
+      toggleFocus();
+    });
+  }
+
   ready(function () {
     /* ★ 极简系统拦截：在任何赛博初始化之前判断。命中则走极简分支并 return。 */
     if (getSystem() === 'minimal') {
       safe(initMinimalSystem, 'minimalSystem');
+      safe(initMinimalFocusMode, 'minimalFocusMode');
       return;
     }
 
