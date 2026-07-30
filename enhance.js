@@ -1910,9 +1910,6 @@
   }
 
 
-  /* ---- Background picker — 已移除（全站改用纯色 #00020c，无背景图功能） */
-  function showBgPicker() { /* no-op: background-image feature removed */ }
-
   /* ---- Reading preferences (font size + font style) -------- */
   function applyReadingPrefs() {
     var pbody = document.getElementById('postBody');
@@ -1929,7 +1926,6 @@
 
   /* ---- Reading-panel width (CSS variable) --------------------
      背景图/模糊功能已删除。仅保留阅读宽度控制，默认拉到最大(400)。 */
-  function applyBgBlur() { /* no-op: background blur feature removed */ }
   function applyPbWidth() {
     /* 默认最大宽度 400；用户若手动调过则用其值 */
     var raw = _lsGet('luliy-pbwidth');
@@ -1937,7 +1933,6 @@
     d = Math.min(400, Math.max(0, d));   /* 0..400px extra width, each side */
     document.documentElement.style.setProperty('--luliy-pb-extra', d + 'px');
   }
-  root._luliyApplyBgBlur = applyBgBlur;
   root._luliyApplyPbWidth = applyPbWidth;
 
   /* ---- 液态玻璃三个可调参数：模糊 / 透明度 / 色调 -------------
@@ -2554,10 +2549,16 @@
     var ctrlBtn = document.createElement('button');
     ctrlBtn.id = 'luliy-ctrl-btn';
     ctrlBtn.type = 'button';
+    ctrlBtn.setAttribute('aria-haspopup', 'true');
+    ctrlBtn.setAttribute('aria-expanded', 'false');
     function refreshBtnLabel() {
       var sfx    = _lsGet('luliy-sfx')    !== '0';
       var sakura = _lsGet('luliy-sakura') !== '0';
       ctrlBtn.textContent = (sfx ? '\uD83D\uDD0A' : '\uD83D\uDD07') + ' \u2728 ' + (sakura ? '\uD83C\uDF38' : '\u00D7');
+      /* 可见文字只有 emoji，屏幕阅读器读不出含义，单独补一份文字说明 */
+      ctrlBtn.setAttribute('aria-label',
+        '\u663e\u793a\u8bbe\u7f6e\u9762\u677f\uff08\u97f3\u6548' + (sfx ? '\u5f00' : '\u5173') +
+        '\u3001\u6a31\u82b1\u7279\u6548' + (sakura ? '\u5f00' : '\u5173') + '\uff09');
     }
     refreshBtnLabel();
 
@@ -3139,11 +3140,13 @@
       e.stopPropagation();
       var open = panel.classList.toggle('is-open');
       ctrlBtn.classList.toggle('is-open', open);
+      ctrlBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       if (open) syncThemeRows();
     });
     document.addEventListener('click', function () {
       panel.classList.remove('is-open');
       ctrlBtn.classList.remove('is-open');
+      ctrlBtn.setAttribute('aria-expanded', 'false');
     });
     panel.addEventListener('click', function (e) { e.stopPropagation(); });
 
@@ -3238,7 +3241,8 @@
         else if (!archiveIsSystem(p)) state.other.push(p);
       });
       renderArchivesShell();
-    }).catch(function () {
+    }).catch(function (e) {
+      try { console.warn('[luliy] archive page failed to load posts:', e); } catch (e2) {}
       root2.innerHTML = '<div class="luliy-arch-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
         '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
     });
@@ -3393,8 +3397,9 @@
         return;
       }
       renderChronicle(data);
-    }).catch(function () {
+    }).catch(function (e) {
       /* 兜底：万一渲染过程本身抛错（比如数据结构异常），也优雅降级 */
+      try { console.warn('[luliy] chronicle page render failed:', e); } catch (e2) {}
       var data = fallbackJson;
       if (data && data.years && data.years.length) {
         try { renderChronicle(data); return; } catch (e) {}
@@ -3713,7 +3718,8 @@
         });
       });
       renderBookshelf(books);
-    }).catch(function () {
+    }).catch(function (e) {
+      try { console.warn('[luliy] bookshelf page failed to load posts:', e); } catch (e2) {}
       root2.innerHTML = '<div class="luliy-book-error">\u65e0\u6cd5\u8bfb\u53d6\u6587\u7ae0\u5217\u8868\uff0c' +
         '\u8bf7\u786e\u8ba4 Gmeek \u5df2\u751f\u6210 postList.json\u3002</div>';
     });
@@ -4481,6 +4487,26 @@
        the TOC button, highlights the current section, and jumps on
        click. Fully theme-styled, high contrast in both modes.       */
     buildLuliyTOC(pbody);
+
+    /* 部分内容（如异步渲染的 Markdown/代码高亮）可能在首次调用时标题
+       还没插入 DOM，buildLuliyTOC 会因标题不足直接跳过。此前用两次
+       setTimeout(600/2000ms) 盲猜时机重试；改用 MutationObserver 监听
+       pbody 子树变化，标题真正出现后立即重建一次目录。buildLuliyTOC
+       本身对"已存在 #luliy-toc-panel"是幂等的，面板建成后立刻断开
+       观察，避免长期监听造成不必要开销。 */
+    if (!pbody._luliyTocObs && !document.getElementById('luliy-toc-panel')) {
+      pbody._luliyTocObs = true;
+      try {
+        var tocObs = new MutationObserver(function () {
+          buildLuliyTOC(pbody);
+          if (document.getElementById('luliy-toc-panel')) tocObs.disconnect();
+        });
+        tocObs.observe(pbody, { childList: true, subtree: true });
+        /* 保险丝：10 秒后无论如何断开，防止长期未出现标题的页面上
+           观察器一直挂着（例如极短文章从未满足"≥2 个标题"的条件）。 */
+        setTimeout(function () { try { tocObs.disconnect(); } catch (e) {} }, 10000);
+      } catch (e) {}
+    }
   }
 
   function buildLuliyTOC(pbody) {
@@ -4865,15 +4891,14 @@
       });
     });
 
-    /* macOS code blocks */
+    /* macOS code blocks — initCodeBlocks() 内部已挂载 MutationObserver
+       持续监听 pbody 子树变化，异步渲染的代码高亮出现时会自动补装饰，
+       无需再用 setTimeout 盲猜时机重复调用。 */
     initCodeBlocks(pbody);
-    setTimeout(function () { initCodeBlocks(pbody); }, 800);
-    setTimeout(function () { initCodeBlocks(pbody); }, 2200);
 
-    /* TOC scroll-spy */
+    /* TOC scroll-spy — 首次调用即挂好 MutationObserver，标题异步
+       出现时会自动补建目录，无需重复调用（见 initArticleTocSpy 定义）。 */
     initArticleTocSpy();
-    setTimeout(function () { initArticleTocSpy(); }, 600);
-    setTimeout(function () { initArticleTocSpy(); }, 2000);
 
     /* Prev / Next navigation */
     fetchPosts().then(function (posts) {
@@ -4921,7 +4946,11 @@
 
       /* Series navigation (same-tag prev/next with progress) */
       initSeriesNav(pbody, posts, idx, navPosts);
-    }).catch(function () {});
+    }).catch(function (e) {
+      /* 上/下一篇导航是锦上添花的功能，加载失败时静默降级（不影响正文
+         阅读），但留一条 console.warn 方便排查为何导航条没出现。 */
+      try { console.warn('[luliy] prev/next nav failed to load posts:', e); } catch (e2) {}
+    });
 
     /* In-page search (Ctrl/Cmd+F) */
     initInPageSearch();
@@ -5167,12 +5196,13 @@
     var bar = document.createElement('div');
     bar.id = 'luliy-search-bar';
     bar.innerHTML =
-      '<i class="luliy-search-icon">\uD83D\uDD0D</i>' +
-      '<input id="luliy-search-input" type="text" placeholder="\u641c\u7d22\u672c\u6587\u2026" autocomplete="off">' +
+      '<i class="luliy-search-icon" aria-hidden="true">\uD83D\uDD0D</i>' +
+      '<input id="luliy-search-input" type="text" placeholder="\u641c\u7d22\u672c\u6587\u2026" ' +
+        'aria-label="\u641c\u7d22\u672c\u6587" autocomplete="off">' +
       '<span id="luliy-search-count">0/0</span>' +
-      '<button id="luliy-search-prev" type="button" title="\u4e0a\u4e00\u4e2a">\u2191</button>' +
-      '<button id="luliy-search-next" type="button" title="\u4e0b\u4e00\u4e2a">\u2193</button>' +
-      '<button id="luliy-search-close" type="button" title="\u5173\u95ed">\u2715</button>';
+      '<button id="luliy-search-prev" type="button" title="\u4e0a\u4e00\u4e2a" aria-label="\u4e0a\u4e00\u4e2a\u5339\u914d\u9879">\u2191</button>' +
+      '<button id="luliy-search-next" type="button" title="\u4e0b\u4e00\u4e2a" aria-label="\u4e0b\u4e00\u4e2a\u5339\u914d\u9879">\u2193</button>' +
+      '<button id="luliy-search-close" type="button" title="\u5173\u95ed" aria-label="\u5173\u95ed\u641c\u7d22">\u2715</button>';
     document.body.appendChild(bar);
 
     var input = bar.querySelector('#luliy-search-input');
@@ -5283,6 +5313,7 @@
       fab.id = 'luliy-search-fab';
       fab.type = 'button';
       fab.title = '\u641c\u7d22\u672c\u6587 (Ctrl+F)';
+      fab.setAttribute('aria-label', '\u641c\u7d22\u672c\u6587');
       fab.textContent = '\uD83D\uDD0D';
       fab.addEventListener('click', openSearch);
       document.body.appendChild(fab);
@@ -5359,7 +5390,11 @@
          因为 #luliy-tag-grid 本身在 #content 末尾追加，先后顺序不影响视觉） */
       var mount = document.getElementById('content') || document.body;
       mount.insertBefore(wrap, mount.firstChild);
-    }).catch(function () {});
+    }).catch(function (e) {
+      /* 标签云是锦上添花的功能，加载失败时静默降级，但留一条
+         console.warn 方便排查为何标签云没有出现。 */
+      try { console.warn('[luliy] tag cloud failed to load posts:', e); } catch (e2) {}
+    });
   }
 
   /* ---- 25a/25b 鼠标拖尾、萤火虫特效已删除 --------------------
