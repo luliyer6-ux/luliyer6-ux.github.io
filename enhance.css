@@ -4803,7 +4803,7 @@ body.luliy-minimal #content { background: transparent !important; }
 }
 #luliy-to-minimal:hover { opacity: 1; transform: scale(1.15); }
 
-/* ════════ 主页：大图 + 右上角文字导航 ════════ */
+/* ════════ 主页：大图 + 左侧竖排文字导航 ════════ */
 #luliy-min-home {
   position: fixed; inset: 0;
   background: var(--min-bg);
@@ -4822,22 +4822,28 @@ body.luliy-minimal #content { background: transparent !important; }
 }
 .luliy-min-home-nav {
   position: absolute;
-  top: 28px; left: 32px;
+  top: 48px; left: 48px;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
   font-family: var(--min-sans);
-  font-size: 21px;            /* 14px × 1.5 */
-  letter-spacing: 0.75px;     /* 0.5px × 1.5 */
+  font-size: 32px;            /* 21px → 32px，明显更大 */
+  font-weight: 500;
+  letter-spacing: 0.5px;
   color: var(--min-muted);
 }
 .luliy-min-home-nav a {
   color: var(--min-title);
   text-decoration: none;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, transform 0.15s;
 }
-.luliy-min-home-nav a:hover { opacity: 0.55; }
-.luliy-min-home-nav .luliy-min-nav-sep { margin: 0 12px; color: var(--min-muted); }
+.luliy-min-home-nav a:hover { opacity: 0.55; transform: translateX(4px); }
+/* 竖排列表，不再需要 "/" 分隔符 */
+.luliy-min-home-nav .luliy-min-nav-sep { display: none; }
 @media (max-width: 640px) {
-  .luliy-min-home-nav { top: 14px; left: 16px; font-size: 16px; }
+  .luliy-min-home-nav { top: 24px; left: 20px; gap: 10px; font-size: 21px; }
 }
 
 
@@ -5635,21 +5641,16 @@ body.luliy-minimal .luliy-chron-year-tab.is-active::after {
 #luliy-min-toc a:hover,
 #luliy-min-toc .luliy-min-toc-h1 { color: #1c1c1e !important; -webkit-text-fill-color:#1c1c1e !important; }
 
-/* —— 7. 主页：背景全屏 + 图片居中 + 顶部文字导航（切换按钮左边） —— */
+/* —— 7. 主页：背景全屏 + 图片居中 —— */
 #luliy-min-home {
   position: fixed !important; inset: 0 !important;
   background: rgb(230,225,212) !important;
   display: flex !important; align-items: center !important; justify-content: center !important;
   z-index: 50 !important;
 }
-#luliy-min-home-nav {
-  position: fixed; top: 24px; right: 76px; z-index: 120;
-  font-family: var(--min-sans); font-size: 14px; letter-spacing: 0.5px;
-  color: #8c8c8c;
-}
-#luliy-min-home-nav a { color: #1c1c1e; text-decoration: none; }
-#luliy-min-home-nav a:hover { opacity: 0.55; }
-#luliy-min-home-nav .luliy-min-nav-sep { margin: 0 8px; color: #8c8c8c; }
+/* 注：此前这里有一份 #luliy-min-home-nav（ID 选择器）规则，实际元素用的
+   是 class="luliy-min-home-nav"，选择器从未命中过，是完全不生效的死代码，
+   已删除。真正生效的样式见上面 "主页：大图 + 左侧文字导航" 区块。 */
 
 /* —— 8. 切换按钮：极简风、放右上角 —— */
 #luliy-system-toggle {
@@ -5663,8 +5664,7 @@ body.luliy-minimal .luliy-chron-year-tab.is-active::after {
   #luliy-min-toc { display: none !important; }
 }
 @media (max-width: 720px) {
-  #luliy-min-home-nav { right: 64px; font-size: 12px; }
-  #luliy-min-home-nav .luliy-min-nav-sep { margin: 0 5px; }
+  /* 首页导航尺寸/位置已改为在 .luliy-min-home-nav 的移动端媒体查询里统一处理 */
 }
 
 /* —— v2 补丁：标题/表头颜色 + 表格外框，更强覆盖 —— */
