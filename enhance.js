@@ -414,8 +414,10 @@
     }, { passive: true });
     document.addEventListener('touchmove', function(e) {
       if (!dragging) return;
+      /* 正在拖拽播放器面板时阻止页面跟着滚动（需要 passive:false 才能 preventDefault） */
+      if (e.cancelable) e.preventDefault();
       var t = e.touches[0]; var p = zoomPos(t.clientX, t.clientY); onDragMove(p.x, p.y);
-    }, { passive: true });
+    }, { passive: false });
     document.addEventListener('touchend', onDragEnd, { passive: true });
 
     function boot() {
@@ -633,11 +635,13 @@
           }, { passive: true });
           document.addEventListener('touchmove', function (e) {
             if (!fabDragging) return;
+            /* 正在拖拽悬浮按钮时阻止页面跟着滚动 */
+            if (e.cancelable) e.preventDefault();
             _fabMoved = true;
             var t = e.touches[0];
             var p = zoomPos(t.clientX, t.clientY);
             onFabDragMove(p.x, p.y);
-          }, { passive: true });
+          }, { passive: false });
           document.addEventListener('touchend', onFabDragEnd);
 
           var APOPEN = 'luliy-aplayer-open';
@@ -5544,20 +5548,25 @@
               : (location.pathname === '/' || location.pathname === '/index.html') ? 'post'
               : (url.pathname > location.pathname) ? 'next' : 'prev';
       document.documentElement.setAttribute('data-vt-dir', dir);
-      try {
-        var vt = document.startViewTransition(function () {
-          /* Cleanup infinite-scroll observers before navigation */
-          if (root._luliyTeardownTimeline) root._luliyTeardownTimeline();
-          location.href = dest;
-          return new Promise(function () {});
-        });
-        setTimeout(function () {
-          document.documentElement.removeAttribute('data-vt-dir');
-          location.href = dest;
-        }, 1000);
-      } catch (err) {
+      /* 只导航一次：优先走 startViewTransition，1s 后仍未跳转（回调异常/浏览器
+         行为不一致）才用兜底定时器补一次跳转，避免旧代码里两条路径都会
+         无条件调用 location.href 造成的重复导航。 */
+      var navigated = false;
+      function go() {
+        if (navigated) return;
+        navigated = true;
         document.documentElement.removeAttribute('data-vt-dir');
         location.href = dest;
+      }
+      try {
+        document.startViewTransition(function () {
+          if (root._luliyTeardownTimeline) root._luliyTeardownTimeline();
+          go();
+          return new Promise(function () {});
+        });
+        setTimeout(go, 1000); /* 兜底 */
+      } catch (err) {
+        go();
       }
     });
   }
