@@ -784,7 +784,8 @@
       'luliy-glass-hue':     '250',    /* 0~360 */
       'luliy-cat-w':        '1700',    /* 主页卡片宽度 px，900~2000，★默认再加宽 */
       'luliy-cat-h':         '338',    /* 主页卡片高度 px，220~500 */
-      'luliy-article-opacity': '0.5',  /* 文章正文面板独立不透明度，0.1~0.95 */
+      /* 注意：luliy-article-opacity 不再写默认值——未手动设置时
+         由 applyGlassVars 按颜色模式取默认（夜间 0 / 白天 0.95）。 */
       'luliy-fontsize':  '18',
       'luliy-sans':      '0',
       'luliy-cardview':  'grid',   /* grid | list */
@@ -1405,6 +1406,25 @@
   /* ---- 液态玻璃三个可调参数：模糊 / 透明度 / 色调 -------------
      写入 CSS 变量 --luliy-glass-blur / -opacity / -hue，
      .luliy-card、文章面板、标签云容器都读这三个变量。 */
+  /* ★ 文章面板透明度：
+     未手动调节时跟随颜色模式取默认——夜间 0%（完全透明）/ 白天 95%。
+     只要用户在滑块上手动调过，就尊重手动值（两种模式共用该值）。 */
+  function getArticleOpacitySetting() {
+    var raw = _lsGet('luliy-article-opacity');
+    /* 迁移：旧版默认 0.5 会残留在 localStorage，首次按“未手动设置”清掉，
+       让新默认（夜间 0 / 白天 0.95）对老访客也生效。 */
+    if (raw === '0.5' && !_lsGet('luliy-ao-v2')) {
+      try { window.localStorage.removeItem('luliy-article-opacity'); } catch (e) {}
+      _lsSet('luliy-ao-v2', '1');
+      raw = null;
+    } else if (raw !== null) {
+      _lsSet('luliy-ao-v2', '1');
+    }
+    var v = parseFloat(raw);
+    if (isNaN(v)) return _luliyResolveMode() === 'dark' ? 0 : 0.95;
+    return Math.min(0.95, Math.max(0, v));
+  }
+
   function applyGlassVars() {
     var blur = parseFloat(_lsGet('luliy-glass-blur'));
     if (isNaN(blur)) blur = 22;
@@ -1418,15 +1438,29 @@
     if (isNaN(hue)) hue = 250;
     hue = ((hue % 360) + 360) % 360;
 
-    var artOp = parseFloat(_lsGet('luliy-article-opacity'));
-    if (isNaN(artOp)) artOp = 0.5;
-    artOp = Math.min(0.95, Math.max(0.1, artOp));
+    var artOp = getArticleOpacitySetting();
 
     var root2 = document.documentElement.style;
     root2.setProperty('--luliy-glass-blur', blur + 'px');
     root2.setProperty('--luliy-glass-opacity', String(op));
     root2.setProperty('--luliy-glass-hue', String(hue));
     root2.setProperty('--luliy-article-opacity', String(artOp));
+
+    /* 颜色模式切换（白天/夜间）时，若用户未手动调过文章面板透明度，
+       自动跟随新模式切换默认值（夜间 0 / 白天 0.95）。 */
+    if (!applyGlassVars._modeObsBound) {
+      applyGlassVars._modeObsBound = true;
+      try {
+        new MutationObserver(function () {
+          if (_lsGet('luliy-article-opacity') === null) {
+            applyGlassVars();
+            if (root._luliySyncArticleOpacity) root._luliySyncArticleOpacity();
+          }
+        }).observe(document.documentElement, {
+          attributes: true, attributeFilter: ['data-color-mode']
+        });
+      } catch (e) {}
+    }
   }
   root._luliyApplyGlassVars = applyGlassVars;
 
@@ -2097,12 +2131,16 @@
         rng.style.setProperty('--luliy-range-pct', pct + '%');
       }
       fill();
-      rng.addEventListener('input', function (e) {
-        e.stopPropagation();
-        var v = parseFloat(rng.value);
+      /* 供外部设置值：silent=true 只改视觉，不触发 onInput（不写存储） */
+      row.setValue = function (v, silent) {
+        rng.value = String(v);
         bdg.textContent = fmt(v);
         fill();
-        if (opts.onInput) opts.onInput(v);
+        if (!silent && opts.onInput) opts.onInput(v);
+      };
+      rng.addEventListener('input', function (e) {
+        e.stopPropagation();
+        row.setValue(parseFloat(rng.value), false);
       });
       rng.addEventListener('click', function (e) { e.stopPropagation(); });
       row.appendChild(top); row.appendChild(rng);
@@ -2351,8 +2389,8 @@
 
     var articleOpacitySlider = mkSlider({
       emoji: '\uD83D\uDCC4', label: '\u6587\u7ae0\u9762\u677f\u900f\u660e\u5ea6',   /* 📄 文章面板透明度（独立于上面的玻璃透明度，单独控制阅读面板） */
-      min: 0.1, max: 0.95, step: 0.05,
-      value: parseFloat(_lsGet('luliy-article-opacity')) || 0.5,
+      min: 0, max: 0.95, step: 0.05,
+      value: getArticleOpacitySetting(),
       format: function (v) { return Math.round(v * 100) + '%'; },
       onInput: function (v) {
         _lsSet('luliy-article-opacity', String(v));
@@ -2360,6 +2398,13 @@
       }
     });
     panel.appendChild(articleOpacitySlider);
+    /* 颜色模式切换时静默同步滑块位置（只改视觉，不写 localStorage，
+       避免把“跟随模式的默认”变成手动值） */
+    root._luliySyncArticleOpacity = function () {
+      if (articleOpacitySlider.setValue) {
+        articleOpacitySlider.setValue(getArticleOpacitySetting(), true);
+      }
+    };
 
     /* ── 主页卡片尺寸（宽 / 高可调） ───────────────────── */
     panel.appendChild(mkSep());
@@ -2396,7 +2441,6 @@
       'luliy-glass-blur':     '22',
       'luliy-glass-opacity':  '0.5',
       'luliy-glass-hue':      '250',
-      'luliy-article-opacity':'0.5',
       'luliy-cat-w':          '1700',
       'luliy-cat-h':          '338'
     };
@@ -2407,17 +2451,23 @@
       Object.keys(APPEARANCE_DEFAULTS).forEach(function (k) {
         _lsSet(k, APPEARANCE_DEFAULTS[k]);
       });
-      /* 同步滑块的视觉显示：改 value 再派发 input 事件，
+      /* 文章面板透明度：重置为跟随模式的默认（夜间 0 / 白天 0.95）——
+         直接清掉手动值，滑块静默同步，不写回 localStorage */
+      try { window.localStorage.removeItem('luliy-article-opacity'); } catch (e2) {}
+      applyGlassVars();
+      if (articleOpacitySlider.setValue) {
+        articleOpacitySlider.setValue(getArticleOpacitySetting(), true);
+      }
+      /* 同步其余滑块的视觉显示：改 value 再派发 input 事件，
          会自动触发各自的 onInput（写 localStorage + 实时生效），
          不用逐个手写重复逻辑。
          （粒子速度/方向/风格三项已随粒子系统一起移除，不再需要同步。） */
       [glassBlurSlider, glassOpacitySlider,
-       glassHueSlider, articleOpacitySlider, catWSlider, catHSlider].forEach(function (s) {
+       glassHueSlider, catWSlider, catHSlider].forEach(function (s) {
         s._range.value = APPEARANCE_DEFAULTS[
           s === glassBlurSlider ? 'luliy-glass-blur' :
           s === glassOpacitySlider ? 'luliy-glass-opacity' :
           s === glassHueSlider ? 'luliy-glass-hue' :
-          s === articleOpacitySlider ? 'luliy-article-opacity' :
           s === catWSlider ? 'luliy-cat-w' : 'luliy-cat-h'
         ];
         s._range.dispatchEvent(new Event('input', { bubbles: false }));
