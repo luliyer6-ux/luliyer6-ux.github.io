@@ -79,8 +79,10 @@
   --luliy-cat-w: 1700px;   /* ★ 默认再横向加宽 */
   --luliy-cat-h: 338px;
 
-  /* ★ 文章正文面板独立不透明度（和卡片/标签云的玻璃透明度分开控制） */
-  --luliy-article-opacity: 0.5;
+/* ★ 文章正文面板独立不透明度（和卡片/标签云的玻璃透明度分开控制）。
+   CSS 里只作兜底（白天 0.95）；真实默认由 JS 按颜色模式写入：
+   夜间 0（完全透明）/ 白天 0.95。 */
+--luliy-article-opacity: 0.95;
 }
 
 html { scroll-behavior: smooth; zoom: 1.1; }
