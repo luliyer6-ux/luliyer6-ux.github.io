@@ -1443,6 +1443,30 @@
     var root2 = document.documentElement.style;
     root2.setProperty('--luliy-cat-w', w + 'px');
     root2.setProperty('--luliy-cat-h', h + 'px');
+
+    /* ★ 修复：卡片宽度滑块无响应。
+       Gmeek 的 body 是居中的 max-width 容器，原 CSS 用
+       min(var(--luliy-cat-w), 100%)，一旦滑块值超过容器宽就
+       被封顶（默认 1700 早已超过，所以调大无反应）。
+       这里把卡片区拉成通栏（突破 body 容器），并用实测视口宽度
+       算出真正可用的最大宽度（考虑 html 的 zoom），写入
+       --luliy-cat-max 供 CSS 封顶：滑块 900~2000 全程有响应，
+       只受屏幕实际宽度约束。 */
+    try {
+      var z = getZoomFactor();
+      var vwLayout = window.innerWidth / z;   /* 视口在布局坐标系的宽度 */
+      var wrap = document.getElementById('luliy-cats-wrap');
+      if (wrap) {
+        wrap.style.width = vwLayout + 'px';
+        wrap.style.maxWidth = 'none';
+        wrap.style.marginLeft = 'calc(50% - ' + (vwLayout / 2) + 'px)';
+      }
+      root2.setProperty('--luliy-cat-max', Math.max(320, vwLayout - 48) + 'px');
+      if (!applyCatSize._resizeBound) {
+        applyCatSize._resizeBound = true;
+        _luliyOnResize(applyCatSize);
+      }
+    } catch (e) {}
   }
   root._luliyApplyCatSize = applyCatSize;
 
