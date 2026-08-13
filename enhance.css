@@ -6068,3 +6068,20 @@ body.luliy-min-article #postBody h3::after,
 body.luliy-min-article #postBody h4::after,
 body.luliy-min-article #postBody h5::after,
 body.luliy-min-article #postBody h6::after { width: 48px; height: 4px; }
+
+/* ── 修复：卡片宽度滑块无响应 ───────────────────────────────
+   原规则 width:min(var(--luliy-cat-w,1500px),100%) 里 100% 的参照物是
+   body（Gmeek 居中 max-width 容器），一旦滑块值超过容器宽度就被封顶
+   （默认 1700 早已超过，所以调大无反应）。
+   这里把卡片区拉成通栏（突破 body max-width），宽度上限 --luliy-cat-max
+   由 JS 按实测视口宽度写入（已扣除 48px 内边距并补偿 html 的 zoom），
+   滑块 900~2000 全程有响应，只受屏幕实际宽度约束。 */
+#luliy-cats-wrap {
+  width: 100vw;
+  max-width: none !important;
+  margin-left: calc(50% - 50vw);
+}
+#luliy-cats,
+#luliy-cats-more-row {
+  width: min(var(--luliy-cat-w, 1700px), var(--luliy-cat-max, calc(100vw - 48px)));
+}
